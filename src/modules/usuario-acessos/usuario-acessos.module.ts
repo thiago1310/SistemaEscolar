@@ -4,6 +4,7 @@ import { AnoLetivo } from '../anos-letivos/anos-letivos.entities';
 import { AutenticacaoModule } from '../autenticacao/autenticacao.module';
 import { TokenAcessoGuard } from '../autenticacao/autenticacao.guard';
 import { Usuario } from '../autenticacao/autenticacao.entities';
+import { AutorizacaoModule } from '../autorizacao/autorizacao.module';
 import { Escola } from '../escolas/escolas.entities';
 import { Perfil } from '../perfis-permissoes/perfis-permissoes.entities';
 import { Secretaria } from '../secretarias/secretarias.entities';
@@ -14,6 +15,7 @@ import { UsuarioAcessosService } from './usuario-acessos.service';
 @Module({
   imports: [
     AutenticacaoModule,
+    AutorizacaoModule,
     TypeOrmModule.forFeature([
       UsuarioAcesso,
       Usuario,
