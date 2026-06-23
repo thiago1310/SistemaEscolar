@@ -2,16 +2,34 @@
   "info": {
     "_postman_id": "8a25d70e-b72d-4730-b5e0-8d54877b40f4",
     "name": "Sistema Escolar - Perfis e Permissoes",
-    "description": "Colecao para testar perfis, permissoes e vinculos entre eles.",
+    "description": "Colecao administrativa para consultar perfis fixos e manter permissoes legadas. A autorizacao principal usa codigo/nivel do perfil.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:3000" },
-    { "key": "identificador", "value": "admin" },
-    { "key": "senha", "value": "123456" },
-    { "key": "accessToken", "value": "" },
-    { "key": "perfilId", "value": "" },
-    { "key": "permissaoId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "identificador",
+      "value": "admin"
+    },
+    {
+      "key": "senha",
+      "value": "123456"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "perfilId",
+      "value": ""
+    },
+    {
+      "key": "permissaoId",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -30,7 +48,12 @@
       ],
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"identificador\": \"{{identificador}}\",\n  \"senha\": \"{{senha}}\"\n}"
@@ -39,7 +62,7 @@
       }
     },
     {
-      "name": "Criar Perfil",
+      "name": "Criar Perfil Suporte Tecnico (Administrativo)",
       "event": [
         {
           "listen": "test",
@@ -55,12 +78,18 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nome\": \"Perfil Teste\",\n  \"codigo\": \"PERFIL_TESTE\",\n  \"descricao\": \"Perfil criado pelo Postman.\",\n  \"nivel\": 10,\n  \"sistema\": false,\n  \"ativo\": true\n}"
+          "raw": "{\n  \"nome\": \"Suporte Tecnico\",\n  \"codigo\": \"SUPORTE_TECNICO\",\n  \"descricao\": \"Perfil fixo para suporte operacional e diagnostico tecnico.\",\n  \"nivel\": 10,\n  \"sistema\": true,\n  \"ativo\": true\n}"
         },
         "url": "{{baseUrl}}/perfis"
       }
@@ -69,7 +98,12 @@
       "name": "Listar Perfis",
       "request": {
         "method": "GET",
-        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
         "url": "{{baseUrl}}/perfis"
       }
     },
@@ -77,7 +111,12 @@
       "name": "Buscar Perfil Por Id",
       "request": {
         "method": "GET",
-        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
         "url": "{{baseUrl}}/perfis/{{perfilId}}"
       }
     },
@@ -86,18 +125,24 @@
       "request": {
         "method": "PATCH",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"descricao\": \"Perfil atualizado pelo Postman.\",\n  \"nivel\": 20\n}"
+          "raw": "{\n  \"descricao\": \"Perfil fixo atualizado administrativamente.\"\n}"
         },
         "url": "{{baseUrl}}/perfis/{{perfilId}}"
       }
     },
     {
-      "name": "Criar Permissao",
+      "name": "Criar Permissao (Legado Administrativo)",
       "event": [
         {
           "listen": "test",
@@ -113,31 +158,48 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"modulo\": \"teste\",\n  \"acao\": \"visualizar\",\n  \"codigo\": \"teste.visualizar\",\n  \"descricao\": \"Permissao criada pelo Postman.\"\n}"
+          "raw": "{\n  \"modulo\": \"legado\",\n  \"acao\": \"visualizar\",\n  \"codigo\": \"legado.visualizar\",\n  \"descricao\": \"Permissao mantida apenas para compatibilidade administrativa.\"\n}"
         },
         "url": "{{baseUrl}}/permissoes"
       }
     },
     {
-      "name": "Listar Permissoes",
+      "name": "Listar Permissoes (Legado Administrativo)",
       "request": {
         "method": "GET",
-        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
         "url": "{{baseUrl}}/permissoes"
       }
     },
     {
-      "name": "Vincular Permissao Ao Perfil",
+      "name": "Vincular Permissao Ao Perfil (Legado Administrativo)",
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
         ],
         "body": {
           "mode": "raw",
@@ -147,18 +209,28 @@
       }
     },
     {
-      "name": "Listar Permissoes Do Perfil",
+      "name": "Listar Permissoes Do Perfil (Legado Administrativo)",
       "request": {
         "method": "GET",
-        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
         "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes"
       }
     },
     {
-      "name": "Desvincular Permissao Do Perfil",
+      "name": "Desvincular Permissao Do Perfil (Legado Administrativo)",
       "request": {
         "method": "DELETE",
-        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
         "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes/{{permissaoId}}"
       }
     }
