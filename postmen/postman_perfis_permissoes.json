@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "8a25d70e-b72d-4730-b5e0-8d54877b40f4",
-    "name": "Sistema Escolar - Perfis e Permissoes",
-    "description": "Colecao administrativa para consultar perfis fixos e manter permissoes legadas. A autorizacao principal usa codigo/nivel do perfil.",
+    "name": "Sistema Escolar - Perfis",
+    "description": "Colecao administrativa para consultar e manter perfis fixos. A autorizacao principal usa codigo/nivel do perfil.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -24,10 +24,6 @@
     },
     {
       "key": "perfilId",
-      "value": ""
-    },
-    {
-      "key": "permissaoId",
       "value": ""
     }
   ],
@@ -139,99 +135,6 @@
           "raw": "{\n  \"descricao\": \"Perfil fixo atualizado administrativamente.\"\n}"
         },
         "url": "{{baseUrl}}/perfis/{{perfilId}}"
-      }
-    },
-    {
-      "name": "Criar Permissao (Legado Administrativo)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const resposta = pm.response.json();",
-              "if (resposta.id) pm.collectionVariables.set('permissaoId', resposta.id);"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"modulo\": \"legado\",\n  \"acao\": \"visualizar\",\n  \"codigo\": \"legado.visualizar\",\n  \"descricao\": \"Permissao mantida apenas para compatibilidade administrativa.\"\n}"
-        },
-        "url": "{{baseUrl}}/permissoes"
-      }
-    },
-    {
-      "name": "Listar Permissoes (Legado Administrativo)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": "{{baseUrl}}/permissoes"
-      }
-    },
-    {
-      "name": "Vincular Permissao Ao Perfil (Legado Administrativo)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"permissaoId\": \"{{permissaoId}}\"\n}"
-        },
-        "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes"
-      }
-    },
-    {
-      "name": "Listar Permissoes Do Perfil (Legado Administrativo)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes"
-      }
-    },
-    {
-      "name": "Desvincular Permissao Do Perfil (Legado Administrativo)",
-      "request": {
-        "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes/{{permissaoId}}"
       }
     }
   ]

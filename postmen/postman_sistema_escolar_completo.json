@@ -39,10 +39,6 @@
       "value": ""
     },
     {
-      "key": "permissaoId",
-      "value": ""
-    },
-    {
       "key": "refreshToken",
       "value": ""
     },
@@ -927,99 +923,6 @@
           "raw": "{\n  \"descricao\": \"Perfil fixo atualizado administrativamente.\"\n}"
         },
         "url": "{{baseUrl}}/perfis/{{perfilId}}"
-      }
-    },
-    {
-      "name": "Criar Permissao (Legado Administrativo)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const resposta = pm.response.json();",
-              "if (resposta.id) pm.collectionVariables.set('permissaoId', resposta.id);"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"modulo\": \"legado\",\n  \"acao\": \"visualizar\",\n  \"codigo\": \"legado.visualizar\",\n  \"descricao\": \"Permissao mantida apenas para compatibilidade administrativa.\"\n}"
-        },
-        "url": "{{baseUrl}}/permissoes"
-      }
-    },
-    {
-      "name": "Listar Permissoes (Legado Administrativo)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": "{{baseUrl}}/permissoes"
-      }
-    },
-    {
-      "name": "Vincular Permissao Ao Perfil (Legado Administrativo)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"permissaoId\": \"{{permissaoId}}\"\n}"
-        },
-        "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes"
-      }
-    },
-    {
-      "name": "Listar Permissoes Do Perfil (Legado Administrativo)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes"
-      }
-    },
-    {
-      "name": "Desvincular Permissao Do Perfil (Legado Administrativo)",
-      "request": {
-        "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes/{{permissaoId}}"
       }
     },
     {
