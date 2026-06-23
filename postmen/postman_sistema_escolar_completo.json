@@ -1,0 +1,1371 @@
+﻿{
+    "info":  {
+                 "_postman_id":  "2f8db404-df91-4d73-90d9-157c2f399744",
+                 "name":  "Sistema Escolar - Completo",
+                 "description":  "Colecao consolidada com todos os modulos do Sistema Escolar.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "variable":  [
+                     {
+                         "key":  "accessToken",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "anoLetivoId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "auditoriaId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "baseUrl",
+                         "value":  "http://localhost:3000"
+                     },
+                     {
+                         "key":  "disciplinaId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "escolaId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "identificador",
+                         "value":  "admin"
+                     },
+                     {
+                         "key":  "perfilId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "permissaoId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "refreshToken",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "secretariaId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "senha",
+                         "value":  "123456"
+                     },
+                     {
+                         "key":  "usuarioAcessoId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "usuarioId",
+                         "value":  ""
+                     }
+                 ],
+    "item":  [
+                 {
+                     "name":  "Autenticacao",
+                     "item":  [
+                                  {
+                                      "name":  "Entrar",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const resposta = pm.response.json();",
+                                                                                    "if (resposta.accessToken) {",
+                                                                                    "  pm.collectionVariables.set(\u0027accessToken\u0027, resposta.accessToken);",
+                                                                                    "}",
+                                                                                    "if (resposta.refreshToken) {",
+                                                                                    "  pm.collectionVariables.set(\u0027refreshToken\u0027, resposta.refreshToken);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"identificador\": \"{{identificador}}\",\n  \"senha\": \"{{senha}}\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/autenticacao/entrar",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "autenticacao",
+                                                                               "entrar"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Perfil",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/autenticacao/perfil",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "autenticacao",
+                                                                               "perfil"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Renovar Token",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const resposta = pm.response.json();",
+                                                                                    "if (resposta.accessToken) {",
+                                                                                    "  pm.collectionVariables.set(\u0027accessToken\u0027, resposta.accessToken);",
+                                                                                    "}",
+                                                                                    "if (resposta.refreshToken) {",
+                                                                                    "  pm.collectionVariables.set(\u0027refreshToken\u0027, resposta.refreshToken);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/autenticacao/renovar-token",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "autenticacao",
+                                                                               "renovar-token"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Sair",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/autenticacao/sair",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "autenticacao",
+                                                                               "sair"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Secretarias",
+                     "item":  [
+                                  {
+                                      "name":  "Criar Secretaria",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const resposta = pm.response.json();",
+                                                                                    "if (resposta.id) {",
+                                                                                    "  pm.collectionVariables.set(\u0027secretariaId\u0027, resposta.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nome\": \"Secretaria Municipal de Educacao\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"cnpj\": \"00000000000100\",\n  \"telefone\": \"1130000000\",\n  \"email\": \"educacao@sistema.local\",\n  \"ativa\": true\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/secretarias",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "secretarias"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Listar Secretarias",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/secretarias",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "secretarias"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Buscar Secretaria Por Id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/secretarias/{{secretariaId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "secretarias",
+                                                                               "{{secretariaId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Atualizar Secretaria",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nome\": \"Secretaria Municipal de Educacao Atualizada\",\n  \"telefone\": \"1130001111\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/secretarias/{{secretariaId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "secretarias",
+                                                                               "{{secretariaId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Inativar Secretaria",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/secretarias/{{secretariaId}}/inativar",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "secretarias",
+                                                                               "{{secretariaId}}",
+                                                                               "inativar"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Remover Secretaria",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/secretarias/{{secretariaId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "secretarias",
+                                                                               "{{secretariaId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Preparacao",
+                     "item":  [
+                                  {
+                                      "name":  "Criar Secretaria Para Teste",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const resposta = pm.response.json();",
+                                                                                    "if (resposta.id) {",
+                                                                                    "  pm.collectionVariables.set(\u0027secretariaId\u0027, resposta.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nome\": \"Secretaria Para Escola\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"cnpj\": \"00000000000101\",\n  \"telefone\": \"1130000001\",\n  \"email\": \"secretaria.escola@sistema.local\",\n  \"ativa\": true\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/secretarias",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "secretarias"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Escolas",
+                     "item":  [
+                                  {
+                                      "name":  "Criar Escola",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const resposta = pm.response.json();",
+                                                                                    "if (resposta.id) {",
+                                                                                    "  pm.collectionVariables.set(\u0027escolaId\u0027, resposta.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Municipal Modelo\",\n  \"codigoInep\": \"12345678\",\n  \"cnpj\": \"00000000000102\",\n  \"telefone\": \"1130000002\",\n  \"email\": \"escola@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Praca da Se\",\n  \"numero\": \"100\",\n  \"complemento\": \"Predio Principal\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/escolas",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "escolas"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Listar Escolas",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/escolas",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "escolas"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Buscar Escola Por Id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/escolas/{{escolaId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "escolas",
+                                                                               "{{escolaId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Atualizar Escola",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nome\": \"Escola Municipal Modelo Atualizada\",\n  \"telefone\": \"1130002222\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/escolas/{{escolaId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "escolas",
+                                                                               "{{escolaId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Inativar Escola",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/escolas/{{escolaId}}/inativar",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "escolas",
+                                                                               "{{escolaId}}",
+                                                                               "inativar"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Remover Escola",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/escolas/{{escolaId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "escolas",
+                                                                               "{{escolaId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Sistema Escolar - Anos Letivos - Preparacao",
+                     "item":  [
+                                  {
+                                      "name":  "Criar Secretaria Para Teste",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const resposta = pm.response.json();",
+                                                                                    "if (resposta.id) {",
+                                                                                    "  pm.collectionVariables.set(\u0027secretariaId\u0027, resposta.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nome\": \"Secretaria Para Ano Letivo\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"cnpj\": \"00000000000103\",\n  \"telefone\": \"1130000003\",\n  \"email\": \"secretaria.ano@sistema.local\",\n  \"ativa\": true\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/secretarias",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "secretarias"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Anos Letivos",
+                     "item":  [
+                                  {
+                                      "name":  "Criar Ano Letivo",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const resposta = pm.response.json();",
+                                                                                    "if (resposta.id) {",
+                                                                                    "  pm.collectionVariables.set(\u0027anoLetivoId\u0027, resposta.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"descricao\": \"Ano letivo 2026\",\n  \"dataInicio\": \"2026-02-01\",\n  \"dataFim\": \"2026-12-20\",\n  \"status\": \"PLANEJAMENTO\",\n  \"ativo\": true\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/anos-letivos",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "anos-letivos"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Listar Anos Letivos",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/anos-letivos",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "anos-letivos"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Buscar Ano Letivo Por Id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/anos-letivos/{{anoLetivoId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "anos-letivos",
+                                                                               "{{anoLetivoId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Atualizar Ano Letivo",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"descricao\": \"Ano letivo 2026 atualizado\",\n  \"status\": \"ABERTO\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/anos-letivos/{{anoLetivoId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "anos-letivos",
+                                                                               "{{anoLetivoId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Ativar Ano Letivo",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/anos-letivos/{{anoLetivoId}}/ativar",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "anos-letivos",
+                                                                               "{{anoLetivoId}}",
+                                                                               "ativar"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Inativar Ano Letivo",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/anos-letivos/{{anoLetivoId}}/inativar",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "anos-letivos",
+                                                                               "{{anoLetivoId}}",
+                                                                               "inativar"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Remover Ano Letivo",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/anos-letivos/{{anoLetivoId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "anos-letivos",
+                                                                               "{{anoLetivoId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Entrar",
+                     "event":  [
+                                   {
+                                       "listen":  "test",
+                                       "script":  {
+                                                      "type":  "text/javascript",
+                                                      "exec":  [
+                                                                   "const resposta = pm.response.json();",
+                                                                   "if (resposta.accessToken) pm.collectionVariables.set(\u0027accessToken\u0027, resposta.accessToken);"
+                                                               ]
+                                                  }
+                                   }
+                               ],
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"identificador\": \"{{identificador}}\",\n  \"senha\": \"{{senha}}\"\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/autenticacao/entrar"
+                                 }
+                 },
+                 {
+                     "name":  "Criar Perfil",
+                     "event":  [
+                                   {
+                                       "listen":  "test",
+                                       "script":  {
+                                                      "type":  "text/javascript",
+                                                      "exec":  [
+                                                                   "const resposta = pm.response.json();",
+                                                                   "if (resposta.id) pm.collectionVariables.set(\u0027perfilId\u0027, resposta.id);"
+                                                               ]
+                                                  }
+                                   }
+                               ],
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"nome\": \"Perfil Teste\",\n  \"codigo\": \"PERFIL_TESTE\",\n  \"descricao\": \"Perfil criado pelo Postman.\",\n  \"nivel\": 10,\n  \"sistema\": false,\n  \"ativo\": true\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/perfis"
+                                 }
+                 },
+                 {
+                     "name":  "Listar Perfis",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/perfis"
+                                 }
+                 },
+                 {
+                     "name":  "Buscar Perfil Por Id",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/perfis/{{perfilId}}"
+                                 }
+                 },
+                 {
+                     "name":  "Atualizar Perfil",
+                     "request":  {
+                                     "method":  "PATCH",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"descricao\": \"Perfil atualizado pelo Postman.\",\n  \"nivel\": 20\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/perfis/{{perfilId}}"
+                                 }
+                 },
+                 {
+                     "name":  "Criar Permissao",
+                     "event":  [
+                                   {
+                                       "listen":  "test",
+                                       "script":  {
+                                                      "type":  "text/javascript",
+                                                      "exec":  [
+                                                                   "const resposta = pm.response.json();",
+                                                                   "if (resposta.id) pm.collectionVariables.set(\u0027permissaoId\u0027, resposta.id);"
+                                                               ]
+                                                  }
+                                   }
+                               ],
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"modulo\": \"teste\",\n  \"acao\": \"visualizar\",\n  \"codigo\": \"teste.visualizar\",\n  \"descricao\": \"Permissao criada pelo Postman.\"\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/permissoes"
+                                 }
+                 },
+                 {
+                     "name":  "Listar Permissoes",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/permissoes"
+                                 }
+                 },
+                 {
+                     "name":  "Vincular Permissao Ao Perfil",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"permissaoId\": \"{{permissaoId}}\"\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/perfis/{{perfilId}}/permissoes"
+                                 }
+                 },
+                 {
+                     "name":  "Listar Permissoes Do Perfil",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/perfis/{{perfilId}}/permissoes"
+                                 }
+                 },
+                 {
+                     "name":  "Desvincular Permissao Do Perfil",
+                     "request":  {
+                                     "method":  "DELETE",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/perfis/{{perfilId}}/permissoes/{{permissaoId}}"
+                                 }
+                 },
+                 {
+                     "name":  "Sistema Escolar - Usuario Acessos - Entrar",
+                     "item":  null
+                 },
+                 {
+                     "name":  "Criar Perfil Para Teste",
+                     "event":  [
+                                   {
+                                       "listen":  "test",
+                                       "script":  {
+                                                      "type":  "text/javascript",
+                                                      "exec":  [
+                                                                   "const resposta = pm.response.json();",
+                                                                   "if (resposta.id) pm.collectionVariables.set(\u0027perfilId\u0027, resposta.id);"
+                                                               ]
+                                                  }
+                                   }
+                               ],
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"nome\": \"Perfil Acesso Teste\",\n  \"codigo\": \"PERFIL_ACESSO_TESTE\",\n  \"nivel\": 30,\n  \"ativo\": true\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/perfis"
+                                 }
+                 },
+                 {
+                     "name":  "Criar Secretaria Para Teste",
+                     "event":  [
+                                   {
+                                       "listen":  "test",
+                                       "script":  {
+                                                      "type":  "text/javascript",
+                                                      "exec":  [
+                                                                   "const resposta = pm.response.json();",
+                                                                   "if (resposta.id) pm.collectionVariables.set(\u0027secretariaId\u0027, resposta.id);"
+                                                               ]
+                                                  }
+                                   }
+                               ],
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"nome\": \"Secretaria Para Acesso\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"cnpj\": \"00000000000105\",\n  \"telefone\": \"1130000005\",\n  \"email\": \"secretaria.acesso@sistema.local\",\n  \"ativa\": true\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/secretarias"
+                                 }
+                 },
+                 {
+                     "name":  "Criar Usuario Acesso",
+                     "event":  [
+                                   {
+                                       "listen":  "test",
+                                       "script":  {
+                                                      "type":  "text/javascript",
+                                                      "exec":  [
+                                                                   "const resposta = pm.response.json();",
+                                                                   "if (resposta.id) pm.collectionVariables.set(\u0027usuarioAcessoId\u0027, resposta.id);"
+                                                               ]
+                                                  }
+                                   }
+                               ],
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ativo\": true\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/usuario-acessos"
+                                 }
+                 },
+                 {
+                     "name":  "Listar Usuario Acessos",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/usuario-acessos"
+                                 }
+                 },
+                 {
+                     "name":  "Buscar Usuario Acesso Por Id",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}"
+                                 }
+                 },
+                 {
+                     "name":  "Atualizar Usuario Acesso",
+                     "request":  {
+                                     "method":  "PATCH",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"ativo\": true\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}"
+                                 }
+                 },
+                 {
+                     "name":  "Inativar Usuario Acesso",
+                     "request":  {
+                                     "method":  "PATCH",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}/inativar"
+                                 }
+                 },
+                 {
+                     "name":  "Remover Usuario Acesso",
+                     "request":  {
+                                     "method":  "DELETE",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}"
+                                 }
+                 },
+                 {
+                     "name":  "Sistema Escolar - Disciplinas - Entrar",
+                     "item":  null
+                 },
+                 {
+                     "name":  "Sistema Escolar - Disciplinas - Criar Secretaria Para Teste",
+                     "item":  null
+                 },
+                 {
+                     "name":  "Criar Disciplina",
+                     "event":  [
+                                   {
+                                       "listen":  "test",
+                                       "script":  {
+                                                      "type":  "text/javascript",
+                                                      "exec":  [
+                                                                   "const resposta = pm.response.json();",
+                                                                   "if (resposta.id) pm.collectionVariables.set(\u0027disciplinaId\u0027, resposta.id);"
+                                                               ]
+                                                  }
+                                   }
+                               ],
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Matematica\",\n  \"codigo\": \"MAT\",\n  \"ativa\": true\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/disciplinas"
+                                 }
+                 },
+                 {
+                     "name":  "Listar Disciplinas",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/disciplinas"
+                                 }
+                 },
+                 {
+                     "name":  "Buscar Disciplina Por Id",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/disciplinas/{{disciplinaId}}"
+                                 }
+                 },
+                 {
+                     "name":  "Atualizar Disciplina",
+                     "request":  {
+                                     "method":  "PATCH",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    },
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"nome\": \"Matematica Atualizada\",\n  \"codigo\": \"MAT-AT\"\n}"
+                                              },
+                                     "url":  "{{baseUrl}}/disciplinas/{{disciplinaId}}"
+                                 }
+                 },
+                 {
+                     "name":  "Inativar Disciplina",
+                     "request":  {
+                                     "method":  "PATCH",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/disciplinas/{{disciplinaId}}/inativar"
+                                 }
+                 },
+                 {
+                     "name":  "Remover Disciplina",
+                     "request":  {
+                                     "method":  "DELETE",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/disciplinas/{{disciplinaId}}"
+                                 }
+                 },
+                 {
+                     "name":  "Sistema Escolar - Auditoria - Entrar",
+                     "item":  null
+                 },
+                 {
+                     "name":  "Listar Auditoria",
+                     "event":  [
+                                   {
+                                       "listen":  "test",
+                                       "script":  {
+                                                      "type":  "text/javascript",
+                                                      "exec":  [
+                                                                   "const resposta = pm.response.json();",
+                                                                   "if (Array.isArray(resposta) \u0026\u0026 resposta[0] \u0026\u0026 resposta[0].id) pm.collectionVariables.set(\u0027auditoriaId\u0027, resposta[0].id);"
+                                                               ]
+                                                  }
+                                   }
+                               ],
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/auditoria"
+                                 }
+                 },
+                 {
+                     "name":  "Listar Auditoria Por Entidade",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/auditoria?entidade=secretarias"
+                                 }
+                 },
+                 {
+                     "name":  "Buscar Auditoria Por Id",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Authorization",
+                                                        "value":  "Bearer {{accessToken}}"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/auditoria/{{auditoriaId}}"
+                                 }
+                 }
+             ]
+}
