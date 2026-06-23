@@ -10,6 +10,7 @@ import { DisciplinasModule } from './modules/disciplinas/disciplinas.module';
 import { PerfisPermissoesModule } from './modules/perfis-permissoes/perfis-permissoes.module';
 import { SecretariasModule } from './modules/secretarias/secretarias.module';
 import { UsuarioAcessosModule } from './modules/usuario-acessos/usuario-acessos.module';
+import { UsuariosModule } from './modules/usuarios/usuarios.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { UsuarioAcessosModule } from './modules/usuario-acessos/usuario-acessos.
     EscolasModule,
     AnosLetivosModule,
     PerfisPermissoesModule,
+    UsuariosModule,
     UsuarioAcessosModule,
     DisciplinasModule,
   ],
