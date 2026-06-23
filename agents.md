@@ -1,0 +1,14 @@
+- seja em typescript usando nestjs
+- banco de dados mysql
+- token jwt
+- o codigo deve ser claro, com nome de funções, metodos e variaveis em portugues
+- organização dos modulos:
+  - em uma pasta modules contendo o nome do modulo
+  - dentro da pasta, os arquivos service, controller e module
+  - todos os services no arquivo de service
+  - os controller no arquivo contorller
+  - o modulo no seu arquivo
+  - isso para cada modulo
+- o tratamento do controller deve ser com class-validator com dto
+- as dtos também podem ser tudo em uma rquivo só.
+- sempre que atualizar o codigo atualize o arquivo postmen referente a api.

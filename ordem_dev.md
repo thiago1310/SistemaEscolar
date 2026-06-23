@@ -1,0 +1,7 @@
+secretarias
+escolas
+anos_letivos
+perfis e permissoes
+usuario_acessos
+disciplinas
+auditoria e complementos

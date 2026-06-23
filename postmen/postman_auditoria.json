@@ -1,0 +1,77 @@
+{
+  "info": {
+    "_postman_id": "604ff81f-2784-40b9-88fc-c59e2cdb5c77",
+    "name": "Sistema Escolar - Auditoria",
+    "description": "Colecao para consultar logs de auditoria.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "identificador", "value": "admin" },
+    { "key": "senha", "value": "123456" },
+    { "key": "accessToken", "value": "" },
+    { "key": "auditoriaId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Entrar",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const resposta = pm.response.json();",
+              "if (resposta.accessToken) pm.collectionVariables.set('accessToken', resposta.accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identificador\": \"{{identificador}}\",\n  \"senha\": \"{{senha}}\"\n}"
+        },
+        "url": "{{baseUrl}}/autenticacao/entrar"
+      }
+    },
+    {
+      "name": "Listar Auditoria",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const resposta = pm.response.json();",
+              "if (Array.isArray(resposta) && resposta[0] && resposta[0].id) pm.collectionVariables.set('auditoriaId', resposta[0].id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{baseUrl}}/auditoria"
+      }
+    },
+    {
+      "name": "Listar Auditoria Por Entidade",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{baseUrl}}/auditoria?entidade=secretarias"
+      }
+    },
+    {
+      "name": "Buscar Auditoria Por Id",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{baseUrl}}/auditoria/{{auditoriaId}}"
+      }
+    }
+  ]
+}

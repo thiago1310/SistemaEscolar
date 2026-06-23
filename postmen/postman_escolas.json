@@ -1,0 +1,295 @@
+{
+  "info": {
+    "_postman_id": "aa5d7fc1-57fa-4507-99df-20a9f533d63d",
+    "name": "Sistema Escolar - Escolas",
+    "description": "Colecao para testar o CRUD do modulo de escolas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "identificador",
+      "value": "admin"
+    },
+    {
+      "key": "senha",
+      "value": "123456"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "secretariaId",
+      "value": ""
+    },
+    {
+      "key": "escolaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Autenticacao",
+      "item": [
+        {
+          "name": "Entrar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', resposta.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identificador\": \"{{identificador}}\",\n  \"senha\": \"{{senha}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/autenticacao/entrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "autenticacao",
+                "entrar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Preparacao",
+      "item": [
+        {
+          "name": "Criar Secretaria Para Teste",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) {",
+                  "  pm.collectionVariables.set('secretariaId', resposta.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Secretaria Para Escola\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"cnpj\": \"00000000000101\",\n  \"telefone\": \"1130000001\",\n  \"email\": \"secretaria.escola@sistema.local\",\n  \"ativa\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/secretarias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "secretarias"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Escolas",
+      "item": [
+        {
+          "name": "Criar Escola",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) {",
+                  "  pm.collectionVariables.set('escolaId', resposta.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Municipal Modelo\",\n  \"codigoInep\": \"12345678\",\n  \"cnpj\": \"00000000000102\",\n  \"telefone\": \"1130000002\",\n  \"email\": \"escola@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Praca da Se\",\n  \"numero\": \"100\",\n  \"complemento\": \"Predio Principal\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/escolas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "escolas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar Escolas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/escolas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "escolas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar Escola Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/escolas/{{escolaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "escolas",
+                "{{escolaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar Escola",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Escola Municipal Modelo Atualizada\",\n  \"telefone\": \"1130002222\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/escolas/{{escolaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "escolas",
+                "{{escolaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Inativar Escola",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/escolas/{{escolaId}}/inativar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "escolas",
+                "{{escolaId}}",
+                "inativar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remover Escola",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/escolas/{{escolaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "escolas",
+                "{{escolaId}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
