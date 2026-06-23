@@ -6,9 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
-import { TokenAcessoGuard } from '../autenticacao/autenticacao.guard';
+import {
+  RequisicaoAutenticada,
+  TokenAcessoGuard,
+} from '../autenticacao/autenticacao.guard';
 import { NivelMinimo, Perfis } from '../autorizacao/permissao.decorator';
 import { PermissaoGuard } from '../autorizacao/permissao.guard';
 import {
@@ -24,20 +28,23 @@ export class UsuarioAcessosController {
 
   @Post()
   @NivelMinimo(80)
-  criar(@Body() dados: CriarUsuarioAcessoDto) {
-    return this.usuarioAcessosService.criar(dados);
+  criar(
+    @Body() dados: CriarUsuarioAcessoDto,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.usuarioAcessosService.criar(dados, req.usuario.id);
   }
 
   @Get()
   @NivelMinimo(80)
-  listar() {
-    return this.usuarioAcessosService.listar();
+  listar(@Req() req: RequisicaoAutenticada) {
+    return this.usuarioAcessosService.listar(req.usuario.id);
   }
 
   @Get(':id')
   @NivelMinimo(80)
-  buscarPorId(@Param('id') id: string) {
-    return this.usuarioAcessosService.buscarPorId(id);
+  buscarPorId(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.usuarioAcessosService.buscarPorId(id, req.usuario.id);
   }
 
   @Patch(':id')
@@ -45,19 +52,20 @@ export class UsuarioAcessosController {
   atualizar(
     @Param('id') id: string,
     @Body() dados: AtualizarUsuarioAcessoDto,
+    @Req() req: RequisicaoAutenticada,
   ) {
-    return this.usuarioAcessosService.atualizar(id, dados);
+    return this.usuarioAcessosService.atualizar(id, dados, req.usuario.id);
   }
 
   @Patch(':id/inativar')
   @NivelMinimo(80)
-  inativar(@Param('id') id: string) {
-    return this.usuarioAcessosService.inativar(id);
+  inativar(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.usuarioAcessosService.inativar(id, req.usuario.id);
   }
 
   @Delete(':id')
   @Perfis('ADMIN_GERAL')
-  remover(@Param('id') id: string) {
-    return this.usuarioAcessosService.remover(id);
+  remover(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.usuarioAcessosService.remover(id, req.usuario.id);
   }
 }

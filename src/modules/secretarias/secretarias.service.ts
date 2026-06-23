@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import {
   AtualizarSecretariaDto,
   CriarSecretariaDto,
@@ -12,9 +13,12 @@ export class SecretariasService {
   constructor(
     @InjectRepository(Secretaria)
     private readonly secretariasRepositorio: Repository<Secretaria>,
+    private readonly escopoUsuarioService: EscopoUsuarioService,
   ) {}
 
-  criar(dados: CriarSecretariaDto) {
+  async criar(dados: CriarSecretariaDto, usuarioId: string) {
+    await this.escopoUsuarioService.garantirEscopoGlobal(usuarioId);
+
     const secretaria = this.secretariasRepositorio.create({
       ...dados,
       uf: dados.uf.toUpperCase(),
@@ -24,26 +28,35 @@ export class SecretariasService {
     return this.secretariasRepositorio.save(secretaria);
   }
 
-  listar() {
+  async listar(usuarioId: string) {
+    const where = await this.escopoUsuarioService.filtroSecretarias(usuarioId);
+
+    if (where === null) {
+      return [];
+    }
+
     return this.secretariasRepositorio.find({
+      where,
       order: {
         nome: 'ASC',
       },
     });
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: string, usuarioId: string) {
     const secretaria = await this.secretariasRepositorio.findOneBy({ id });
 
     if (!secretaria) {
-      throw new NotFoundException('Secretaria não encontrada.');
+      throw new NotFoundException('Secretaria nao encontrada.');
     }
+
+    await this.escopoUsuarioService.garantirSecretariaPermitida(usuarioId, id);
 
     return secretaria;
   }
 
-  async atualizar(id: string, dados: AtualizarSecretariaDto) {
-    const secretaria = await this.buscarPorId(id);
+  async atualizar(id: string, dados: AtualizarSecretariaDto, usuarioId: string) {
+    const secretaria = await this.buscarPorId(id, usuarioId);
 
     Object.assign(secretaria, {
       ...dados,
@@ -53,15 +66,15 @@ export class SecretariasService {
     return this.secretariasRepositorio.save(secretaria);
   }
 
-  async remover(id: string) {
-    const secretaria = await this.buscarPorId(id);
+  async remover(id: string, usuarioId: string) {
+    const secretaria = await this.buscarPorId(id, usuarioId);
     await this.secretariasRepositorio.remove(secretaria);
 
     return { mensagem: 'Secretaria removida com sucesso.' };
   }
 
-  async inativar(id: string) {
-    const secretaria = await this.buscarPorId(id);
+  async inativar(id: string, usuarioId: string) {
+    const secretaria = await this.buscarPorId(id, usuarioId);
     secretaria.ativa = false;
 
     return this.secretariasRepositorio.save(secretaria);

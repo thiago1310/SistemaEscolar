@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import { Secretaria } from '../secretarias/secretarias.entities';
 import {
   AtualizarAnoLetivoDto,
@@ -19,10 +20,15 @@ export class AnosLetivosService {
     private readonly anosLetivosRepositorio: Repository<AnoLetivo>,
     @InjectRepository(Secretaria)
     private readonly secretariasRepositorio: Repository<Secretaria>,
+    private readonly escopoUsuarioService: EscopoUsuarioService,
   ) {}
 
-  async criar(dados: CriarAnoLetivoDto) {
+  async criar(dados: CriarAnoLetivoDto, usuarioId: string) {
     await this.garantirSecretariaExiste(dados.secretariaId);
+    await this.escopoUsuarioService.garantirSecretariaPermitida(
+      usuarioId,
+      dados.secretariaId,
+    );
     this.validarPeriodo(dados.dataInicio, dados.dataFim);
 
     if (dados.ativo) {
@@ -38,8 +44,15 @@ export class AnosLetivosService {
     return this.anosLetivosRepositorio.save(anoLetivo);
   }
 
-  listar() {
+  async listar(usuarioId: string) {
+    const where = await this.escopoUsuarioService.filtroAnosLetivos(usuarioId);
+
+    if (where === null) {
+      return [];
+    }
+
     return this.anosLetivosRepositorio.find({
+      where,
       relations: {
         secretaria: true,
       },
@@ -49,7 +62,7 @@ export class AnosLetivosService {
     });
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: string, usuarioId: string) {
     const anoLetivo = await this.anosLetivosRepositorio.findOne({
       where: { id },
       relations: {
@@ -58,20 +71,29 @@ export class AnosLetivosService {
     });
 
     if (!anoLetivo) {
-      throw new NotFoundException('Ano letivo não encontrado.');
+      throw new NotFoundException('Ano letivo nao encontrado.');
     }
+
+    await this.escopoUsuarioService.garantirSecretariaPermitida(
+      usuarioId,
+      anoLetivo.secretariaId,
+    );
 
     return anoLetivo;
   }
 
-  async atualizar(id: string, dados: AtualizarAnoLetivoDto) {
-    const anoLetivo = await this.buscarPorId(id);
+  async atualizar(id: string, dados: AtualizarAnoLetivoDto, usuarioId: string) {
+    const anoLetivo = await this.buscarPorId(id, usuarioId);
     const secretariaId = dados.secretariaId ?? anoLetivo.secretariaId;
     const dataInicio = dados.dataInicio ?? anoLetivo.dataInicio;
     const dataFim = dados.dataFim ?? anoLetivo.dataFim;
 
     if (dados.secretariaId) {
       await this.garantirSecretariaExiste(dados.secretariaId);
+      await this.escopoUsuarioService.garantirSecretariaPermitida(
+        usuarioId,
+        dados.secretariaId,
+      );
     }
 
     this.validarPeriodo(dataInicio, dataFim);
@@ -85,23 +107,23 @@ export class AnosLetivosService {
     return this.anosLetivosRepositorio.save(anoLetivo);
   }
 
-  async remover(id: string) {
-    const anoLetivo = await this.buscarPorId(id);
+  async remover(id: string, usuarioId: string) {
+    const anoLetivo = await this.buscarPorId(id, usuarioId);
     await this.anosLetivosRepositorio.remove(anoLetivo);
 
     return { mensagem: 'Ano letivo removido com sucesso.' };
   }
 
-  async ativar(id: string) {
-    const anoLetivo = await this.buscarPorId(id);
+  async ativar(id: string, usuarioId: string) {
+    const anoLetivo = await this.buscarPorId(id, usuarioId);
     await this.inativarAnosDaSecretaria(anoLetivo.secretariaId, id);
 
     anoLetivo.ativo = true;
     return this.anosLetivosRepositorio.save(anoLetivo);
   }
 
-  async inativar(id: string) {
-    const anoLetivo = await this.buscarPorId(id);
+  async inativar(id: string, usuarioId: string) {
+    const anoLetivo = await this.buscarPorId(id, usuarioId);
     anoLetivo.ativo = false;
 
     return this.anosLetivosRepositorio.save(anoLetivo);
@@ -113,14 +135,14 @@ export class AnosLetivosService {
     });
 
     if (!secretaria) {
-      throw new NotFoundException('Secretaria não encontrada.');
+      throw new NotFoundException('Secretaria nao encontrada.');
     }
   }
 
   private validarPeriodo(dataInicio: string, dataFim: string) {
     if (new Date(dataFim) < new Date(dataInicio)) {
       throw new BadRequestException(
-        'A data final deve ser maior ou igual à data inicial.',
+        'A data final deve ser maior ou igual a data inicial.',
       );
     }
   }

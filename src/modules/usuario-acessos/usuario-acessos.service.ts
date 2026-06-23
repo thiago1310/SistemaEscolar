@@ -1,12 +1,14 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { AnoLetivo } from '../anos-letivos/anos-letivos.entities';
 import { Usuario } from '../autenticacao/autenticacao.entities';
+import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import { Escola } from '../escolas/escolas.entities';
 import { Perfil } from '../perfis-permissoes/perfis-permissoes.entities';
 import { Secretaria } from '../secretarias/secretarias.entities';
@@ -31,10 +33,12 @@ export class UsuarioAcessosService {
     private readonly escolasRepositorio: Repository<Escola>,
     @InjectRepository(AnoLetivo)
     private readonly anosLetivosRepositorio: Repository<AnoLetivo>,
+    private readonly escopoUsuarioService: EscopoUsuarioService,
   ) {}
 
-  async criar(dados: CriarUsuarioAcessoDto) {
+  async criar(dados: CriarUsuarioAcessoDto, usuarioExecutorId: string) {
     await this.validarRelacionamentos(dados);
+    await this.garantirEscopoGerenciavel(usuarioExecutorId, dados);
     await this.garantirAcessoNaoDuplicado(dados);
 
     const acesso = this.usuarioAcessosRepositorio.create({
@@ -48,8 +52,15 @@ export class UsuarioAcessosService {
     return this.usuarioAcessosRepositorio.save(acesso);
   }
 
-  listar() {
+  async listar(usuarioExecutorId: string) {
+    const where = await this.filtroAcessosGerenciaveis(usuarioExecutorId);
+
+    if (where === null) {
+      return [];
+    }
+
     return this.usuarioAcessosRepositorio.find({
+      where,
       relations: {
         usuario: true,
         perfil: true,
@@ -63,7 +74,7 @@ export class UsuarioAcessosService {
     });
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: string, usuarioExecutorId: string) {
     const acesso = await this.usuarioAcessosRepositorio.findOne({
       where: { id },
       relations: {
@@ -76,14 +87,20 @@ export class UsuarioAcessosService {
     });
 
     if (!acesso) {
-      throw new NotFoundException('Acesso do usuário não encontrado.');
+      throw new NotFoundException('Acesso do usuario nao encontrado.');
     }
+
+    await this.garantirEscopoGerenciavel(usuarioExecutorId, acesso);
 
     return acesso;
   }
 
-  async atualizar(id: string, dados: AtualizarUsuarioAcessoDto) {
-    const acesso = await this.buscarPorId(id);
+  async atualizar(
+    id: string,
+    dados: AtualizarUsuarioAcessoDto,
+    usuarioExecutorId: string,
+  ) {
+    const acesso = await this.buscarPorId(id, usuarioExecutorId);
     const dadosCompletos = {
       usuarioId: dados.usuarioId ?? acesso.usuarioId,
       perfilId: dados.perfilId ?? acesso.perfilId,
@@ -94,6 +111,7 @@ export class UsuarioAcessosService {
     };
 
     await this.validarRelacionamentos(dadosCompletos);
+    await this.garantirEscopoGerenciavel(usuarioExecutorId, dadosCompletos);
     await this.garantirAcessoNaoDuplicado(dadosCompletos, id);
 
     Object.assign(acesso, {
@@ -106,15 +124,15 @@ export class UsuarioAcessosService {
     return this.usuarioAcessosRepositorio.save(acesso);
   }
 
-  async remover(id: string) {
-    const acesso = await this.buscarPorId(id);
+  async remover(id: string, usuarioExecutorId: string) {
+    const acesso = await this.buscarPorId(id, usuarioExecutorId);
     await this.usuarioAcessosRepositorio.remove(acesso);
 
-    return { mensagem: 'Acesso do usuário removido com sucesso.' };
+    return { mensagem: 'Acesso do usuario removido com sucesso.' };
   }
 
-  async inativar(id: string) {
-    const acesso = await this.buscarPorId(id);
+  async inativar(id: string, usuarioExecutorId: string) {
+    const acesso = await this.buscarPorId(id, usuarioExecutorId);
     acesso.ativo = false;
 
     return this.usuarioAcessosRepositorio.save(acesso);
@@ -123,12 +141,12 @@ export class UsuarioAcessosService {
   private async validarRelacionamentos(dados: CriarUsuarioAcessoDto) {
     const usuario = await this.usuariosRepositorio.findOneBy({ id: dados.usuarioId });
     if (!usuario) {
-      throw new NotFoundException('Usuário não encontrado.');
+      throw new NotFoundException('Usuario nao encontrado.');
     }
 
     const perfil = await this.perfisRepositorio.findOneBy({ id: dados.perfilId });
     if (!perfil) {
-      throw new NotFoundException('Perfil não encontrado.');
+      throw new NotFoundException('Perfil nao encontrado.');
     }
 
     const secretaria = dados.secretariaId
@@ -136,7 +154,7 @@ export class UsuarioAcessosService {
       : null;
 
     if (dados.secretariaId && !secretaria) {
-      throw new NotFoundException('Secretaria não encontrada.');
+      throw new NotFoundException('Secretaria nao encontrada.');
     }
 
     const escola = dados.escolaId
@@ -144,7 +162,7 @@ export class UsuarioAcessosService {
       : null;
 
     if (dados.escolaId && !escola) {
-      throw new NotFoundException('Escola não encontrada.');
+      throw new NotFoundException('Escola nao encontrada.');
     }
 
     if (escola && !dados.secretariaId) {
@@ -152,7 +170,7 @@ export class UsuarioAcessosService {
     }
 
     if (escola && dados.secretariaId !== escola.secretariaId) {
-      throw new BadRequestException('Escola não pertence à secretaria informada.');
+      throw new BadRequestException('Escola nao pertence a secretaria informada.');
     }
 
     const anoLetivo = dados.anoLetivoId
@@ -160,12 +178,93 @@ export class UsuarioAcessosService {
       : null;
 
     if (dados.anoLetivoId && !anoLetivo) {
-      throw new NotFoundException('Ano letivo não encontrado.');
+      throw new NotFoundException('Ano letivo nao encontrado.');
     }
 
     if (anoLetivo && dados.secretariaId && anoLetivo.secretariaId !== dados.secretariaId) {
-      throw new BadRequestException('Ano letivo não pertence à secretaria informada.');
+      throw new BadRequestException('Ano letivo nao pertence a secretaria informada.');
     }
+  }
+
+  private async garantirEscopoGerenciavel(
+    usuarioExecutorId: string,
+    dados: {
+      perfilId: string;
+      secretariaId?: string | null;
+      escolaId?: string | null;
+      anoLetivoId?: string | null;
+    },
+  ) {
+    const escopo = await this.escopoUsuarioService.obterEscopo(usuarioExecutorId);
+    const perfil = await this.perfisRepositorio.findOneBy({ id: dados.perfilId });
+
+    if (!perfil) {
+      throw new NotFoundException('Perfil nao encontrado.');
+    }
+
+    if (escopo.global) {
+      return;
+    }
+
+    if (perfil.nivel > escopo.maiorNivel) {
+      throw new ForbiddenException('Usuario nao pode conceder perfil superior.');
+    }
+
+    if (!dados.secretariaId && !dados.escolaId && !dados.anoLetivoId) {
+      throw new ForbiddenException('Usuario sem permissao para gerenciar escopo global.');
+    }
+
+    if (
+      dados.secretariaId &&
+      !escopo.secretariaIds.includes(dados.secretariaId)
+    ) {
+      throw new ForbiddenException('Usuario sem acesso a esta secretaria.');
+    }
+
+    if (dados.escolaId && !escopo.escolaIds.includes(dados.escolaId)) {
+      const escola = await this.escolasRepositorio.findOneBy({ id: dados.escolaId });
+
+      if (!escola || !escopo.secretariaIds.includes(escola.secretariaId)) {
+        throw new ForbiddenException('Usuario sem acesso a esta escola.');
+      }
+    }
+
+    if (
+      dados.anoLetivoId &&
+      !escopo.anoLetivoIds.includes(dados.anoLetivoId)
+    ) {
+      const anoLetivo = await this.anosLetivosRepositorio.findOneBy({
+        id: dados.anoLetivoId,
+      });
+
+      if (!anoLetivo || !escopo.secretariaIds.includes(anoLetivo.secretariaId)) {
+        throw new ForbiddenException('Usuario sem acesso a este ano letivo.');
+      }
+    }
+  }
+
+  private async filtroAcessosGerenciaveis(usuarioExecutorId: string) {
+    const escopo = await this.escopoUsuarioService.obterEscopo(usuarioExecutorId);
+
+    if (escopo.global) {
+      return undefined;
+    }
+
+    const filtros = [];
+
+    if (escopo.secretariaIds.length > 0) {
+      filtros.push({ secretariaId: In(escopo.secretariaIds) });
+    }
+
+    if (escopo.escolaIds.length > 0) {
+      filtros.push({ escolaId: In(escopo.escolaIds) });
+    }
+
+    if (escopo.anoLetivoIds.length > 0) {
+      filtros.push({ anoLetivoId: In(escopo.anoLetivoIds) });
+    }
+
+    return filtros.length > 0 ? filtros : null;
   }
 
   private async garantirAcessoNaoDuplicado(
@@ -187,7 +286,7 @@ export class UsuarioAcessosService {
     const existente = await consulta.getOne();
 
     if (existente) {
-      throw new BadRequestException('Já existe acesso para este usuário, perfil e escopo.');
+      throw new BadRequestException('Ja existe acesso para este usuario, perfil e escopo.');
     }
   }
 

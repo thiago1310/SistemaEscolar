@@ -6,9 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
-import { TokenAcessoGuard } from '../autenticacao/autenticacao.guard';
+import {
+  RequisicaoAutenticada,
+  TokenAcessoGuard,
+} from '../autenticacao/autenticacao.guard';
 import { NivelMinimo, Perfis } from '../autorizacao/permissao.decorator';
 import { PermissaoGuard } from '../autorizacao/permissao.guard';
 import {
@@ -24,37 +28,41 @@ export class DisciplinasController {
 
   @Post()
   @NivelMinimo(80)
-  criar(@Body() dados: CriarDisciplinaDto) {
-    return this.disciplinasService.criar(dados);
+  criar(@Body() dados: CriarDisciplinaDto, @Req() req: RequisicaoAutenticada) {
+    return this.disciplinasService.criar(dados, req.usuario.id);
   }
 
   @Get()
   @NivelMinimo(30)
-  listar() {
-    return this.disciplinasService.listar();
+  listar(@Req() req: RequisicaoAutenticada) {
+    return this.disciplinasService.listar(req.usuario.id);
   }
 
   @Get(':id')
   @NivelMinimo(30)
-  buscarPorId(@Param('id') id: string) {
-    return this.disciplinasService.buscarPorId(id);
+  buscarPorId(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.disciplinasService.buscarPorId(id, req.usuario.id);
   }
 
   @Patch(':id')
   @NivelMinimo(80)
-  atualizar(@Param('id') id: string, @Body() dados: AtualizarDisciplinaDto) {
-    return this.disciplinasService.atualizar(id, dados);
+  atualizar(
+    @Param('id') id: string,
+    @Body() dados: AtualizarDisciplinaDto,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.disciplinasService.atualizar(id, dados, req.usuario.id);
   }
 
   @Patch(':id/inativar')
   @NivelMinimo(80)
-  inativar(@Param('id') id: string) {
-    return this.disciplinasService.inativar(id);
+  inativar(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.disciplinasService.inativar(id, req.usuario.id);
   }
 
   @Delete(':id')
   @Perfis('ADMIN_GERAL')
-  remover(@Param('id') id: string) {
-    return this.disciplinasService.remover(id);
+  remover(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.disciplinasService.remover(id, req.usuario.id);
   }
 }

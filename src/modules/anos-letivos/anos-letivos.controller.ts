@@ -6,9 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
-import { TokenAcessoGuard } from '../autenticacao/autenticacao.guard';
+import {
+  RequisicaoAutenticada,
+  TokenAcessoGuard,
+} from '../autenticacao/autenticacao.guard';
 import { NivelMinimo, Perfis } from '../autorizacao/permissao.decorator';
 import { PermissaoGuard } from '../autorizacao/permissao.guard';
 import {
@@ -24,43 +28,47 @@ export class AnosLetivosController {
 
   @Post()
   @NivelMinimo(80)
-  criar(@Body() dados: CriarAnoLetivoDto) {
-    return this.anosLetivosService.criar(dados);
+  criar(@Body() dados: CriarAnoLetivoDto, @Req() req: RequisicaoAutenticada) {
+    return this.anosLetivosService.criar(dados, req.usuario.id);
   }
 
   @Get()
   @NivelMinimo(10)
-  listar() {
-    return this.anosLetivosService.listar();
+  listar(@Req() req: RequisicaoAutenticada) {
+    return this.anosLetivosService.listar(req.usuario.id);
   }
 
   @Get(':id')
   @NivelMinimo(10)
-  buscarPorId(@Param('id') id: string) {
-    return this.anosLetivosService.buscarPorId(id);
+  buscarPorId(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.anosLetivosService.buscarPorId(id, req.usuario.id);
   }
 
   @Patch(':id')
   @NivelMinimo(80)
-  atualizar(@Param('id') id: string, @Body() dados: AtualizarAnoLetivoDto) {
-    return this.anosLetivosService.atualizar(id, dados);
+  atualizar(
+    @Param('id') id: string,
+    @Body() dados: AtualizarAnoLetivoDto,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.anosLetivosService.atualizar(id, dados, req.usuario.id);
   }
 
   @Patch(':id/ativar')
   @NivelMinimo(80)
-  ativar(@Param('id') id: string) {
-    return this.anosLetivosService.ativar(id);
+  ativar(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.anosLetivosService.ativar(id, req.usuario.id);
   }
 
   @Patch(':id/inativar')
   @NivelMinimo(80)
-  inativar(@Param('id') id: string) {
-    return this.anosLetivosService.inativar(id);
+  inativar(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.anosLetivosService.inativar(id, req.usuario.id);
   }
 
   @Delete(':id')
   @Perfis('ADMIN_GERAL')
-  remover(@Param('id') id: string) {
-    return this.anosLetivosService.remover(id);
+  remover(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
+    return this.anosLetivosService.remover(id, req.usuario.id);
   }
 }

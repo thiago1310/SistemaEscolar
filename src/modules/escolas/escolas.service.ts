@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import { Secretaria } from '../secretarias/secretarias.entities';
 import { AtualizarEscolaDto, CriarEscolaDto } from './escolas.dto';
 import { Escola } from './escolas.entities';
@@ -12,10 +13,15 @@ export class EscolasService {
     private readonly escolasRepositorio: Repository<Escola>,
     @InjectRepository(Secretaria)
     private readonly secretariasRepositorio: Repository<Secretaria>,
+    private readonly escopoUsuarioService: EscopoUsuarioService,
   ) {}
 
-  async criar(dados: CriarEscolaDto) {
+  async criar(dados: CriarEscolaDto, usuarioId: string) {
     await this.garantirSecretariaExiste(dados.secretariaId);
+    await this.escopoUsuarioService.garantirSecretariaPermitida(
+      usuarioId,
+      dados.secretariaId,
+    );
 
     const escola = this.escolasRepositorio.create({
       ...dados,
@@ -26,8 +32,15 @@ export class EscolasService {
     return this.escolasRepositorio.save(escola);
   }
 
-  listar() {
+  async listar(usuarioId: string) {
+    const where = await this.escopoUsuarioService.filtroEscolas(usuarioId);
+
+    if (where === null) {
+      return [];
+    }
+
     return this.escolasRepositorio.find({
+      where,
       relations: {
         secretaria: true,
       },
@@ -37,7 +50,7 @@ export class EscolasService {
     });
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: string, usuarioId: string) {
     const escola = await this.escolasRepositorio.findOne({
       where: { id },
       relations: {
@@ -46,17 +59,23 @@ export class EscolasService {
     });
 
     if (!escola) {
-      throw new NotFoundException('Escola não encontrada.');
+      throw new NotFoundException('Escola nao encontrada.');
     }
+
+    await this.escopoUsuarioService.garantirEscolaPermitida(usuarioId, escola);
 
     return escola;
   }
 
-  async atualizar(id: string, dados: AtualizarEscolaDto) {
-    const escola = await this.buscarPorId(id);
+  async atualizar(id: string, dados: AtualizarEscolaDto, usuarioId: string) {
+    const escola = await this.buscarPorId(id, usuarioId);
 
     if (dados.secretariaId) {
       await this.garantirSecretariaExiste(dados.secretariaId);
+      await this.escopoUsuarioService.garantirSecretariaPermitida(
+        usuarioId,
+        dados.secretariaId,
+      );
     }
 
     Object.assign(escola, {
@@ -67,15 +86,15 @@ export class EscolasService {
     return this.escolasRepositorio.save(escola);
   }
 
-  async remover(id: string) {
-    const escola = await this.buscarPorId(id);
+  async remover(id: string, usuarioId: string) {
+    const escola = await this.buscarPorId(id, usuarioId);
     await this.escolasRepositorio.remove(escola);
 
     return { mensagem: 'Escola removida com sucesso.' };
   }
 
-  async inativar(id: string) {
-    const escola = await this.buscarPorId(id);
+  async inativar(id: string, usuarioId: string) {
+    const escola = await this.buscarPorId(id, usuarioId);
     escola.ativa = false;
 
     return this.escolasRepositorio.save(escola);
@@ -87,7 +106,7 @@ export class EscolasService {
     });
 
     if (!secretaria) {
-      throw new NotFoundException('Secretaria não encontrada.');
+      throw new NotFoundException('Secretaria nao encontrada.');
     }
   }
 }
