@@ -46,6 +46,6 @@ export class AutenticacaoController {
   @Get('perfil')
   @UseGuards(TokenAcessoGuard)
   perfil(@Req() requisicao: RequisicaoAutenticada) {
-    return requisicao.usuario;
+    return this.autenticacaoService.obterPerfil(requisicao.usuario.id);
   }
 }

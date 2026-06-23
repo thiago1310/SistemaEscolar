@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { IsNull, Repository } from 'typeorm';
+import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
 import { EntrarDto, RenovarTokenDto, SairDto } from './autenticacao.dto';
 import { SessaoUsuario, Usuario } from './autenticacao.entities';
 import { UsuarioAutenticado } from './autenticacao.guard';
@@ -36,6 +37,8 @@ export class AutenticacaoService {
     private readonly usuariosRepositorio: Repository<Usuario>,
     @InjectRepository(SessaoUsuario)
     private readonly sessoesRepositorio: Repository<SessaoUsuario>,
+    @InjectRepository(UsuarioAcesso)
+    private readonly usuarioAcessosRepositorio: Repository<UsuarioAcesso>,
     private readonly jwtService: JwtService,
     private readonly configuracao: ConfigService,
   ) {
@@ -151,6 +154,81 @@ export class AutenticacaoService {
     }
   }
 
+  async obterPerfil(usuarioId: string) {
+    const usuario = await this.usuariosRepositorio.findOneBy({ id: usuarioId });
+
+    if (!usuario) {
+      throw new UnauthorizedException('Usuário não encontrado.');
+    }
+
+    const acessos = await this.usuarioAcessosRepositorio.find({
+      where: { usuarioId, ativo: true },
+      relations: {
+        perfil: true,
+        secretaria: true,
+        escola: true,
+        anoLetivo: true,
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+    const perfis = acessos
+      .filter((acesso) => acesso.perfil?.ativo)
+      .map((acesso) => ({
+        id: acesso.perfil.id,
+        nome: acesso.perfil.nome,
+        codigo: acesso.perfil.codigo,
+        nivel: acesso.perfil.nivel,
+        sistema: acesso.perfil.sistema,
+      }));
+    const maiorNivel = perfis.reduce(
+      (nivel, perfil) => Math.max(nivel, perfil.nivel),
+      0,
+    );
+
+    return {
+      id: usuario.id,
+      nome: usuario.nome,
+      email: usuario.email,
+      username: usuario.username,
+      primeiroAcesso: usuario.primeiroAcesso,
+      maiorNivel,
+      perfis: this.removerPerfisDuplicados(perfis),
+      menus: this.montarMenusPorNivel(maiorNivel),
+      escopos: acessos.map((acesso) => ({
+        id: acesso.id,
+        perfil: acesso.perfil
+          ? {
+              id: acesso.perfil.id,
+              nome: acesso.perfil.nome,
+              codigo: acesso.perfil.codigo,
+              nivel: acesso.perfil.nivel,
+            }
+          : null,
+        secretaria: acesso.secretaria
+          ? {
+              id: acesso.secretaria.id,
+              nome: acesso.secretaria.nome,
+            }
+          : null,
+        escola: acesso.escola
+          ? {
+              id: acesso.escola.id,
+              nome: acesso.escola.nome,
+            }
+          : null,
+        anoLetivo: acesso.anoLetivo
+          ? {
+              id: acesso.anoLetivo.id,
+              ano: acesso.anoLetivo.ano,
+              descricao: acesso.anoLetivo.descricao,
+            }
+          : null,
+      })),
+    };
+  }
+
   private async buscarUsuarioParaLogin(identificador: string) {
     return this.usuariosRepositorio.findOne({
       where: [
@@ -219,6 +297,56 @@ export class AutenticacaoService {
       email: usuario.email,
       username: usuario.username,
     };
+  }
+
+  private removerPerfisDuplicados(
+    perfis: Array<{
+      id: string;
+      nome: string;
+      codigo: string;
+      nivel: number;
+      sistema: boolean;
+    }>,
+  ) {
+    return Array.from(
+      new Map(perfis.map((perfil) => [perfil.id, perfil])).values(),
+    );
+  }
+
+  private montarMenusPorNivel(nivel: number) {
+    if (nivel >= 100) {
+      return [
+        'secretarias',
+        'escolas',
+        'anos_letivos',
+        'perfis',
+        'usuario_acessos',
+        'disciplinas',
+        'auditoria',
+      ];
+    }
+
+    if (nivel >= 80) {
+      return ['secretarias', 'escolas', 'anos_letivos', 'disciplinas'];
+    }
+
+    if (nivel >= 60) {
+      return ['escolas', 'anos_letivos', 'disciplinas'];
+    }
+
+    if (nivel >= 45) {
+      return ['anos_letivos', 'disciplinas'];
+    }
+
+    if (nivel >= 30) {
+      return ['disciplinas'];
+    }
+
+    if (nivel >= 20) {
+      return ['auditoria'];
+    }
+
+    return [];
   }
 
   private async validarRefreshToken(token: string): Promise<ConteudoRefreshToken> {
