@@ -7,10 +7,6 @@
   },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
       "key": "accessToken",
       "value": ""
     },
@@ -38,7 +34,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/auditoria"
+        "url": "{{url_base}}/auditoria"
       }
     },
     {
@@ -51,7 +47,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/auditoria?usuarioId={{usuarioId}}&entidade=usuarios&entidadeId={{entidadeId}}&acao=CRIAR&dataInicio=2026-01-01&dataFim=2026-12-31"
+        "url": "{{url_base}}/auditoria?usuarioId={{usuarioId}}&entidade=usuarios&entidadeId={{entidadeId}}&acao=CRIAR&dataInicio=2026-01-01&dataFim=2026-12-31"
       }
     },
     {
@@ -64,7 +60,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/auditoria/{{auditoriaId}}"
+        "url": "{{url_base}}/auditoria/{{auditoriaId}}"
       }
     }
   ]

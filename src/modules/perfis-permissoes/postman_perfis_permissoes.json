@@ -7,10 +7,6 @@
   },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
       "key": "accessToken",
       "value": ""
     },
@@ -53,7 +49,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/perfis",
+            "url": "{{url_base}}/perfis",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Perfil Teste {{$timestamp}}\",\n  \"codigo\": \"PERFIL_TESTE_{{$timestamp}}\"\n}"
@@ -86,7 +82,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/perfis",
+            "url": "{{url_base}}/perfis",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Perfil Completo {{$timestamp}}\",\n  \"codigo\": \"PERFIL_COMPLETO_{{$timestamp}}\",\n  \"descricao\": \"Perfil completo para testes.\",\n  \"nivel\": 10,\n  \"sistema\": false,\n  \"ativo\": true\n}"
@@ -105,7 +101,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/perfis"
+        "url": "{{url_base}}/perfis"
       }
     },
     {
@@ -118,7 +114,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}"
+        "url": "{{url_base}}/perfis/{{perfilId}}"
       }
     },
     {
@@ -138,7 +134,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/perfis/{{perfilId}}",
+            "url": "{{url_base}}/perfis/{{perfilId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"descricao\": \"Perfil atualizado.\"\n}"
@@ -159,7 +155,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/perfis/{{perfilId}}",
+            "url": "{{url_base}}/perfis/{{perfilId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Perfil Completo Atualizado\",\n  \"codigo\": \"PERFIL_COMPLETO_ATUALIZADO\",\n  \"descricao\": \"Perfil completo atualizado.\",\n  \"nivel\": 20,\n  \"sistema\": false,\n  \"ativo\": true\n}"
@@ -178,7 +174,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}"
+        "url": "{{url_base}}/perfis/{{perfilId}}"
       }
     },
     {
@@ -210,7 +206,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/permissoes",
+            "url": "{{url_base}}/permissoes",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"modulo\": \"usuarios\",\n  \"acao\": \"listar\",\n  \"codigo\": \"USUARIOS_LISTAR_{{$timestamp}}\"\n}"
@@ -243,7 +239,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/permissoes",
+            "url": "{{url_base}}/permissoes",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"modulo\": \"usuarios\",\n  \"acao\": \"criar\",\n  \"codigo\": \"USUARIOS_CRIAR_{{$timestamp}}\",\n  \"descricao\": \"Permite criar usuarios.\"\n}"
@@ -262,7 +258,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/permissoes"
+        "url": "{{url_base}}/permissoes"
       }
     },
     {
@@ -275,7 +271,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/permissoes/{{permissaoId}}"
+        "url": "{{url_base}}/permissoes/{{permissaoId}}"
       }
     },
     {
@@ -295,7 +291,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/permissoes/{{permissaoId}}",
+            "url": "{{url_base}}/permissoes/{{permissaoId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"descricao\": \"Permissao atualizada.\"\n}"
@@ -316,7 +312,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/permissoes/{{permissaoId}}",
+            "url": "{{url_base}}/permissoes/{{permissaoId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"modulo\": \"usuarios\",\n  \"acao\": \"atualizar\",\n  \"codigo\": \"USUARIOS_ATUALIZAR\",\n  \"descricao\": \"Permite atualizar usuarios.\"\n}"
@@ -335,7 +331,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/permissoes/{{permissaoId}}"
+        "url": "{{url_base}}/permissoes/{{permissaoId}}"
       }
     },
     {
@@ -352,7 +348,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes",
+        "url": "{{url_base}}/perfis/{{perfilId}}/permissoes",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"permissaoId\": \"{{permissaoId}}\"\n}"
@@ -369,7 +365,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes"
+        "url": "{{url_base}}/perfis/{{perfilId}}/permissoes"
       }
     },
     {
@@ -382,7 +378,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}/permissoes/{{permissaoId}}"
+        "url": "{{url_base}}/perfis/{{perfilId}}/permissoes/{{permissaoId}}"
       }
     }
   ]

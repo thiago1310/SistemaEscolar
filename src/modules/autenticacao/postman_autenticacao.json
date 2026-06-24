@@ -7,10 +7,6 @@
   },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
       "key": "accessToken",
       "value": ""
     },
@@ -56,7 +52,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/autenticacao/entrar",
+        "url": "{{url_base}}/autenticacao/entrar",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"identificador\": \"{{identificador}}\",\n  \"senha\": \"{{senha}}\"\n}"
@@ -87,7 +83,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/autenticacao/renovar-token",
+        "url": "{{url_base}}/autenticacao/renovar-token",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
@@ -104,7 +100,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/autenticacao/perfil"
+        "url": "{{url_base}}/autenticacao/perfil"
       }
     },
     {
@@ -117,7 +113,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/autenticacao/sair",
+        "url": "{{url_base}}/autenticacao/sair",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"

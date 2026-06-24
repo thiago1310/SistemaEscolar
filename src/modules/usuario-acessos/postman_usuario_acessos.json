@@ -7,10 +7,6 @@
   },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
       "key": "accessToken",
       "value": ""
     },
@@ -69,7 +65,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/usuario-acessos",
+            "url": "{{url_base}}/usuario-acessos",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
@@ -102,7 +98,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/usuario-acessos",
+            "url": "{{url_base}}/usuario-acessos",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"anoLetivoId\": \"{{anoLetivoId}}\",\n  \"ativo\": true\n}"
@@ -121,7 +117,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/usuario-acessos"
+        "url": "{{url_base}}/usuario-acessos"
       }
     },
     {
@@ -134,7 +130,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}"
+        "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}"
       }
     },
     {
@@ -154,7 +150,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}",
+            "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"ativo\": true\n}"
@@ -175,7 +171,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}",
+            "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"anoLetivoId\": \"{{anoLetivoId}}\",\n  \"ativo\": true\n}"
@@ -194,7 +190,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}/inativar"
+        "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}/inativar"
       }
     },
     {
@@ -207,7 +203,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}"
+        "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}"
       }
     }
   ]

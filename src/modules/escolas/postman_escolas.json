@@ -7,10 +7,6 @@
   },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
       "key": "accessToken",
       "value": ""
     },
@@ -53,7 +49,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/escolas",
+            "url": "{{url_base}}/escolas",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Municipal {{$timestamp}}\"\n}"
@@ -86,7 +82,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/escolas",
+            "url": "{{url_base}}/escolas",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa {{$timestamp}}\",\n  \"codigoInep\": \"INEP{{$timestamp}}\",\n  \"cnpj\": \"00000000000102\",\n  \"telefone\": \"1130000002\",\n  \"email\": \"escola{{$timestamp}}@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Praca da Se\",\n  \"numero\": \"100\",\n  \"complemento\": \"Predio Principal\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true\n}"
@@ -105,7 +101,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/escolas"
+        "url": "{{url_base}}/escolas"
       }
     },
     {
@@ -118,7 +114,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/escolas/{{escolaId}}"
+        "url": "{{url_base}}/escolas/{{escolaId}}"
       }
     },
     {
@@ -138,7 +134,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/escolas/{{escolaId}}",
+            "url": "{{url_base}}/escolas/{{escolaId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Escola Atualizada\"\n}"
@@ -159,7 +155,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/escolas/{{escolaId}}",
+            "url": "{{url_base}}/escolas/{{escolaId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa Atualizada\",\n  \"codigoInep\": \"INEP0002\",\n  \"cnpj\": \"00000000000108\",\n  \"telefone\": \"1130000008\",\n  \"email\": \"escola.atualizada@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Rua Direita\",\n  \"numero\": \"200\",\n  \"complemento\": \"Bloco A\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true\n}"
@@ -178,7 +174,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/escolas/{{escolaId}}/inativar"
+        "url": "{{url_base}}/escolas/{{escolaId}}/inativar"
       }
     },
     {
@@ -191,7 +187,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/escolas/{{escolaId}}"
+        "url": "{{url_base}}/escolas/{{escolaId}}"
       }
     }
   ]

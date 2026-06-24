@@ -7,10 +7,6 @@
   },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
       "key": "accessToken",
       "value": ""
     },
@@ -49,7 +45,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/usuarios",
+            "url": "{{url_base}}/usuarios",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Usuario Teste {{$timestamp}}\",\n  \"username\": \"usuario{{$timestamp}}\",\n  \"senha\": \"123456\"\n}"
@@ -82,7 +78,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/usuarios",
+            "url": "{{url_base}}/usuarios",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Usuario Completo {{$timestamp}}\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.completo{{$timestamp}}@sistema.local\",\n  \"telefone\": \"11999999999\",\n  \"username\": \"usuario.completo{{$timestamp}}\",\n  \"senha\": \"123456\",\n  \"ativo\": true\n}"
@@ -101,7 +97,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/usuarios"
+        "url": "{{url_base}}/usuarios"
       }
     },
     {
@@ -114,7 +110,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+        "url": "{{url_base}}/usuarios/{{usuarioId}}"
       }
     },
     {
@@ -134,7 +130,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/usuarios/{{usuarioId}}",
+            "url": "{{url_base}}/usuarios/{{usuarioId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Usuario Atualizado\"\n}"
@@ -155,7 +151,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/usuarios/{{usuarioId}}",
+            "url": "{{url_base}}/usuarios/{{usuarioId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Usuario Completo Atualizado\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.atualizado@sistema.local\",\n  \"telefone\": \"11888888888\",\n  \"username\": \"usuario.atualizado\",\n  \"ativo\": true\n}"
@@ -178,7 +174,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/usuarios/{{usuarioId}}/senha",
+        "url": "{{url_base}}/usuarios/{{usuarioId}}/senha",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"senha\": \"654321\"\n}"
@@ -195,7 +191,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/usuarios/{{usuarioId}}/inativar"
+        "url": "{{url_base}}/usuarios/{{usuarioId}}/inativar"
       }
     }
   ]

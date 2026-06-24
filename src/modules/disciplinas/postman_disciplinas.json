@@ -7,10 +7,6 @@
   },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
       "key": "accessToken",
       "value": ""
     },
@@ -53,7 +49,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/disciplinas",
+            "url": "{{url_base}}/disciplinas",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Matematica {{$timestamp}}\"\n}"
@@ -86,7 +82,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/disciplinas",
+            "url": "{{url_base}}/disciplinas",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Matematica Completa {{$timestamp}}\",\n  \"codigo\": \"MAT{{$timestamp}}\",\n  \"ativa\": true\n}"
@@ -105,7 +101,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/disciplinas"
+        "url": "{{url_base}}/disciplinas"
       }
     },
     {
@@ -118,7 +114,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/disciplinas/{{disciplinaId}}"
+        "url": "{{url_base}}/disciplinas/{{disciplinaId}}"
       }
     },
     {
@@ -138,7 +134,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/disciplinas/{{disciplinaId}}",
+            "url": "{{url_base}}/disciplinas/{{disciplinaId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Disciplina Atualizada\"\n}"
@@ -159,7 +155,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/disciplinas/{{disciplinaId}}",
+            "url": "{{url_base}}/disciplinas/{{disciplinaId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Disciplina Completa Atualizada\",\n  \"codigo\": \"DISC_ATUALIZADA\",\n  \"ativa\": true\n}"
@@ -178,7 +174,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/disciplinas/{{disciplinaId}}/inativar"
+        "url": "{{url_base}}/disciplinas/{{disciplinaId}}/inativar"
       }
     },
     {
@@ -191,7 +187,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/disciplinas/{{disciplinaId}}"
+        "url": "{{url_base}}/disciplinas/{{disciplinaId}}"
       }
     }
   ]

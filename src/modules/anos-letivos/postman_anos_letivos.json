@@ -7,10 +7,6 @@
   },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
       "key": "accessToken",
       "value": ""
     },
@@ -53,7 +49,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/anos-letivos",
+            "url": "{{url_base}}/anos-letivos",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"dataInicio\": \"2026-02-01\",\n  \"dataFim\": \"2026-12-20\"\n}"
@@ -86,7 +82,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/anos-letivos",
+            "url": "{{url_base}}/anos-letivos",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"descricao\": \"Ano letivo 2026\",\n  \"dataInicio\": \"2026-02-01\",\n  \"dataFim\": \"2026-12-20\",\n  \"status\": \"PLANEJAMENTO\",\n  \"ativo\": true\n}"
@@ -105,7 +101,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/anos-letivos"
+        "url": "{{url_base}}/anos-letivos"
       }
     },
     {
@@ -118,7 +114,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}"
+        "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}"
       }
     },
     {
@@ -138,7 +134,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}",
+            "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"descricao\": \"Ano letivo atualizado\"\n}"
@@ -159,7 +155,7 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}",
+            "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"descricao\": \"Ano letivo completo atualizado\",\n  \"dataInicio\": \"2026-02-03\",\n  \"dataFim\": \"2026-12-18\",\n  \"status\": \"ATIVO\",\n  \"ativo\": true\n}"
@@ -178,7 +174,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}/ativar"
+        "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}/ativar"
       }
     },
     {
@@ -191,7 +187,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}/inativar"
+        "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}/inativar"
       }
     },
     {
@@ -204,7 +200,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}"
+        "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}"
       }
     }
   ]
