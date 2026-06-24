@@ -1,0 +1,202 @@
+{
+  "info": {
+    "_postman_id": "03f99621-4fba-4a1d-05a6-8b18fece8e71",
+    "name": "Sistema Escolar - Usuarios",
+    "description": "Collection do modulo usuarios com exemplos essenciais e completos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "POST Criar Usuario",
+      "item": [
+        {
+          "name": "Criar Usuario - Dados essenciais",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('usuarioId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Usuario Teste {{$timestamp}}\",\n  \"username\": \"usuario{{$timestamp}}\",\n  \"senha\": \"123456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Criar Usuario - Dados completos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('usuarioId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Usuario Completo {{$timestamp}}\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.completo{{$timestamp}}@sistema.local\",\n  \"telefone\": \"11999999999\",\n  \"username\": \"usuario.completo{{$timestamp}}\",\n  \"senha\": \"123456\",\n  \"ativo\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar Usuarios",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/usuarios"
+      }
+    },
+    {
+      "name": "Buscar Usuario Por Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+      }
+    },
+    {
+      "name": "PATCH Atualizar Usuario",
+      "item": [
+        {
+          "name": "Atualizar Usuario - Dados essenciais",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Usuario Atualizado\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Atualizar Usuario - Dados completos",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Usuario Completo Atualizado\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.atualizado@sistema.local\",\n  \"telefone\": \"11888888888\",\n  \"username\": \"usuario.atualizado\",\n  \"ativo\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Redefinir Senha",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/usuarios/{{usuarioId}}/senha",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"senha\": \"654321\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Inativar Usuario",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/usuarios/{{usuarioId}}/inativar"
+      }
+    }
+  ]
+}

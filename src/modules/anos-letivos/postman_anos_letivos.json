@@ -1,0 +1,211 @@
+{
+  "info": {
+    "_postman_id": "1b79e92f-f588-4bff-bc59-d085aa81fd6e",
+    "name": "Sistema Escolar - Anos Letivos",
+    "description": "Collection do modulo anos-letivos com exemplos essenciais e completos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "secretariaId",
+      "value": ""
+    },
+    {
+      "key": "anoLetivoId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "POST Criar Ano Letivo",
+      "item": [
+        {
+          "name": "Criar Ano Letivo - Dados essenciais",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('anoLetivoId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/anos-letivos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"dataInicio\": \"2026-02-01\",\n  \"dataFim\": \"2026-12-20\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Criar Ano Letivo - Dados completos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('anoLetivoId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/anos-letivos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"descricao\": \"Ano letivo 2026\",\n  \"dataInicio\": \"2026-02-01\",\n  \"dataFim\": \"2026-12-20\",\n  \"status\": \"PLANEJAMENTO\",\n  \"ativo\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar Anos Letivos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/anos-letivos"
+      }
+    },
+    {
+      "name": "Buscar Ano Letivo Por Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}"
+      }
+    },
+    {
+      "name": "PATCH Atualizar Ano Letivo",
+      "item": [
+        {
+          "name": "Atualizar Ano Letivo - Dados essenciais",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Ano letivo atualizado\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Atualizar Ano Letivo - Dados completos",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"descricao\": \"Ano letivo completo atualizado\",\n  \"dataInicio\": \"2026-02-03\",\n  \"dataFim\": \"2026-12-18\",\n  \"status\": \"ATIVO\",\n  \"ativo\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ativar Ano Letivo",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}/ativar"
+      }
+    },
+    {
+      "name": "Inativar Ano Letivo",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}/inativar"
+      }
+    },
+    {
+      "name": "Remover Ano Letivo",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/anos-letivos/{{anoLetivoId}}"
+      }
+    }
+  ]
+}

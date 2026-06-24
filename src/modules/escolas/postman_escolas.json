@@ -1,0 +1,198 @@
+{
+  "info": {
+    "_postman_id": "662c1276-edbe-8a40-6b5d-e9105a2fe573",
+    "name": "Sistema Escolar - Escolas",
+    "description": "Collection do modulo escolas com exemplos essenciais e completos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "secretariaId",
+      "value": ""
+    },
+    {
+      "key": "escolaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "POST Criar Escola",
+      "item": [
+        {
+          "name": "Criar Escola - Dados essenciais",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('escolaId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/escolas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Municipal {{$timestamp}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Criar Escola - Dados completos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('escolaId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/escolas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa {{$timestamp}}\",\n  \"codigoInep\": \"INEP{{$timestamp}}\",\n  \"cnpj\": \"00000000000102\",\n  \"telefone\": \"1130000002\",\n  \"email\": \"escola{{$timestamp}}@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Praca da Se\",\n  \"numero\": \"100\",\n  \"complemento\": \"Predio Principal\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar Escolas",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/escolas"
+      }
+    },
+    {
+      "name": "Buscar Escola Por Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/escolas/{{escolaId}}"
+      }
+    },
+    {
+      "name": "PATCH Atualizar Escola",
+      "item": [
+        {
+          "name": "Atualizar Escola - Dados essenciais",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/escolas/{{escolaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Escola Atualizada\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Atualizar Escola - Dados completos",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/escolas/{{escolaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa Atualizada\",\n  \"codigoInep\": \"INEP0002\",\n  \"cnpj\": \"00000000000108\",\n  \"telefone\": \"1130000008\",\n  \"email\": \"escola.atualizada@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Rua Direita\",\n  \"numero\": \"200\",\n  \"complemento\": \"Bloco A\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inativar Escola",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/escolas/{{escolaId}}/inativar"
+      }
+    },
+    {
+      "name": "Remover Escola",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/escolas/{{escolaId}}"
+      }
+    }
+  ]
+}

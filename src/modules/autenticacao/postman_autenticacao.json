@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "8a25d70e-b72d-4730-b5e0-8d54877b40f4",
-    "name": "Sistema Escolar - Perfis",
-    "description": "Colecao administrativa para consultar e manter perfis fixos. A autorizacao principal usa codigo/nivel do perfil.",
+    "_postman_id": "91504393-c928-9f93-3447-1c6a0acb0e5a",
+    "name": "Sistema Escolar - Autenticacao",
+    "description": "Collection do modulo autenticacao.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -11,19 +11,23 @@
       "value": "http://localhost:3000"
     },
     {
-      "key": "identificador",
-      "value": "admin"
-    },
-    {
-      "key": "senha",
-      "value": "123456"
-    },
-    {
       "key": "accessToken",
       "value": ""
     },
     {
-      "key": "perfilId",
+      "key": "identificador",
+      "value": ""
+    },
+    {
+      "key": "senha",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "usuarioId",
       "value": ""
     }
   ],
@@ -37,7 +41,9 @@
             "type": "text/javascript",
             "exec": [
               "const resposta = pm.response.json();",
-              "if (resposta.accessToken) pm.collectionVariables.set('accessToken', resposta.accessToken);"
+              "if (resposta.accessToken) pm.collectionVariables.set('accessToken', resposta.accessToken);",
+              "if (resposta.refreshToken) pm.collectionVariables.set('refreshToken', resposta.refreshToken);",
+              "if (resposta.usuario && resposta.usuario.id) pm.collectionVariables.set('usuarioId', resposta.usuario.id);"
             ]
           }
         }
@@ -50,15 +56,15 @@
             "value": "application/json"
           }
         ],
+        "url": "{{baseUrl}}/autenticacao/entrar",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"identificador\": \"{{identificador}}\",\n  \"senha\": \"{{senha}}\"\n}"
-        },
-        "url": "{{baseUrl}}/autenticacao/entrar"
+        }
       }
     },
     {
-      "name": "Criar Perfil Suporte Tecnico (Administrativo)",
+      "name": "Renovar Token",
       "event": [
         {
           "listen": "test",
@@ -66,7 +72,9 @@
             "type": "text/javascript",
             "exec": [
               "const resposta = pm.response.json();",
-              "if (resposta.id) pm.collectionVariables.set('perfilId', resposta.id);"
+              "if (resposta.accessToken) pm.collectionVariables.set('accessToken', resposta.accessToken);",
+              "if (resposta.refreshToken) pm.collectionVariables.set('refreshToken', resposta.refreshToken);",
+              "if (resposta.usuario && resposta.usuario.id) pm.collectionVariables.set('usuarioId', resposta.usuario.id);"
             ]
           }
         }
@@ -77,21 +85,17 @@
           {
             "key": "Content-Type",
             "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
           }
         ],
+        "url": "{{baseUrl}}/autenticacao/renovar-token",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nome\": \"Suporte Tecnico\",\n  \"codigo\": \"SUPORTE_TECNICO\",\n  \"descricao\": \"Perfil fixo para suporte operacional e diagnostico tecnico.\",\n  \"nivel\": 10,\n  \"sistema\": true,\n  \"ativo\": true\n}"
-        },
-        "url": "{{baseUrl}}/perfis"
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+        }
       }
     },
     {
-      "name": "Listar Perfis",
+      "name": "Perfil Autenticado",
       "request": {
         "method": "GET",
         "header": [
@@ -100,41 +104,24 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{baseUrl}}/perfis"
+        "url": "{{baseUrl}}/autenticacao/perfil"
       }
     },
     {
-      "name": "Buscar Perfil Por Id",
+      "name": "Sair",
       "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": "{{baseUrl}}/perfis/{{perfilId}}"
-      }
-    },
-    {
-      "name": "Atualizar Perfil",
-      "request": {
-        "method": "PATCH",
+        "method": "POST",
         "header": [
           {
             "key": "Content-Type",
             "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
           }
         ],
+        "url": "{{baseUrl}}/autenticacao/sair",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"descricao\": \"Perfil fixo atualizado administrativamente.\"\n}"
-        },
-        "url": "{{baseUrl}}/perfis/{{perfilId}}"
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+        }
       }
     }
   ]

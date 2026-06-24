@@ -1,0 +1,71 @@
+{
+  "info": {
+    "_postman_id": "bc4cf798-5df0-ab50-79ec-dbd87c7bee79",
+    "name": "Sistema Escolar - Auditoria",
+    "description": "Collection do modulo auditoria com consulta simples e consulta filtrada.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "auditoriaId",
+      "value": ""
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    },
+    {
+      "key": "entidadeId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Listar Auditoria",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/auditoria"
+      }
+    },
+    {
+      "name": "Listar Auditoria - Com filtros",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/auditoria?usuarioId={{usuarioId}}&entidade=usuarios&entidadeId={{entidadeId}}&acao=CRIAR&dataInicio=2026-01-01&dataFim=2026-12-31"
+      }
+    },
+    {
+      "name": "Buscar Auditoria Por Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/auditoria/{{auditoriaId}}"
+      }
+    }
+  ]
+}

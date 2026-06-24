@@ -173,6 +173,8 @@ export class UsuarioAcessosService {
       throw new BadRequestException('Escola nao pertence a secretaria informada.');
     }
 
+    this.validarEscopoObrigatorioPorPerfil(perfil, dados);
+
     const anoLetivo = dados.anoLetivoId
       ? await this.anosLetivosRepositorio.findOneBy({ id: dados.anoLetivoId })
       : null;
@@ -183,6 +185,17 @@ export class UsuarioAcessosService {
 
     if (anoLetivo && dados.secretariaId && anoLetivo.secretariaId !== dados.secretariaId) {
       throw new BadRequestException('Ano letivo nao pertence a secretaria informada.');
+    }
+  }
+
+  private validarEscopoObrigatorioPorPerfil(
+    perfil: Perfil,
+    dados: CriarUsuarioAcessoDto,
+  ) {
+    if (perfil.codigo === 'GESTOR_ESCOLAR' && !dados.escolaId) {
+      throw new BadRequestException(
+        'Gestor escolar deve estar vinculado a uma escola.',
+      );
     }
   }
 

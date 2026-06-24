@@ -1,0 +1,214 @@
+{
+  "info": {
+    "_postman_id": "74a5667c-1b5f-1511-673a-1c770c62df55",
+    "name": "Sistema Escolar - Usuario Acessos",
+    "description": "Collection do modulo usuario-acessos. Gestor escolar deve informar escolaId; para mais de uma escola, crie um acesso por escola.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "usuarioAcessoId",
+      "value": ""
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    },
+    {
+      "key": "perfilId",
+      "value": ""
+    },
+    {
+      "key": "secretariaId",
+      "value": ""
+    },
+    {
+      "key": "escolaId",
+      "value": ""
+    },
+    {
+      "key": "anoLetivoId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "POST Criar Usuario Acesso",
+      "item": [
+        {
+          "name": "Criar Acesso - Gestor escolar com escola",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('usuarioAcessoId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuario-acessos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Criar Acesso - Dados completos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('usuarioAcessoId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuario-acessos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"anoLetivoId\": \"{{anoLetivoId}}\",\n  \"ativo\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar Usuario Acessos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/usuario-acessos"
+      }
+    },
+    {
+      "name": "Buscar Usuario Acesso Por Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}"
+      }
+    },
+    {
+      "name": "PATCH Atualizar Usuario Acesso",
+      "item": [
+        {
+          "name": "Atualizar Acesso - Ativo",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ativo\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Atualizar Acesso - Dados completos",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"anoLetivoId\": \"{{anoLetivoId}}\",\n  \"ativo\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inativar Usuario Acesso",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}/inativar"
+      }
+    },
+    {
+      "name": "Remover Usuario Acesso",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/usuario-acessos/{{usuarioAcessoId}}"
+      }
+    }
+  ]
+}
