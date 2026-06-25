@@ -6,9 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
-import { TokenAcessoGuard } from '../autenticacao/autenticacao.guard';
+import {
+  RequisicaoAutenticada,
+  TokenAcessoGuard,
+} from '../autenticacao/autenticacao.guard';
 import { NivelMinimo, Perfis } from '../autorizacao/permissao.decorator';
 import { PermissaoGuard } from '../autorizacao/permissao.guard';
 import {
@@ -33,14 +37,17 @@ export class PerfisPermissoesController {
 
   @Get('perfis')
   @NivelMinimo(80)
-  listarPerfis() {
-    return this.perfisPermissoesService.listarPerfis();
+  listarPerfis(@Req() req: RequisicaoAutenticada) {
+    return this.perfisPermissoesService.listarPerfis(req.usuario.id);
   }
 
   @Get('perfis/:id')
   @NivelMinimo(80)
-  buscarPerfilPorId(@Param('id') id: string) {
-    return this.perfisPermissoesService.buscarPerfilPorId(id);
+  buscarPerfilPorId(
+    @Param('id') id: string,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.perfisPermissoesService.buscarPerfilPorId(id, req.usuario.id);
   }
 
   @Patch('perfis/:id')

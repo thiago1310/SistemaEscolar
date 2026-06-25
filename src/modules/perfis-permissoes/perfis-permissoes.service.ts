@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, Repository } from 'typeorm';
+import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import {
   AtualizarPerfilDto,
   AtualizarPermissaoDto,
@@ -18,6 +19,7 @@ export class PerfisPermissoesService {
     private readonly permissoesRepositorio: Repository<Permissao>,
     @InjectRepository(PerfilPermissao)
     private readonly perfilPermissoesRepositorio: Repository<PerfilPermissao>,
+    private readonly escopoUsuarioService: EscopoUsuarioService,
   ) {}
 
   criarPerfil(dados: CriarPerfilDto) {
@@ -31,15 +33,28 @@ export class PerfisPermissoesService {
     return this.perfisRepositorio.save(perfil);
   }
 
-  listarPerfis() {
-    return this.perfisRepositorio.find({ order: { nivel: 'DESC', nome: 'ASC' } });
+  async listarPerfis(usuarioExecutorId: string) {
+    const escopo = await this.escopoUsuarioService.obterEscopo(usuarioExecutorId);
+
+    return this.perfisRepositorio.find({
+      where: { nivel: LessThanOrEqual(escopo.maiorNivel) },
+      order: { nivel: 'DESC', nome: 'ASC' },
+    });
   }
 
-  async buscarPerfilPorId(id: string) {
+  async buscarPerfilPorId(id: string, usuarioExecutorId?: string) {
     const perfil = await this.perfisRepositorio.findOneBy({ id });
 
     if (!perfil) {
       throw new NotFoundException('Perfil não encontrado.');
+    }
+
+    if (usuarioExecutorId) {
+      const escopo = await this.escopoUsuarioService.obterEscopo(usuarioExecutorId);
+
+      if (perfil.nivel > escopo.maiorNivel) {
+        throw new NotFoundException('Perfil nÃ£o encontrado.');
+      }
     }
 
     return perfil;

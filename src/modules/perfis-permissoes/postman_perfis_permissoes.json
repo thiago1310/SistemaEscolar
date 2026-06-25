@@ -94,6 +94,7 @@
     {
       "name": "Listar Perfis",
       "request": {
+        "description": "Retorna apenas perfis com nivel menor ou igual ao maior nivel do usuario autenticado.",
         "method": "GET",
         "header": [
           {
@@ -107,6 +108,7 @@
     {
       "name": "Buscar Perfil Por Id",
       "request": {
+        "description": "Retorna o perfil apenas se o nivel for menor ou igual ao maior nivel do usuario autenticado.",
         "method": "GET",
         "header": [
           {
