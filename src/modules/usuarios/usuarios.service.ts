@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomInt } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { In, IsNull, Repository } from 'typeorm';
@@ -12,6 +13,7 @@ import {
   Usuario,
 } from '../autenticacao/autenticacao.entities';
 import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
+import { EmailService } from '../email/email.service';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
 import {
   AtualizarUsuarioDto,
@@ -27,20 +29,26 @@ export class UsuariosService {
     @InjectRepository(UsuarioAcesso)
     private readonly usuarioAcessosRepositorio: Repository<UsuarioAcesso>,
     private readonly escopoUsuarioService: EscopoUsuarioService,
+    private readonly emailService: EmailService,
   ) {}
 
   async criar(dados: CriarUsuarioDto) {
     this.garantirIdentificador(dados.email, dados.username);
+    this.garantirEmailParaBoasVindas(dados.email, dados.enviarEmailBoasVindas);
     await this.garantirIdentificadoresUnicos(dados.email, dados.username, dados.cpf);
 
     const agora = new Date();
+    const senhaTemporaria = this.gerarSenhaTemporaria();
     const usuario = this.usuariosRepositorio.create({
       nome: dados.nome,
       cpf: dados.cpf ?? null,
       email: dados.email ?? null,
       telefone: dados.telefone ?? null,
+      dataNascimento: dados.dataNascimento ?? null,
+      cargo: dados.cargo ?? null,
+      observacoes: dados.observacoes ?? null,
       username: dados.username ?? null,
-      senhaHash: await bcrypt.hash(dados.senha, 12),
+      senhaHash: await bcrypt.hash(senhaTemporaria, 12),
       origemAuth: OrigemAutenticacao.LOCAL,
       ativo: dados.ativo ?? true,
       primeiroAcesso: true,
@@ -50,7 +58,16 @@ export class UsuariosService {
       deletedAt: null,
     });
 
-    return this.serializarUsuario(await this.usuariosRepositorio.save(usuario));
+    const usuarioSalvo = await this.usuariosRepositorio.save(usuario);
+
+    if (dados.enviarEmailBoasVindas) {
+      await this.enviarEmailBoasVindas(usuarioSalvo, senhaTemporaria);
+    }
+
+    return {
+      ...this.serializarUsuario(usuarioSalvo),
+      ...(dados.enviarEmailBoasVindas ? {} : { senhaTemporaria }),
+    };
   }
 
   async listar(usuarioExecutorId: string) {
@@ -130,6 +147,15 @@ export class UsuariosService {
       cpf: dados.cpf === undefined ? usuario.cpf : dados.cpf ?? null,
       telefone:
         dados.telefone === undefined ? usuario.telefone : dados.telefone ?? null,
+      dataNascimento:
+        dados.dataNascimento === undefined
+          ? usuario.dataNascimento
+          : dados.dataNascimento ?? null,
+      cargo: dados.cargo === undefined ? usuario.cargo : dados.cargo ?? null,
+      observacoes:
+        dados.observacoes === undefined
+          ? usuario.observacoes
+          : dados.observacoes ?? null,
       updatedAt: new Date(),
     });
 
@@ -179,6 +205,17 @@ export class UsuariosService {
   private garantirIdentificador(email?: string, username?: string) {
     if (!email && !username) {
       throw new BadRequestException('Informe email ou username para o usuario.');
+    }
+  }
+
+  private garantirEmailParaBoasVindas(
+    email?: string | null,
+    enviarEmailBoasVindas?: boolean,
+  ) {
+    if (enviarEmailBoasVindas && !email) {
+      throw new BadRequestException(
+        'Informe o email do usuario para enviar o email de boas-vindas.',
+      );
     }
   }
 
@@ -267,6 +304,9 @@ export class UsuariosService {
       cpf: usuario.cpf,
       email: usuario.email,
       telefone: usuario.telefone,
+      dataNascimento: usuario.dataNascimento,
+      cargo: usuario.cargo,
+      observacoes: usuario.observacoes,
       username: usuario.username,
       origemAuth: usuario.origemAuth,
       ativo: usuario.ativo,
@@ -275,5 +315,79 @@ export class UsuariosService {
       createdAt: usuario.createdAt,
       updatedAt: usuario.updatedAt,
     };
+  }
+
+  private gerarSenhaTemporaria() {
+    const caracteres =
+      'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%';
+    const obrigatorios = [
+      'ABCDEFGHJKLMNPQRSTUVWXYZ',
+      'abcdefghijkmnopqrstuvwxyz',
+      '23456789',
+      '@#$%',
+    ];
+    const senha = obrigatorios.map((grupo) => this.sortearCaractere(grupo));
+
+    while (senha.length < 12) {
+      senha.push(this.sortearCaractere(caracteres));
+    }
+
+    return senha
+      .map((caractere) => ({ caractere, ordem: randomInt(0, 1000) }))
+      .sort((a, b) => a.ordem - b.ordem)
+      .map((item) => item.caractere)
+      .join('');
+  }
+
+  private sortearCaractere(caracteres: string) {
+    return caracteres[randomInt(0, caracteres.length)];
+  }
+
+  private async enviarEmailBoasVindas(usuario: Usuario, senhaTemporaria: string) {
+    if (!usuario.email) {
+      throw new BadRequestException('Usuario sem email cadastrado.');
+    }
+
+    const usuarioAcesso = usuario.username ?? usuario.email;
+    const nomeHtml = this.escaparHtml(usuario.nome);
+    const emailHtml = this.escaparHtml(usuario.email);
+    const usuarioAcessoHtml = this.escaparHtml(usuarioAcesso);
+    const senhaHtml = this.escaparHtml(senhaTemporaria);
+    const texto = [
+      `Ola, ${usuario.nome}.`,
+      '',
+      'Sua conta foi criada no Sistema Escolar.',
+      `Email cadastrado: ${usuario.email}`,
+      `Usuario de acesso: ${usuarioAcesso}`,
+      `Senha temporaria: ${senhaTemporaria}`,
+      '',
+      'No primeiro acesso, altere sua senha temporaria.',
+    ].join('\n');
+    const html = `
+      <p>Ola, ${nomeHtml}.</p>
+      <p>Sua conta foi criada no Sistema Escolar.</p>
+      <ul>
+        <li><strong>Email cadastrado:</strong> ${emailHtml}</li>
+        <li><strong>Usuario de acesso:</strong> ${usuarioAcessoHtml}</li>
+        <li><strong>Senha temporaria:</strong> ${senhaHtml}</li>
+      </ul>
+      <p>No primeiro acesso, altere sua senha temporaria.</p>
+    `;
+
+    await this.emailService.enviar({
+      to: usuario.email,
+      subject: 'Bem-vindo ao Sistema Escolar',
+      text: texto,
+      html,
+    });
+  }
+
+  private escaparHtml(valor: string) {
+    return valor
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

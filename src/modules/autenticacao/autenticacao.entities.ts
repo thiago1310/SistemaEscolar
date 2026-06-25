@@ -32,6 +32,15 @@ export class Usuario {
   @Column({ type: 'varchar', length: 30, nullable: true })
   telefone: string | null;
 
+  @Column({ name: 'data_nascimento', type: 'date', nullable: true })
+  dataNascimento: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  cargo: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  observacoes: string | null;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   username: string | null;
 

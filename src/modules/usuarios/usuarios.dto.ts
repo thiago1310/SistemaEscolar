@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsDateString,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -29,19 +30,32 @@ export class CriarUsuarioDto {
   @MaxLength(30)
   telefone?: string;
 
+  @IsDateString()
+  @IsOptional()
+  dataNascimento?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  cargo?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(2000)
+  observacoes?: string;
+
   @IsString()
   @IsOptional()
   @MaxLength(100)
   username?: string;
 
-  @IsString()
-  @MinLength(6)
-  @MaxLength(100)
-  senha: string;
-
   @IsBoolean()
   @IsOptional()
   ativo?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  enviarEmailBoasVindas?: boolean;
 }
 
 export class AtualizarUsuarioDto {
@@ -64,6 +78,20 @@ export class AtualizarUsuarioDto {
   @IsOptional()
   @MaxLength(30)
   telefone?: string;
+
+  @IsDateString()
+  @IsOptional()
+  dataNascimento?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  cargo?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(2000)
+  observacoes?: string;
 
   @IsString()
   @IsOptional()

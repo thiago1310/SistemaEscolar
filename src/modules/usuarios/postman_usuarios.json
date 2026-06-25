@@ -48,7 +48,7 @@
             "url": "{{url_base}}/usuarios",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Teste {{$timestamp}}\",\n  \"username\": \"usuario{{$timestamp}}\",\n  \"senha\": \"123456\"\n}"
+              "raw": "{\n  \"nome\": \"Usuario Teste {{$timestamp}}\",\n  \"username\": \"usuario{{$timestamp}}\",\n  \"enviarEmailBoasVindas\": false\n}"
             }
           }
         },
@@ -81,7 +81,7 @@
             "url": "{{url_base}}/usuarios",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Completo {{$timestamp}}\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.completo{{$timestamp}}@sistema.local\",\n  \"telefone\": \"11999999999\",\n  \"username\": \"usuario.completo{{$timestamp}}\",\n  \"senha\": \"123456\",\n  \"ativo\": true\n}"
+              "raw": "{\n  \"nome\": \"Usuario Completo {{$timestamp}}\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.completo{{$timestamp}}@sistema.local\",\n  \"telefone\": \"11999999999\",\n  \"dataNascimento\": \"1990-10-13\",\n  \"cargo\": \"Professor\",\n  \"observacoes\": \"Conta criada para teste completo.\",\n  \"username\": \"usuario.completo{{$timestamp}}\",\n  \"ativo\": true,\n  \"enviarEmailBoasVindas\": true\n}"
             }
           }
         }
@@ -154,7 +154,7 @@
             "url": "{{url_base}}/usuarios/{{usuarioId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Completo Atualizado\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.atualizado@sistema.local\",\n  \"telefone\": \"11888888888\",\n  \"username\": \"usuario.atualizado\",\n  \"ativo\": true\n}"
+              "raw": "{\n  \"nome\": \"Usuario Completo Atualizado\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.atualizado@sistema.local\",\n  \"telefone\": \"11888888888\",\n  \"dataNascimento\": \"1991-10-13\",\n  \"cargo\": \"Coordenador\",\n  \"observacoes\": \"Observacao interna atualizada.\",\n  \"username\": \"usuario.atualizado\",\n  \"ativo\": true\n}"
             }
           }
         }

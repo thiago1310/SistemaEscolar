@@ -19,6 +19,11 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@sistema.local}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-123456}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      EMAIL_FROM: ${EMAIL_FROM:-${EMAIL_USER}}
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
     command: sh -c "npm run seed:admin && node dist/main.js"
