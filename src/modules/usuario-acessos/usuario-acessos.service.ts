@@ -6,11 +6,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { AnoLetivo } from '../anos-letivos/anos-letivos.entities';
 import { Usuario } from '../autenticacao/autenticacao.entities';
 import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import { Escola } from '../escolas/escolas.entities';
 import { Perfil } from '../perfis-permissoes/perfis-permissoes.entities';
+import { ProfessoresService } from '../professores/professores.service';
 import { Secretaria } from '../secretarias/secretarias.entities';
 import {
   AtualizarUsuarioAcessoDto,
@@ -31,25 +31,43 @@ export class UsuarioAcessosService {
     private readonly secretariasRepositorio: Repository<Secretaria>,
     @InjectRepository(Escola)
     private readonly escolasRepositorio: Repository<Escola>,
-    @InjectRepository(AnoLetivo)
-    private readonly anosLetivosRepositorio: Repository<AnoLetivo>,
     private readonly escopoUsuarioService: EscopoUsuarioService,
+    private readonly professoresService: ProfessoresService,
   ) {}
 
   async criar(dados: CriarUsuarioAcessoDto, usuarioExecutorId: string) {
     await this.validarRelacionamentos(dados);
     await this.garantirEscopoGerenciavel(usuarioExecutorId, dados);
-    await this.garantirAcessoNaoDuplicado(dados);
+
+    const acessoExistente = await this.buscarAcessoDuplicado(dados);
+
+    if (acessoExistente) {
+      Object.assign(acessoExistente, {
+        secretariaId: dados.secretariaId ?? null,
+        escolaId: dados.escolaId ?? null,
+        ativo: dados.ativo ?? true,
+      });
+
+      const acessoSalvo =
+        await this.usuarioAcessosRepositorio.save(acessoExistente);
+      await this.professoresService.sincronizarUsuarioProfessor(
+        acessoSalvo.usuarioId,
+      );
+
+      return acessoSalvo;
+    }
 
     const acesso = this.usuarioAcessosRepositorio.create({
       ...dados,
       secretariaId: dados.secretariaId ?? null,
       escolaId: dados.escolaId ?? null,
-      anoLetivoId: dados.anoLetivoId ?? null,
       ativo: dados.ativo ?? true,
     });
 
-    return this.usuarioAcessosRepositorio.save(acesso);
+    const acessoSalvo = await this.usuarioAcessosRepositorio.save(acesso);
+    await this.professoresService.sincronizarUsuarioProfessor(acessoSalvo.usuarioId);
+
+    return acessoSalvo;
   }
 
   async listar(usuarioExecutorId: string) {
@@ -66,7 +84,6 @@ export class UsuarioAcessosService {
         perfil: true,
         secretaria: true,
         escola: true,
-        anoLetivo: true,
       },
       order: {
         createdAt: 'DESC',
@@ -82,7 +99,6 @@ export class UsuarioAcessosService {
         perfil: true,
         secretaria: true,
         escola: true,
-        anoLetivo: true,
       },
     });
 
@@ -106,7 +122,6 @@ export class UsuarioAcessosService {
       perfilId: dados.perfilId ?? acesso.perfilId,
       secretariaId: dados.secretariaId ?? acesso.secretariaId ?? undefined,
       escolaId: dados.escolaId ?? acesso.escolaId ?? undefined,
-      anoLetivoId: dados.anoLetivoId ?? acesso.anoLetivoId ?? undefined,
       ativo: dados.ativo ?? acesso.ativo,
     };
 
@@ -118,15 +133,19 @@ export class UsuarioAcessosService {
       ...dados,
       secretariaId: dadosCompletos.secretariaId ?? null,
       escolaId: dadosCompletos.escolaId ?? null,
-      anoLetivoId: dadosCompletos.anoLetivoId ?? null,
     });
 
-    return this.usuarioAcessosRepositorio.save(acesso);
+    const acessoSalvo = await this.usuarioAcessosRepositorio.save(acesso);
+    await this.professoresService.sincronizarUsuarioProfessor(acessoSalvo.usuarioId);
+
+    return acessoSalvo;
   }
 
   async remover(id: string, usuarioExecutorId: string) {
     const acesso = await this.buscarPorId(id, usuarioExecutorId);
+    const usuarioId = acesso.usuarioId;
     await this.usuarioAcessosRepositorio.remove(acesso);
+    await this.professoresService.sincronizarUsuarioProfessor(usuarioId);
 
     return { mensagem: 'Acesso do usuario removido com sucesso.' };
   }
@@ -135,7 +154,10 @@ export class UsuarioAcessosService {
     const acesso = await this.buscarPorId(id, usuarioExecutorId);
     acesso.ativo = false;
 
-    return this.usuarioAcessosRepositorio.save(acesso);
+    const acessoSalvo = await this.usuarioAcessosRepositorio.save(acesso);
+    await this.professoresService.sincronizarUsuarioProfessor(acessoSalvo.usuarioId);
+
+    return acessoSalvo;
   }
 
   private async validarRelacionamentos(dados: CriarUsuarioAcessoDto) {
@@ -175,17 +197,6 @@ export class UsuarioAcessosService {
 
     this.validarEscopoObrigatorioPorPerfil(perfil, dados);
 
-    const anoLetivo = dados.anoLetivoId
-      ? await this.anosLetivosRepositorio.findOneBy({ id: dados.anoLetivoId })
-      : null;
-
-    if (dados.anoLetivoId && !anoLetivo) {
-      throw new NotFoundException('Ano letivo nao encontrado.');
-    }
-
-    if (anoLetivo && dados.secretariaId && anoLetivo.secretariaId !== dados.secretariaId) {
-      throw new BadRequestException('Ano letivo nao pertence a secretaria informada.');
-    }
   }
 
   private validarEscopoObrigatorioPorPerfil(
@@ -205,7 +216,6 @@ export class UsuarioAcessosService {
       perfilId: string;
       secretariaId?: string | null;
       escolaId?: string | null;
-      anoLetivoId?: string | null;
     },
   ) {
     const escopo = await this.escopoUsuarioService.obterEscopo(usuarioExecutorId);
@@ -223,7 +233,7 @@ export class UsuarioAcessosService {
       throw new ForbiddenException('Usuario nao pode conceder perfil superior.');
     }
 
-    if (!dados.secretariaId && !dados.escolaId && !dados.anoLetivoId) {
+    if (!dados.secretariaId && !dados.escolaId) {
       throw new ForbiddenException('Usuario sem permissao para gerenciar escopo global.');
     }
 
@@ -242,18 +252,6 @@ export class UsuarioAcessosService {
       }
     }
 
-    if (
-      dados.anoLetivoId &&
-      !escopo.anoLetivoIds.includes(dados.anoLetivoId)
-    ) {
-      const anoLetivo = await this.anosLetivosRepositorio.findOneBy({
-        id: dados.anoLetivoId,
-      });
-
-      if (!anoLetivo || !escopo.secretariaIds.includes(anoLetivo.secretariaId)) {
-        throw new ForbiddenException('Usuario sem acesso a este ano letivo.');
-      }
-    }
   }
 
   private async filtroAcessosGerenciaveis(usuarioExecutorId: string) {
@@ -273,10 +271,6 @@ export class UsuarioAcessosService {
       filtros.push({ escolaId: In(escopo.escolaIds) });
     }
 
-    if (escopo.anoLetivoIds.length > 0) {
-      filtros.push({ anoLetivoId: In(escopo.anoLetivoIds) });
-    }
-
     return filtros.length > 0 ? filtros : null;
   }
 
@@ -284,23 +278,26 @@ export class UsuarioAcessosService {
     dados: CriarUsuarioAcessoDto,
     ignorarId?: string,
   ) {
+    const existente = await this.buscarAcessoDuplicado(dados, ignorarId);
+
+    if (existente) {
+      throw new BadRequestException('Ja existe acesso para este usuario, perfil e escopo.');
+    }
+  }
+
+  private buscarAcessoDuplicado(dados: CriarUsuarioAcessoDto, ignorarId?: string) {
     const consulta = this.usuarioAcessosRepositorio
       .createQueryBuilder('acesso')
       .where('acesso.usuario_id = :usuarioId', { usuarioId: dados.usuarioId })
       .andWhere('acesso.perfil_id = :perfilId', { perfilId: dados.perfilId })
       .andWhere(this.condicaoEscopo('secretaria_id', dados.secretariaId))
-      .andWhere(this.condicaoEscopo('escola_id', dados.escolaId))
-      .andWhere(this.condicaoEscopo('ano_letivo_id', dados.anoLetivoId));
+      .andWhere(this.condicaoEscopo('escola_id', dados.escolaId));
 
     if (ignorarId) {
       consulta.andWhere('acesso.id != :ignorarId', { ignorarId });
     }
 
-    const existente = await consulta.getOne();
-
-    if (existente) {
-      throw new BadRequestException('Ja existe acesso para este usuario, perfil e escopo.');
-    }
+    return consulta.getOne();
   }
 
   private condicaoEscopo(coluna: string, valor?: string | null) {

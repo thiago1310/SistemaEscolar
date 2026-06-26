@@ -13,7 +13,7 @@ import {
   RequisicaoAutenticada,
   TokenAcessoGuard,
 } from '../autenticacao/autenticacao.guard';
-import { NivelMinimo, Perfis } from '../autorizacao/permissao.decorator';
+import { NivelMinimo } from '../autorizacao/permissao.decorator';
 import { PermissaoGuard } from '../autorizacao/permissao.guard';
 import {
   AtualizarUsuarioAcessoDto,
@@ -64,7 +64,7 @@ export class UsuarioAcessosController {
   }
 
   @Delete(':id')
-  @Perfis('ADMIN_GERAL')
+  @NivelMinimo(80)
   remover(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
     return this.usuarioAcessosService.remover(id, req.usuario.id);
   }

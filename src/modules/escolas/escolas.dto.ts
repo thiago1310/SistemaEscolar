@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsEmail,
   IsIn,
@@ -18,6 +19,16 @@ const ufsBrasileiras = [
   'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
 ];
 
+const tiposEscola = ['Urbana', 'Rural'];
+
+const modalidadesEnsino = [
+  'Creche',
+  'Pre-escola',
+  'Pré-escola',
+  'Ensino Fundamental - Anos Iniciais',
+  'Ensino Fundamental - Anos Finais',
+];
+
 export class CriarEscolaDto {
   @IsUUID()
   secretariaId: string;
@@ -31,6 +42,17 @@ export class CriarEscolaDto {
   @IsOptional()
   @MaxLength(30)
   codigoInep?: string;
+
+  @IsString()
+  @IsOptional()
+  @IsIn(tiposEscola)
+  tipoEscola?: string;
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  @IsIn(modalidadesEnsino, { each: true })
+  modalidadesEnsino?: string[];
 
   @IsString()
   @IsOptional()
@@ -86,6 +108,11 @@ export class CriarEscolaDto {
   @Length(2, 2)
   @IsIn(ufsBrasileiras)
   uf?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(2000)
+  observacoes?: string;
 
   @IsBoolean()
   @IsOptional()
@@ -109,6 +136,17 @@ export class AtualizarEscolaDto {
 
   @IsString()
   @IsOptional()
+  @IsIn(tiposEscola)
+  tipoEscola?: string;
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  @IsIn(modalidadesEnsino, { each: true })
+  modalidadesEnsino?: string[];
+
+  @IsString()
+  @IsOptional()
   @Length(14, 14)
   @Matches(/^\d+$/, { message: 'cnpj deve conter somente números.' })
   cnpj?: string;
@@ -161,6 +199,11 @@ export class AtualizarEscolaDto {
   @Length(2, 2)
   @IsIn(ufsBrasileiras)
   uf?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(2000)
+  observacoes?: string;
 
   @IsBoolean()
   @IsOptional()

@@ -16,11 +16,6 @@ export class CriarDisciplinaDto {
   @MaxLength(150)
   nome: string;
 
-  @IsString()
-  @IsOptional()
-  @MaxLength(50)
-  codigo?: string;
-
   @IsBoolean()
   @IsOptional()
   ativa?: boolean;
@@ -35,11 +30,6 @@ export class AtualizarDisciplinaDto {
   @IsOptional()
   @MaxLength(150)
   nome?: string;
-
-  @IsString()
-  @IsOptional()
-  @MaxLength(50)
-  codigo?: string;
 
   @IsBoolean()
   @IsOptional()

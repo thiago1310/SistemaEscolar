@@ -25,6 +25,9 @@ export class EscolasService {
 
     const escola = this.escolasRepositorio.create({
       ...dados,
+      tipoEscola: dados.tipoEscola ?? null,
+      modalidadesEnsino: dados.modalidadesEnsino ?? null,
+      observacoes: dados.observacoes ?? null,
       uf: dados.uf?.toUpperCase(),
       ativa: dados.ativa ?? true,
     });
@@ -80,6 +83,16 @@ export class EscolasService {
 
     Object.assign(escola, {
       ...dados,
+      tipoEscola:
+        dados.tipoEscola === undefined ? escola.tipoEscola : dados.tipoEscola ?? null,
+      modalidadesEnsino:
+        dados.modalidadesEnsino === undefined
+          ? escola.modalidadesEnsino
+          : dados.modalidadesEnsino ?? null,
+      observacoes:
+        dados.observacoes === undefined
+          ? escola.observacoes
+          : dados.observacoes ?? null,
       uf: dados.uf?.toUpperCase() ?? escola.uf,
     });
 

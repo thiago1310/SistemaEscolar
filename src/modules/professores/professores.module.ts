@@ -1,31 +1,34 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Usuario } from '../autenticacao/autenticacao.entities';
 import { AutenticacaoModule } from '../autenticacao/autenticacao.module';
 import { TokenAcessoGuard } from '../autenticacao/autenticacao.guard';
-import { Usuario } from '../autenticacao/autenticacao.entities';
 import { AutorizacaoModule } from '../autorizacao/autorizacao.module';
+import { EmailModule } from '../email/email.module';
 import { Escola } from '../escolas/escolas.entities';
 import { Perfil } from '../perfis-permissoes/perfis-permissoes.entities';
-import { ProfessoresModule } from '../professores/professores.module';
 import { Secretaria } from '../secretarias/secretarias.entities';
-import { UsuarioAcessosController } from './usuario-acessos.controller';
-import { UsuarioAcesso } from './usuario-acessos.entities';
-import { UsuarioAcessosService } from './usuario-acessos.service';
+import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
+import { ProfessoresController } from './professores.controller';
+import { Professor } from './professores.entities';
+import { ProfessoresService } from './professores.service';
 
 @Module({
   imports: [
     AutenticacaoModule,
     AutorizacaoModule,
-    ProfessoresModule,
+    EmailModule,
     TypeOrmModule.forFeature([
-      UsuarioAcesso,
+      Professor,
       Usuario,
+      UsuarioAcesso,
       Perfil,
       Secretaria,
       Escola,
     ]),
   ],
-  controllers: [UsuarioAcessosController],
-  providers: [UsuarioAcessosService, TokenAcessoGuard],
+  controllers: [ProfessoresController],
+  providers: [ProfessoresService, TokenAcessoGuard],
+  exports: [ProfessoresService],
 })
-export class UsuarioAcessosModule {}
+export class ProfessoresModule {}

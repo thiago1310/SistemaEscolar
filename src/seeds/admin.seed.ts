@@ -150,7 +150,6 @@ async function executarSeed() {
         perfilId: perfilAdmin.id,
         secretariaId: IsNull(),
         escolaId: IsNull(),
-        anoLetivoId: IsNull(),
       },
     });
 
@@ -161,7 +160,6 @@ async function executarSeed() {
           perfilId: perfilAdmin.id,
           secretariaId: null,
           escolaId: null,
-          anoLetivoId: null,
           ativo: true,
         }),
       );

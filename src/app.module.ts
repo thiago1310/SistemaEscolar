@@ -2,13 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AutenticacaoModule } from './modules/autenticacao/autenticacao.module';
-import { AnosLetivosModule } from './modules/anos-letivos/anos-letivos.module';
 import { AuditoriaModule } from './modules/auditoria/auditoria.module';
 import { AutorizacaoModule } from './modules/autorizacao/autorizacao.module';
 import { EscolasModule } from './modules/escolas/escolas.module';
 import { DisciplinasModule } from './modules/disciplinas/disciplinas.module';
 import { PerfisPermissoesModule } from './modules/perfis-permissoes/perfis-permissoes.module';
+import { ProfessoresModule } from './modules/professores/professores.module';
 import { SecretariasModule } from './modules/secretarias/secretarias.module';
+import { TurmasModule } from './modules/turmas/turmas.module';
 import { UsuarioAcessosModule } from './modules/usuario-acessos/usuario-acessos.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 
@@ -35,11 +36,12 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module';
     AuditoriaModule,
     SecretariasModule,
     EscolasModule,
-    AnosLetivosModule,
     PerfisPermissoesModule,
+    ProfessoresModule,
     UsuariosModule,
     UsuarioAcessosModule,
     DisciplinasModule,
+    TurmasModule,
   ],
 })
 export class AppModule {}

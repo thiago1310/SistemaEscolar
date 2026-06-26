@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "0d0d23fe-69a7-9fde-c87a-89f2f48e629f",
-    "name": "Sistema Escolar - Disciplinas",
-    "description": "Collection do modulo disciplinas com exemplos essenciais e completos.",
+    "_postman_id": "a4d8381f-32ec-4ef0-9fd7-0a8dcf4a3f01",
+    "name": "Sistema Escolar - Turmas",
+    "description": "Collection do modulo turmas com exemplos essenciais e completos.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -11,20 +11,24 @@
       "value": ""
     },
     {
-      "key": "secretariaId",
+      "key": "escolaId",
       "value": ""
     },
     {
-      "key": "disciplinaId",
+      "key": "turmaId",
+      "value": ""
+    },
+    {
+      "key": "professorRegenteId",
       "value": ""
     }
   ],
   "item": [
     {
-      "name": "POST Criar Disciplina",
+      "name": "POST Criar Turma",
       "item": [
         {
-          "name": "Criar Disciplina - Dados essenciais",
+          "name": "Criar Turma - Dados essenciais",
           "event": [
             {
               "listen": "test",
@@ -32,7 +36,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const resposta = pm.response.json();",
-                  "if (resposta.id) pm.collectionVariables.set('disciplinaId', resposta.id);"
+                  "if (resposta.id) pm.collectionVariables.set('turmaId', resposta.id);"
                 ]
               }
             }
@@ -49,15 +53,15 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/disciplinas",
+            "url": "{{url_base}}/turmas",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Matematica {{$timestamp}}\"\n}"
+              "raw": "{\n  \"escolaId\": \"{{escolaId}}\",\n  \"nome\": \"5ºA {{$timestamp}}\",\n  \"anoLetivo\": 2026,\n  \"etapaEnsino\": \"Ensino Fundamental - Anos Iniciais\",\n  \"anoSerie\": \"1º Ano\",\n  \"turno\": \"Matutino\",\n  \"capacidade\": 30\n}"
             }
           }
         },
         {
-          "name": "Criar Disciplina - Dados completos",
+          "name": "Criar Turma - Dados completos",
           "event": [
             {
               "listen": "test",
@@ -65,7 +69,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const resposta = pm.response.json();",
-                  "if (resposta.id) pm.collectionVariables.set('disciplinaId', resposta.id);"
+                  "if (resposta.id) pm.collectionVariables.set('turmaId', resposta.id);"
                 ]
               }
             }
@@ -82,17 +86,17 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/disciplinas",
+            "url": "{{url_base}}/turmas",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Matematica Completa {{$timestamp}}\",\n  \"ativa\": true\n}"
+              "raw": "{\n  \"escolaId\": \"{{escolaId}}\",\n  \"nome\": \"5ºA Completa {{$timestamp}}\",\n  \"salaReferencia\": \"Sala 04, Bloco B\",\n  \"anoLetivo\": 2026,\n  \"etapaEnsino\": \"Ensino Fundamental - Anos Iniciais\",\n  \"anoSerie\": \"1º Ano\",\n  \"turno\": \"Matutino\",\n  \"capacidade\": 30,\n  \"professorRegenteId\": \"{{professorRegenteId}}\",\n  \"ativa\": true\n}"
             }
           }
         }
       ]
     },
     {
-      "name": "Listar Disciplinas",
+      "name": "Listar Turmas",
       "request": {
         "method": "GET",
         "header": [
@@ -101,11 +105,11 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/disciplinas"
+        "url": "{{url_base}}/turmas"
       }
     },
     {
-      "name": "Buscar Disciplina Por Id",
+      "name": "Buscar Turma Por Id",
       "request": {
         "method": "GET",
         "header": [
@@ -114,14 +118,14 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/disciplinas/{{disciplinaId}}"
+        "url": "{{url_base}}/turmas/{{turmaId}}"
       }
     },
     {
-      "name": "PATCH Atualizar Disciplina",
+      "name": "PATCH Atualizar Turma",
       "item": [
         {
-          "name": "Atualizar Disciplina - Dados essenciais",
+          "name": "Atualizar Turma - Dados essenciais",
           "request": {
             "method": "PATCH",
             "header": [
@@ -134,15 +138,15 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/disciplinas/{{disciplinaId}}",
+            "url": "{{url_base}}/turmas/{{turmaId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Disciplina Atualizada\"\n}"
+              "raw": "{\n  \"nome\": \"5ºA Atualizada\"\n}"
             }
           }
         },
         {
-          "name": "Atualizar Disciplina - Dados completos",
+          "name": "Atualizar Turma - Dados completos",
           "request": {
             "method": "PATCH",
             "header": [
@@ -155,17 +159,17 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/disciplinas/{{disciplinaId}}",
+            "url": "{{url_base}}/turmas/{{turmaId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Disciplina Completa Atualizada\",\n  \"ativa\": true\n}"
+              "raw": "{\n  \"escolaId\": \"{{escolaId}}\",\n  \"nome\": \"5ºA Completa Atualizada\",\n  \"salaReferencia\": \"Sala 05, Bloco C\",\n  \"anoLetivo\": 2026,\n  \"etapaEnsino\": \"Ensino Fundamental - Anos Iniciais\",\n  \"anoSerie\": \"1º Ano\",\n  \"turno\": \"Vespertino\",\n  \"capacidade\": 32,\n  \"professorRegenteId\": \"{{professorRegenteId}}\",\n  \"ativa\": true\n}"
             }
           }
         }
       ]
     },
     {
-      "name": "Inativar Disciplina",
+      "name": "Inativar Turma",
       "request": {
         "method": "PATCH",
         "header": [
@@ -174,11 +178,11 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/disciplinas/{{disciplinaId}}/inativar"
+        "url": "{{url_base}}/turmas/{{turmaId}}/inativar"
       }
     },
     {
-      "name": "Remover Disciplina",
+      "name": "Remover Turma",
       "request": {
         "method": "DELETE",
         "header": [
@@ -187,7 +191,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/disciplinas/{{disciplinaId}}"
+        "url": "{{url_base}}/turmas/{{turmaId}}"
       }
     }
   ]

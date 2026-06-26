@@ -24,18 +24,6 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ano_letivo_status') THEN
-        CREATE TYPE ano_letivo_status AS ENUM (
-            'PLANEJAMENTO',
-            'ABERTO',
-            'FECHADO',
-            'ARQUIVADO'
-        );
-    END IF;
-END$$;
-
-DO $$
-BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'origem_auth_tipo') THEN
         CREATE TYPE origem_auth_tipo AS ENUM (
             'LOCAL',
@@ -91,6 +79,8 @@ CREATE TABLE IF NOT EXISTS escolas (
     secretaria_id UUID NOT NULL REFERENCES secretarias(id) ON DELETE RESTRICT,
     nome VARCHAR(255) NOT NULL,
     codigo_inep VARCHAR(30),
+    tipo_escola VARCHAR(30),
+    modalidades_ensino JSON,
     cnpj VARCHAR(20),
     telefone VARCHAR(30),
     email VARCHAR(150),
@@ -101,6 +91,7 @@ CREATE TABLE IF NOT EXISTS escolas (
     bairro VARCHAR(150),
     municipio VARCHAR(150),
     uf CHAR(2),
+    observacoes TEXT,
     ativa BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -116,36 +107,39 @@ FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
 -- =========================================================
--- Anos Letivos
+-- Turmas
 -- =========================================================
 
-CREATE TABLE IF NOT EXISTS anos_letivos (
+CREATE TABLE IF NOT EXISTS turmas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    secretaria_id UUID NOT NULL REFERENCES secretarias(id) ON DELETE RESTRICT,
-    ano INTEGER NOT NULL,
-    descricao VARCHAR(100),
-    data_inicio DATE NOT NULL,
-    data_fim DATE NOT NULL,
-    status ano_letivo_status NOT NULL DEFAULT 'PLANEJAMENTO',
-    ativo BOOLEAN NOT NULL DEFAULT FALSE,
+    escola_id UUID NOT NULL REFERENCES escolas(id) ON DELETE RESTRICT,
+    nome VARCHAR(120) NOT NULL,
+    sala_referencia VARCHAR(120),
+    ano_letivo INTEGER NOT NULL,
+    etapa_ensino VARCHAR(80) NOT NULL,
+    ano_serie VARCHAR(80) NOT NULL,
+    turno VARCHAR(30) NOT NULL,
+    capacidade INTEGER NOT NULL,
+    professor_regente_id UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    ativa BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_anos_letivos_secretaria_ano UNIQUE (secretaria_id, ano),
-    CONSTRAINT ck_anos_letivos_periodo CHECK (data_fim >= data_inicio)
+    CONSTRAINT uq_turmas_escola_ano_nome UNIQUE (escola_id, ano_letivo, nome)
 );
 
-CREATE INDEX IF NOT EXISTS idx_anos_letivos_secretaria_id ON anos_letivos(secretaria_id);
-CREATE INDEX IF NOT EXISTS idx_anos_letivos_status ON anos_letivos(status);
+CREATE INDEX IF NOT EXISTS idx_turmas_escola_id ON turmas(escola_id);
+CREATE INDEX IF NOT EXISTS idx_turmas_ano_letivo ON turmas(ano_letivo);
+CREATE INDEX IF NOT EXISTS idx_turmas_professor_regente_id ON turmas(professor_regente_id);
+CREATE INDEX IF NOT EXISTS idx_turmas_ativa ON turmas(ativa);
 
-CREATE TRIGGER trg_anos_letivos_updated_at
-BEFORE UPDATE ON anos_letivos
+CREATE TRIGGER trg_turmas_updated_at
+BEFORE UPDATE ON turmas
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
--- Garante somente um ano letivo ativo por secretaria
-CREATE UNIQUE INDEX IF NOT EXISTS uq_ano_letivo_ativo_por_secretaria
-ON anos_letivos(secretaria_id)
-WHERE ativo = TRUE;
+-- =========================================================
+-- Anos Letivos
+-- =========================================================
 
 -- =========================================================
 -- Usuários
@@ -183,6 +177,31 @@ CREATE INDEX IF NOT EXISTS idx_usuarios_deleted_at ON usuarios(deleted_at);
 
 CREATE TRIGGER trg_usuarios_updated_at
 BEFORE UPDATE ON usuarios
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+-- =========================================================
+-- Professores
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS professores (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    usuario_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    matricula VARCHAR(50),
+    data_admissao DATE,
+    formacao VARCHAR(255),
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_professores_usuario_id UNIQUE (usuario_id),
+    CONSTRAINT uq_professores_matricula UNIQUE (matricula)
+);
+
+CREATE INDEX IF NOT EXISTS idx_professores_usuario_id ON professores(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_professores_ativo ON professores(ativo);
+
+CREATE TRIGGER trg_professores_updated_at
+BEFORE UPDATE ON professores
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
@@ -252,7 +271,6 @@ CREATE TABLE IF NOT EXISTS usuario_acessos (
     perfil_id UUID NOT NULL REFERENCES perfis(id) ON DELETE RESTRICT,
     secretaria_id UUID REFERENCES secretarias(id) ON DELETE RESTRICT,
     escola_id UUID REFERENCES escolas(id) ON DELETE RESTRICT,
-    ano_letivo_id UUID REFERENCES anos_letivos(id) ON DELETE RESTRICT,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -269,15 +287,13 @@ ON usuario_acessos (
     usuario_id,
     perfil_id,
     COALESCE(secretaria_id, '00000000-0000-0000-0000-000000000000'::uuid),
-    COALESCE(escola_id, '00000000-0000-0000-0000-000000000000'::uuid),
-    COALESCE(ano_letivo_id, '00000000-0000-0000-0000-000000000000'::uuid)
+    COALESCE(escola_id, '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
 CREATE INDEX IF NOT EXISTS idx_usuario_acessos_usuario_id ON usuario_acessos(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_usuario_acessos_perfil_id ON usuario_acessos(perfil_id);
 CREATE INDEX IF NOT EXISTS idx_usuario_acessos_secretaria_id ON usuario_acessos(secretaria_id);
 CREATE INDEX IF NOT EXISTS idx_usuario_acessos_escola_id ON usuario_acessos(escola_id);
-CREATE INDEX IF NOT EXISTS idx_usuario_acessos_ano_letivo_id ON usuario_acessos(ano_letivo_id);
 CREATE INDEX IF NOT EXISTS idx_usuario_acessos_ativo ON usuario_acessos(ativo);
 
 CREATE TRIGGER trg_usuario_acessos_updated_at
@@ -293,12 +309,10 @@ CREATE TABLE IF NOT EXISTS disciplinas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     secretaria_id UUID NOT NULL REFERENCES secretarias(id) ON DELETE RESTRICT,
     nome VARCHAR(150) NOT NULL,
-    codigo VARCHAR(50),
     ativa BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_disciplinas_secretaria_nome UNIQUE (secretaria_id, nome),
-    CONSTRAINT uq_disciplinas_secretaria_codigo UNIQUE (secretaria_id, codigo)
+    CONSTRAINT uq_disciplinas_secretaria_nome UNIQUE (secretaria_id, nome)
 );
 
 CREATE INDEX IF NOT EXISTS idx_disciplinas_secretaria_id ON disciplinas(secretaria_id);
@@ -398,12 +412,6 @@ VALUES
     ('escolas', 'editar', 'escolas.editar', 'Editar escolas.'),
     ('escolas', 'inativar', 'escolas.inativar', 'Inativar escolas.'),
 
-    ('anos_letivos', 'visualizar', 'anos_letivos.visualizar', 'Visualizar anos letivos.'),
-    ('anos_letivos', 'criar', 'anos_letivos.criar', 'Criar anos letivos.'),
-    ('anos_letivos', 'editar', 'anos_letivos.editar', 'Editar anos letivos.'),
-    ('anos_letivos', 'abrir', 'anos_letivos.abrir', 'Abrir ano letivo.'),
-    ('anos_letivos', 'fechar', 'anos_letivos.fechar', 'Fechar ano letivo.'),
-
     ('disciplinas', 'visualizar', 'disciplinas.visualizar', 'Visualizar disciplinas.'),
     ('disciplinas', 'criar', 'disciplinas.criar', 'Criar disciplinas.'),
     ('disciplinas', 'editar', 'disciplinas.editar', 'Editar disciplinas.'),
@@ -462,11 +470,6 @@ JOIN permissoes pe ON pe.codigo IN (
     'escolas.visualizar',
     'escolas.criar',
     'escolas.editar',
-    'anos_letivos.visualizar',
-    'anos_letivos.criar',
-    'anos_letivos.editar',
-    'anos_letivos.abrir',
-    'anos_letivos.fechar',
     'disciplinas.visualizar',
     'disciplinas.criar',
     'disciplinas.editar',
@@ -487,7 +490,6 @@ FROM perfis p
 JOIN permissoes pe ON pe.codigo IN (
     'usuarios.visualizar',
     'escolas.visualizar',
-    'anos_letivos.visualizar',
     'disciplinas.visualizar',
     'alunos.visualizar',
     'matriculas.visualizar',
@@ -504,7 +506,6 @@ SELECT p.id, pe.id
 FROM perfis p
 JOIN permissoes pe ON pe.codigo IN (
     'escolas.visualizar',
-    'anos_letivos.visualizar',
     'alunos.visualizar',
     'alunos.criar',
     'alunos.editar',
@@ -525,7 +526,6 @@ SELECT p.id, pe.id
 FROM perfis p
 JOIN permissoes pe ON pe.codigo IN (
     'escolas.visualizar',
-    'anos_letivos.visualizar',
     'disciplinas.visualizar',
     'alunos.visualizar',
     'matriculas.visualizar',
@@ -541,7 +541,6 @@ SELECT p.id, pe.id
 FROM perfis p
 JOIN permissoes pe ON pe.codigo IN (
     'escolas.visualizar',
-    'anos_letivos.visualizar',
     'disciplinas.visualizar',
     'alunos.visualizar',
     'diario.visualizar',
@@ -564,7 +563,6 @@ JOIN permissoes pe ON pe.codigo IN (
     'perfis.visualizar',
     'secretarias.visualizar',
     'escolas.visualizar',
-    'anos_letivos.visualizar',
     'disciplinas.visualizar',
     'alunos.visualizar',
     'matriculas.visualizar',
@@ -585,7 +583,6 @@ JOIN permissoes pe ON pe.codigo IN (
     'perfis.visualizar',
     'secretarias.visualizar',
     'escolas.visualizar',
-    'anos_letivos.visualizar',
     'auditoria.visualizar'
 )
 WHERE p.codigo = 'SUPORTE_TECNICO'

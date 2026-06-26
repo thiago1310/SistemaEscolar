@@ -167,7 +167,6 @@ export class AutenticacaoService {
         perfil: true,
         secretaria: true,
         escola: true,
-        anoLetivo: true,
       },
       order: {
         createdAt: 'ASC',
@@ -216,13 +215,6 @@ export class AutenticacaoService {
           ? {
               id: acesso.escola.id,
               nome: acesso.escola.nome,
-            }
-          : null,
-        anoLetivo: acesso.anoLetivo
-          ? {
-              id: acesso.anoLetivo.id,
-              ano: acesso.anoLetivo.ano,
-              descricao: acesso.anoLetivo.descricao,
             }
           : null,
       })),
@@ -315,27 +307,26 @@ export class AutenticacaoService {
 
   private montarMenusPorNivel(nivel: number) {
     if (nivel >= 100) {
-      return [
-        'secretarias',
-        'escolas',
-        'anos_letivos',
-        'perfis',
-        'usuario_acessos',
-        'disciplinas',
+        return [
+          'secretarias',
+          'escolas',
+          'perfis',
+          'usuario_acessos',
+          'disciplinas',
         'auditoria',
       ];
     }
 
     if (nivel >= 80) {
-      return ['secretarias', 'escolas', 'anos_letivos', 'disciplinas'];
+      return ['secretarias', 'escolas', 'disciplinas'];
     }
 
     if (nivel >= 60) {
-      return ['escolas', 'anos_letivos', 'disciplinas'];
+      return ['escolas', 'disciplinas'];
     }
 
     if (nivel >= 45) {
-      return ['anos_letivos', 'disciplinas'];
+      return ['disciplinas'];
     }
 
     if (nivel >= 30) {

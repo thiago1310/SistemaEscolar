@@ -34,6 +34,12 @@ export class Escola {
   @Column({ name: 'codigo_inep', type: 'varchar', length: 30, nullable: true })
   codigoInep: string | null;
 
+  @Column({ name: 'tipo_escola', type: 'varchar', length: 30, nullable: true })
+  tipoEscola: string | null;
+
+  @Column({ name: 'modalidades_ensino', type: 'json', nullable: true })
+  modalidadesEnsino: string[] | null;
+
   @Column({ type: 'varchar', length: 14, nullable: true })
   cnpj: string | null;
 
@@ -63,6 +69,9 @@ export class Escola {
 
   @Column({ type: 'char', length: 2, nullable: true })
   uf: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  observacoes: string | null;
 
   @Column({ type: 'boolean', default: true })
   ativa: boolean;

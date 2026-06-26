@@ -8,7 +8,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AnoLetivo } from '../anos-letivos/anos-letivos.entities';
 import { Usuario } from '../autenticacao/autenticacao.entities';
 import { Escola } from '../escolas/escolas.entities';
 import { Perfil } from '../perfis-permissoes/perfis-permissoes.entities';
@@ -47,13 +46,6 @@ export class UsuarioAcesso {
   @ManyToOne(() => Escola, { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'escola_id' })
   escola: Escola | null;
-
-  @Column({ name: 'ano_letivo_id', type: 'varchar', length: 36, nullable: true })
-  anoLetivoId: string | null;
-
-  @ManyToOne(() => AnoLetivo, { onDelete: 'RESTRICT', nullable: true })
-  @JoinColumn({ name: 'ano_letivo_id' })
-  anoLetivo: AnoLetivo | null;
 
   @Column({ type: 'boolean', default: true })
   ativo: boolean;

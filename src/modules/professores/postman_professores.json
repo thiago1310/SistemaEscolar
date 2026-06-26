@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "1b79e92f-f588-4bff-bc59-d085aa81fd6e",
-    "name": "Sistema Escolar - Anos Letivos",
-    "description": "Collection do modulo anos-letivos com exemplos essenciais e completos.",
+    "_postman_id": "9a0e9d1d-0a15-4113-b5cb-83f81d6c91d6",
+    "name": "Sistema Escolar - Professores",
+    "description": "Collection do modulo professores. O cadastro cria ou atualiza usuario, acesso PROFESSOR e professor em uma unica chamada. Se o vinculo ja existir, ele e reativado/atualizado.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -11,20 +11,24 @@
       "value": ""
     },
     {
+      "key": "professorId",
+      "value": ""
+    },
+    {
       "key": "secretariaId",
       "value": ""
     },
     {
-      "key": "anoLetivoId",
+      "key": "escolaId",
       "value": ""
     }
   ],
   "item": [
     {
-      "name": "POST Criar Ano Letivo",
+      "name": "POST Criar Professor",
       "item": [
         {
-          "name": "Criar Ano Letivo - Dados essenciais",
+          "name": "Criar Professor - Dados essenciais",
           "event": [
             {
               "listen": "test",
@@ -32,7 +36,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const resposta = pm.response.json();",
-                  "if (resposta.id) pm.collectionVariables.set('anoLetivoId', resposta.id);"
+                  "if (resposta.id) pm.collectionVariables.set('professorId', resposta.id);"
                 ]
               }
             }
@@ -49,15 +53,15 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/anos-letivos",
+            "url": "{{url_base}}/professores",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"dataInicio\": \"2026-02-01\",\n  \"dataFim\": \"2026-12-20\"\n}"
+              "raw": "{\n  \"nome\": \"Professor Teste {{$timestamp}}\",\n  \"email\": \"professor{{$timestamp}}@sistema.local\",\n  \"username\": \"professor{{$timestamp}}\",\n  \"enviarEmailBoasVindas\": false\n}"
             }
           }
         },
         {
-          "name": "Criar Ano Letivo - Dados completos",
+          "name": "Criar Professor - Dados completos",
           "event": [
             {
               "listen": "test",
@@ -65,7 +69,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const resposta = pm.response.json();",
-                  "if (resposta.id) pm.collectionVariables.set('anoLetivoId', resposta.id);"
+                  "if (resposta.id) pm.collectionVariables.set('professorId', resposta.id);"
                 ]
               }
             }
@@ -82,17 +86,17 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/anos-letivos",
+            "url": "{{url_base}}/professores",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"descricao\": \"Ano letivo 2026\",\n  \"dataInicio\": \"2026-02-01\",\n  \"dataFim\": \"2026-12-20\",\n  \"status\": \"PLANEJAMENTO\",\n  \"ativo\": true\n}"
+              "raw": "{\n  \"nome\": \"Professor Completo {{$timestamp}}\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"professor.completo{{$timestamp}}@sistema.local\",\n  \"telefone\": \"11999999999\",\n  \"dataNascimento\": \"1990-10-13\",\n  \"cargo\": \"Professor\",\n  \"observacoes\": \"Conta de professor criada pelo modulo professores.\",\n  \"username\": \"professor.completo{{$timestamp}}\",\n  \"matricula\": \"PROF{{$timestamp}}\",\n  \"dataAdmissao\": \"2024-02-01\",\n  \"formacao\": \"Licenciatura em Letras\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaIds\": [\"{{escolaId}}\"],\n  \"ativo\": true,\n  \"enviarEmailBoasVindas\": false\n}"
             }
           }
         }
       ]
     },
     {
-      "name": "Listar Anos Letivos",
+      "name": "Listar Professores",
       "request": {
         "method": "GET",
         "header": [
@@ -101,11 +105,11 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/anos-letivos"
+        "url": "{{url_base}}/professores"
       }
     },
     {
-      "name": "Buscar Ano Letivo Por Id",
+      "name": "Buscar Professor Por Id",
       "request": {
         "method": "GET",
         "header": [
@@ -114,14 +118,14 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}"
+        "url": "{{url_base}}/professores/{{professorId}}"
       }
     },
     {
-      "name": "PATCH Atualizar Ano Letivo",
+      "name": "PATCH Atualizar Professor",
       "item": [
         {
-          "name": "Atualizar Ano Letivo - Dados essenciais",
+          "name": "Atualizar Professor - Dados essenciais",
           "request": {
             "method": "PATCH",
             "header": [
@@ -134,15 +138,15 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}",
+            "url": "{{url_base}}/professores/{{professorId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"descricao\": \"Ano letivo atualizado\"\n}"
+              "raw": "{\n  \"formacao\": \"Licenciatura atualizada\"\n}"
             }
           }
         },
         {
-          "name": "Atualizar Ano Letivo - Dados completos",
+          "name": "Atualizar Professor - Dados completos",
           "request": {
             "method": "PATCH",
             "header": [
@@ -155,17 +159,17 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}",
+            "url": "{{url_base}}/professores/{{professorId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"ano\": 2026,\n  \"descricao\": \"Ano letivo completo atualizado\",\n  \"dataInicio\": \"2026-02-03\",\n  \"dataFim\": \"2026-12-18\",\n  \"status\": \"ATIVO\",\n  \"ativo\": true\n}"
+              "raw": "{\n  \"nome\": \"Professor Completo Atualizado\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"professor.atualizado@sistema.local\",\n  \"telefone\": \"11888888888\",\n  \"dataNascimento\": \"1991-10-13\",\n  \"cargo\": \"Professor Regente\",\n  \"observacoes\": \"Observacao interna atualizada.\",\n  \"username\": \"professor.atualizado\",\n  \"matricula\": \"PROF-ATUALIZADA\",\n  \"dataAdmissao\": \"2024-03-01\",\n  \"formacao\": \"Licenciatura em Matematica\",\n  \"ativo\": true\n}"
             }
           }
         }
       ]
     },
     {
-      "name": "Ativar Ano Letivo",
+      "name": "Inativar Professor",
       "request": {
         "method": "PATCH",
         "header": [
@@ -174,24 +178,11 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}/ativar"
+        "url": "{{url_base}}/professores/{{professorId}}/inativar"
       }
     },
     {
-      "name": "Inativar Ano Letivo",
-      "request": {
-        "method": "PATCH",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}/inativar"
-      }
-    },
-    {
-      "name": "Remover Ano Letivo",
+      "name": "Remover Professor",
       "request": {
         "method": "DELETE",
         "header": [
@@ -200,7 +191,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/anos-letivos/{{anoLetivoId}}"
+        "url": "{{url_base}}/professores/{{professorId}}"
       }
     }
   ]

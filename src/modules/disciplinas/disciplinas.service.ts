@@ -28,7 +28,6 @@ export class DisciplinasService {
 
     const disciplina = this.disciplinasRepositorio.create({
       ...dados,
-      codigo: dados.codigo ?? null,
       ativa: dados.ativa ?? true,
     });
 

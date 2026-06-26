@@ -7,7 +7,6 @@ export interface EscopoUsuario {
   global: boolean;
   secretariaIds: string[];
   escolaIds: string[];
-  anoLetivoIds: string[];
   maiorNivel: number;
   perfis: string[];
 }
@@ -43,9 +42,6 @@ export class EscopoUsuarioService {
         acessosAtivos.map((acesso) => acesso.secretariaId),
       ),
       escolaIds: this.unicos(acessosAtivos.map((acesso) => acesso.escolaId)),
-      anoLetivoIds: this.unicos(
-        acessosAtivos.map((acesso) => acesso.anoLetivoId),
-      ),
       maiorNivel,
       perfis,
     };
@@ -125,26 +121,6 @@ export class EscopoUsuarioService {
 
     if (escopo.escolaIds.length > 0) {
       filtros.push({ id: In(escopo.escolaIds) });
-    }
-
-    return filtros.length > 0 ? filtros : null;
-  }
-
-  async filtroAnosLetivos(usuarioId: string) {
-    const escopo = await this.obterEscopo(usuarioId);
-
-    if (escopo.global) {
-      return undefined;
-    }
-
-    const filtros = [];
-
-    if (escopo.secretariaIds.length > 0) {
-      filtros.push({ secretariaId: In(escopo.secretariaIds) });
-    }
-
-    if (escopo.anoLetivoIds.length > 0) {
-      filtros.push({ id: In(escopo.anoLetivoIds) });
     }
 
     return filtros.length > 0 ? filtros : null;

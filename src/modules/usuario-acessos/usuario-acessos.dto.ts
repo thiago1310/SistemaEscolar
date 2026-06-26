@@ -15,10 +15,6 @@ export class CriarUsuarioAcessoDto {
   @IsOptional()
   escolaId?: string;
 
-  @IsUUID()
-  @IsOptional()
-  anoLetivoId?: string;
-
   @IsBoolean()
   @IsOptional()
   ativo?: boolean;
@@ -40,10 +36,6 @@ export class AtualizarUsuarioAcessoDto {
   @IsUUID()
   @IsOptional()
   escolaId?: string;
-
-  @IsUUID()
-  @IsOptional()
-  anoLetivoId?: string;
 
   @IsBoolean()
   @IsOptional()

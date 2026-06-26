@@ -14,6 +14,7 @@ import {
 } from '../autenticacao/autenticacao.entities';
 import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import { EmailService } from '../email/email.service';
+import { ProfessoresService } from '../professores/professores.service';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
 import {
   AtualizarUsuarioDto,
@@ -30,6 +31,7 @@ export class UsuariosService {
     private readonly usuarioAcessosRepositorio: Repository<UsuarioAcesso>,
     private readonly escopoUsuarioService: EscopoUsuarioService,
     private readonly emailService: EmailService,
+    private readonly professoresService: ProfessoresService,
   ) {}
 
   async criar(dados: CriarUsuarioDto) {
@@ -90,10 +92,6 @@ export class UsuariosService {
 
     if (escopo.escolaIds.length > 0) {
       filtros.push({ escolaId: In(escopo.escolaIds), ativo: true });
-    }
-
-    if (escopo.anoLetivoIds.length > 0) {
-      filtros.push({ anoLetivoId: In(escopo.anoLetivoIds), ativo: true });
     }
 
     if (filtros.length === 0) {
@@ -169,7 +167,10 @@ export class UsuariosService {
     usuario.ativo = false;
     usuario.updatedAt = new Date();
 
-    return this.serializarUsuario(await this.usuariosRepositorio.save(usuario));
+    const usuarioSalvo = await this.usuariosRepositorio.save(usuario);
+    await this.professoresService.inativarPorUsuario(id);
+
+    return this.serializarUsuario(usuarioSalvo);
   }
 
   async redefinirSenha(
@@ -274,14 +275,6 @@ export class UsuariosService {
 
     if (escopo.escolaIds.length > 0) {
       filtros.push({ usuarioId, escolaId: In(escopo.escolaIds), ativo: true });
-    }
-
-    if (escopo.anoLetivoIds.length > 0) {
-      filtros.push({
-        usuarioId,
-        anoLetivoId: In(escopo.anoLetivoIds),
-        ativo: true,
-      });
     }
 
     if (filtros.length === 0) {
