@@ -10,6 +10,7 @@
 -- 7. Disciplinas
 -- 8. Sessões
 -- 9. Auditoria
+-- 10. Matrículas
 -- Banco sugerido: PostgreSQL
 -- =========================================================
 
@@ -165,6 +166,46 @@ CREATE INDEX IF NOT EXISTS idx_alunos_ativo ON alunos(ativo);
 
 CREATE TRIGGER trg_alunos_updated_at
 BEFORE UPDATE ON alunos
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+-- =========================================================
+-- Matrículas
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS matriculas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    aluno_id UUID NOT NULL REFERENCES alunos(id) ON DELETE RESTRICT,
+    escola_id UUID NOT NULL REFERENCES escolas(id) ON DELETE RESTRICT,
+    turma_id UUID NOT NULL REFERENCES turmas(id) ON DELETE RESTRICT,
+    escola_origem_id UUID REFERENCES escolas(id) ON DELETE SET NULL,
+    turma_origem_id UUID REFERENCES turmas(id) ON DELETE SET NULL,
+    numero_matricula VARCHAR(30) NOT NULL,
+    ano_letivo INTEGER NOT NULL,
+    tipo VARCHAR(30) NOT NULL DEFAULT 'Matrícula',
+    situacao VARCHAR(30) NOT NULL DEFAULT 'active',
+    data_matricula DATE NOT NULL DEFAULT CURRENT_DATE,
+    motivo VARCHAR(120),
+    observacoes TEXT,
+    ano_origem INTEGER,
+    ano_destino INTEGER,
+    criterio_rematricula VARCHAR(80),
+    ativa BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_matriculas_numero_matricula UNIQUE (numero_matricula)
+);
+
+CREATE INDEX IF NOT EXISTS idx_matriculas_aluno_id ON matriculas(aluno_id);
+CREATE INDEX IF NOT EXISTS idx_matriculas_escola_id ON matriculas(escola_id);
+CREATE INDEX IF NOT EXISTS idx_matriculas_turma_id ON matriculas(turma_id);
+CREATE INDEX IF NOT EXISTS idx_matriculas_ano_letivo ON matriculas(ano_letivo);
+CREATE INDEX IF NOT EXISTS idx_matriculas_tipo ON matriculas(tipo);
+CREATE INDEX IF NOT EXISTS idx_matriculas_situacao ON matriculas(situacao);
+CREATE INDEX IF NOT EXISTS idx_matriculas_ativa ON matriculas(ativa);
+
+CREATE TRIGGER trg_matriculas_updated_at
+BEFORE UPDATE ON matriculas
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 

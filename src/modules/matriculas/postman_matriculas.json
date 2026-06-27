@@ -1,0 +1,262 @@
+{
+  "info": {
+    "_postman_id": "c3cf5f35-69de-4a26-a64a-62f2708bc0c4",
+    "name": "Sistema Escolar - Matriculas",
+    "description": "Collection do modulo matriculas. O endpoint principal e /matriculas; use tenantSlug=vicente-dutra para respostas compatíveis com a rota do front /vicente-dutra/educacao/matriculas. A API aceita campos em portugues e aliases do front: studentId, targetSchoolId, targetClassId, type, situation, registration, enrollmentDate, reason, observation, sourceYear, targetYear e mode.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "tenantSlug",
+      "value": "vicente-dutra"
+    },
+    {
+      "key": "matriculaId",
+      "value": ""
+    },
+    {
+      "key": "alunoId",
+      "value": ""
+    },
+    {
+      "key": "escolaId",
+      "value": ""
+    },
+    {
+      "key": "turmaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "POST Criar Matricula",
+      "item": [
+        {
+          "name": "Confirmar Matricula - Contrato do front",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('matriculaId', resposta.id);",
+                  "if (resposta.studentId) pm.collectionVariables.set('alunoId', resposta.studentId);",
+                  "if (resposta.schoolId) pm.collectionVariables.set('escolaId', resposta.schoolId);",
+                  "if (resposta.classId) pm.collectionVariables.set('turmaId', resposta.classId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/matriculas?tenantSlug={{tenantSlug}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{alunoId}}\",\n  \"targetSchoolId\": \"{{escolaId}}\",\n  \"targetClassId\": \"{{turmaId}}\",\n  \"type\": \"Matrícula\",\n  \"situation\": \"active\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Criar Matricula - Campos da API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('matriculaId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/matriculas?tenantSlug={{tenantSlug}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alunoId\": \"{{alunoId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"turmaId\": \"{{turmaId}}\",\n  \"tipo\": \"Matrícula\",\n  \"situacao\": \"active\",\n  \"anoLetivo\": 2026,\n  \"dataMatricula\": \"2026-02-10\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Transferir Aluno - Contrato do front",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('matriculaId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/matriculas?tenantSlug={{tenantSlug}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{alunoId}}\",\n  \"targetSchoolId\": \"{{escolaId}}\",\n  \"targetClassId\": \"{{turmaId}}\",\n  \"type\": \"Transferência\",\n  \"reason\": \"Mudança de endereço\",\n  \"observation\": \"Solicitação registrada pela secretaria escolar.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Rematricular Aluno - Contrato do front",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('matriculaId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/matriculas?tenantSlug={{tenantSlug}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{alunoId}}\",\n  \"targetSchoolId\": \"{{escolaId}}\",\n  \"targetClassId\": \"{{turmaId}}\",\n  \"type\": \"Rematrícula\",\n  \"sourceYear\": 2025,\n  \"targetYear\": 2026,\n  \"mode\": \"automatico\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET Listar Matriculas - Front",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/matriculas?tenantSlug={{tenantSlug}}"
+      }
+    },
+    {
+      "name": "GET Listar Matriculas - Filtros",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/matriculas?tenantSlug={{tenantSlug}}&schoolId={{escolaId}}&classId={{turmaId}}&situation=active&busca=ana"
+      }
+    },
+    {
+      "name": "GET Buscar Matricula Por Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/matriculas/{{matriculaId}}?tenantSlug={{tenantSlug}}"
+      }
+    },
+    {
+      "name": "PATCH Atualizar Matricula",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/matriculas/{{matriculaId}}?tenantSlug={{tenantSlug}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"registration\": \"2026000001\",\n  \"situation\": \"active\",\n  \"enrollmentDate\": \"10/02/2026\",\n  \"observation\": \"Dados revisados pela secretaria.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "PATCH Inativar Matricula",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/matriculas/{{matriculaId}}/inativar?tenantSlug={{tenantSlug}}"
+      }
+    },
+    {
+      "name": "DELETE Remover Matricula",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/matriculas/{{matriculaId}}"
+      }
+    }
+  ]
+}

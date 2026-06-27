@@ -7,6 +7,7 @@ import { AuditoriaModule } from './modules/auditoria/auditoria.module';
 import { AutorizacaoModule } from './modules/autorizacao/autorizacao.module';
 import { EscolasModule } from './modules/escolas/escolas.module';
 import { DisciplinasModule } from './modules/disciplinas/disciplinas.module';
+import { MatriculasModule } from './modules/matriculas/matriculas.module';
 import { PerfisPermissoesModule } from './modules/perfis-permissoes/perfis-permissoes.module';
 import { ProfessoresModule } from './modules/professores/professores.module';
 import { SecretariasModule } from './modules/secretarias/secretarias.module';
@@ -44,6 +45,7 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module';
     DisciplinasModule,
     TurmasModule,
     AlunosModule,
+    MatriculasModule,
   ],
 })
 export class AppModule {}
