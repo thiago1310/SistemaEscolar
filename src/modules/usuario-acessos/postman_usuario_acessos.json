@@ -211,6 +211,28 @@
               "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
             }
           }
+        },
+        {
+          "name": "Atualizar Professor para Gestor Escolar",
+          "request": {
+            "description": "Altera somente o vinculo selecionado. Se o usuario ainda tiver outro acesso PROFESSOR ativo, o cadastro de professor permanece ativo.",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
+            }
+          }
         }
       ]
     },

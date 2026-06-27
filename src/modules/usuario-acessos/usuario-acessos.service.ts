@@ -18,6 +18,14 @@ import {
 } from './usuario-acessos.dto';
 import { UsuarioAcesso } from './usuario-acessos.entities';
 
+type DadosUsuarioAcesso = {
+  usuarioId: string;
+  perfilId: string;
+  secretariaId?: string | null;
+  escolaId?: string | null;
+  ativo?: boolean;
+};
+
 @Injectable()
 export class UsuarioAcessosService {
   constructor(
@@ -117,11 +125,14 @@ export class UsuarioAcessosService {
     usuarioExecutorId: string,
   ) {
     const acesso = await this.buscarPorId(id, usuarioExecutorId);
+    const usuarioIdAnterior = acesso.usuarioId;
     const dadosCompletos = {
-      usuarioId: dados.usuarioId ?? acesso.usuarioId,
-      perfilId: dados.perfilId ?? acesso.perfilId,
-      secretariaId: dados.secretariaId ?? acesso.secretariaId ?? undefined,
-      escolaId: dados.escolaId ?? acesso.escolaId ?? undefined,
+      usuarioId:
+        dados.usuarioId === undefined ? acesso.usuarioId : dados.usuarioId,
+      perfilId: dados.perfilId === undefined ? acesso.perfilId : dados.perfilId,
+      secretariaId:
+        dados.secretariaId === undefined ? acesso.secretariaId : dados.secretariaId,
+      escolaId: dados.escolaId === undefined ? acesso.escolaId : dados.escolaId,
       ativo: dados.ativo ?? acesso.ativo,
     };
 
@@ -129,16 +140,21 @@ export class UsuarioAcessosService {
     await this.garantirEscopoGerenciavel(usuarioExecutorId, dadosCompletos);
     await this.garantirAcessoNaoDuplicado(dadosCompletos, id);
 
-    Object.assign(acesso, {
-      ...dados,
+    await this.usuarioAcessosRepositorio.update(id, {
+      usuarioId: dadosCompletos.usuarioId,
+      perfilId: dadosCompletos.perfilId,
       secretariaId: dadosCompletos.secretariaId ?? null,
       escolaId: dadosCompletos.escolaId ?? null,
+      ativo: dadosCompletos.ativo,
     });
 
-    const acessoSalvo = await this.usuarioAcessosRepositorio.save(acesso);
-    await this.professoresService.sincronizarUsuarioProfessor(acessoSalvo.usuarioId);
+    await this.professoresService.sincronizarUsuarioProfessor(usuarioIdAnterior);
 
-    return acessoSalvo;
+    if (usuarioIdAnterior !== dadosCompletos.usuarioId) {
+      await this.professoresService.sincronizarUsuarioProfessor(dadosCompletos.usuarioId);
+    }
+
+    return this.buscarPorId(id, usuarioExecutorId);
   }
 
   async remover(id: string, usuarioExecutorId: string) {
@@ -160,7 +176,7 @@ export class UsuarioAcessosService {
     return acessoSalvo;
   }
 
-  private async validarRelacionamentos(dados: CriarUsuarioAcessoDto) {
+  private async validarRelacionamentos(dados: DadosUsuarioAcesso) {
     const usuario = await this.usuariosRepositorio.findOneBy({ id: dados.usuarioId });
     if (!usuario) {
       throw new NotFoundException('Usuario nao encontrado.');
@@ -201,7 +217,7 @@ export class UsuarioAcessosService {
 
   private validarEscopoObrigatorioPorPerfil(
     perfil: Perfil,
-    dados: CriarUsuarioAcessoDto,
+    dados: DadosUsuarioAcesso,
   ) {
     if (perfil.codigo === 'GESTOR_ESCOLAR' && !dados.escolaId) {
       throw new BadRequestException(
@@ -275,7 +291,7 @@ export class UsuarioAcessosService {
   }
 
   private async garantirAcessoNaoDuplicado(
-    dados: CriarUsuarioAcessoDto,
+    dados: DadosUsuarioAcesso,
     ignorarId?: string,
   ) {
     const existente = await this.buscarAcessoDuplicado(dados, ignorarId);
@@ -285,7 +301,7 @@ export class UsuarioAcessosService {
     }
   }
 
-  private buscarAcessoDuplicado(dados: CriarUsuarioAcessoDto, ignorarId?: string) {
+  private buscarAcessoDuplicado(dados: DadosUsuarioAcesso, ignorarId?: string) {
     const consulta = this.usuarioAcessosRepositorio
       .createQueryBuilder('acesso')
       .where('acesso.usuario_id = :usuarioId', { usuarioId: dados.usuarioId })
