@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { IsNull, Repository } from 'typeorm';
+import { Secretaria } from '../secretarias/secretarias.entities';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
 import { EntrarDto, RenovarTokenDto, SairDto } from './autenticacao.dto';
 import { SessaoUsuario, Usuario } from './autenticacao.entities';
@@ -39,6 +40,8 @@ export class AutenticacaoService {
     private readonly sessoesRepositorio: Repository<SessaoUsuario>,
     @InjectRepository(UsuarioAcesso)
     private readonly usuarioAcessosRepositorio: Repository<UsuarioAcesso>,
+    @InjectRepository(Secretaria)
+    private readonly secretariasRepositorio: Repository<Secretaria>,
     private readonly jwtService: JwtService,
     private readonly configuracao: ConfigService,
   ) {
@@ -160,6 +163,8 @@ export class AutenticacaoService {
     if (!usuario) {
       throw new UnauthorizedException('Usuário não encontrado.');
     }
+
+    await this.vincularSecretariaMunicipalPadraoSeNecessario(usuarioId);
 
     const acessos = await this.usuarioAcessosRepositorio.find({
       where: { usuarioId, ativo: true },
@@ -288,6 +293,69 @@ export class AutenticacaoService {
       nome: usuario.nome,
       email: usuario.email,
       username: usuario.username,
+    };
+  }
+
+  private async vincularSecretariaMunicipalPadraoSeNecessario(usuarioId: string) {
+    const acessosSemSecretaria = await this.usuarioAcessosRepositorio.find({
+      where: {
+        usuarioId,
+        ativo: true,
+        secretariaId: IsNull(),
+      },
+      relations: {
+        perfil: true,
+      },
+    });
+    const acessosSecretariaMunicipal = acessosSemSecretaria.filter(
+      (acesso) => acesso.perfil?.codigo === 'SECRETARIA_MUNICIPAL',
+    );
+
+    if (!acessosSecretariaMunicipal.length) {
+      return;
+    }
+
+    const secretaria = await this.obterOuCriarSecretariaMunicipalPadrao();
+
+    for (const acesso of acessosSecretariaMunicipal) {
+      acesso.secretariaId = secretaria.id;
+    }
+
+    await this.usuarioAcessosRepositorio.save(acessosSecretariaMunicipal);
+  }
+
+  private async obterOuCriarSecretariaMunicipalPadrao() {
+    const secretariaExistente = await this.secretariasRepositorio.findOne({
+      where: { ativa: true },
+      order: { createdAt: 'ASC' },
+    });
+
+    if (secretariaExistente) {
+      return secretariaExistente;
+    }
+
+    return this.secretariasRepositorio.save(
+      this.secretariasRepositorio.create({
+        ...this.obterDadosSecretariaMunicipalPadrao(),
+        cnpj: null,
+        telefone: null,
+        email: null,
+        ativa: true,
+      }),
+    );
+  }
+
+  private obterDadosSecretariaMunicipalPadrao() {
+    return {
+      nome: this.configuracao.get<string>(
+        'SECRETARIA_PADRAO_NOME',
+        'Secretaria Municipal de Educação',
+      ),
+      municipio: this.configuracao.get<string>(
+        'SECRETARIA_PADRAO_MUNICIPIO',
+        'Vicente Dutra',
+      ),
+      uf: this.configuracao.get<string>('SECRETARIA_PADRAO_UF', 'RS').toUpperCase(),
     };
   }
 

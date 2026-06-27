@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Usuario } from '../autenticacao/autenticacao.entities';
@@ -41,19 +42,22 @@ export class UsuarioAcessosService {
     private readonly escolasRepositorio: Repository<Escola>,
     private readonly escopoUsuarioService: EscopoUsuarioService,
     private readonly professoresService: ProfessoresService,
+    private readonly configuracao: ConfigService,
   ) {}
 
   async criar(dados: CriarUsuarioAcessoDto, usuarioExecutorId: string) {
-    await this.validarRelacionamentos(dados);
-    await this.garantirEscopoGerenciavel(usuarioExecutorId, dados);
+    const dadosCompletos = await this.aplicarSecretariaMunicipalAutomatica(dados);
 
-    const acessoExistente = await this.buscarAcessoDuplicado(dados);
+    await this.validarRelacionamentos(dadosCompletos);
+    await this.garantirEscopoGerenciavel(usuarioExecutorId, dadosCompletos);
+
+    const acessoExistente = await this.buscarAcessoDuplicado(dadosCompletos);
 
     if (acessoExistente) {
       Object.assign(acessoExistente, {
-        secretariaId: dados.secretariaId ?? null,
-        escolaId: dados.escolaId ?? null,
-        ativo: dados.ativo ?? true,
+        secretariaId: dadosCompletos.secretariaId ?? null,
+        escolaId: dadosCompletos.escolaId ?? null,
+        ativo: dadosCompletos.ativo ?? true,
       });
 
       const acessoSalvo =
@@ -67,10 +71,10 @@ export class UsuarioAcessosService {
     }
 
     const acesso = this.usuarioAcessosRepositorio.create({
-      ...dados,
-      secretariaId: dados.secretariaId ?? null,
-      escolaId: dados.escolaId ?? null,
-      ativo: dados.ativo ?? true,
+      ...dadosCompletos,
+      secretariaId: dadosCompletos.secretariaId ?? null,
+      escolaId: dadosCompletos.escolaId ?? null,
+      ativo: dadosCompletos.ativo ?? true,
     });
 
     const acessoSalvo = await this.usuarioAcessosRepositorio.save(acesso);
@@ -129,7 +133,7 @@ export class UsuarioAcessosService {
     const acesso = await this.buscarPorId(id, usuarioExecutorId);
     const usuarioIdAnterior = acesso.usuarioId;
     const acessoAnterior = this.clonarDadosAcesso(acesso);
-    const dadosCompletos = {
+    const dadosCompletos = await this.aplicarSecretariaMunicipalAutomatica({
       usuarioId:
         dados.usuarioId === undefined ? acesso.usuarioId : dados.usuarioId,
       perfilId: dados.perfilId === undefined ? acesso.perfilId : dados.perfilId,
@@ -137,7 +141,7 @@ export class UsuarioAcessosService {
         dados.secretariaId === undefined ? acesso.secretariaId : dados.secretariaId,
       escolaId: dados.escolaId === undefined ? acesso.escolaId : dados.escolaId,
       ativo: dados.ativo ?? acesso.ativo,
-    };
+    });
 
     await this.validarRelacionamentos(dadosCompletos);
     await this.garantirEscopoGerenciavel(usuarioExecutorId, dadosCompletos);
@@ -220,6 +224,62 @@ export class UsuarioAcessosService {
 
     this.validarEscopoObrigatorioPorPerfil(perfil, dados);
 
+  }
+
+  private async aplicarSecretariaMunicipalAutomatica(
+    dados: DadosUsuarioAcesso,
+  ): Promise<DadosUsuarioAcesso> {
+    if (dados.secretariaId) {
+      return dados;
+    }
+
+    const perfil = await this.perfisRepositorio.findOneBy({ id: dados.perfilId });
+
+    if (perfil?.codigo !== 'SECRETARIA_MUNICIPAL') {
+      return dados;
+    }
+
+    const secretaria = await this.obterOuCriarSecretariaMunicipalPadrao();
+
+    return {
+      ...dados,
+      secretariaId: secretaria.id,
+    };
+  }
+
+  private async obterOuCriarSecretariaMunicipalPadrao() {
+    const secretariaExistente = await this.secretariasRepositorio.findOne({
+      where: { ativa: true },
+      order: { createdAt: 'ASC' },
+    });
+
+    if (secretariaExistente) {
+      return secretariaExistente;
+    }
+
+    return this.secretariasRepositorio.save(
+      this.secretariasRepositorio.create({
+        ...this.obterDadosSecretariaMunicipalPadrao(),
+        cnpj: null,
+        telefone: null,
+        email: null,
+        ativa: true,
+      }),
+    );
+  }
+
+  private obterDadosSecretariaMunicipalPadrao() {
+    return {
+      nome: this.configuracao.get<string>(
+        'SECRETARIA_PADRAO_NOME',
+        'Secretaria Municipal de Educação',
+      ),
+      municipio: this.configuracao.get<string>(
+        'SECRETARIA_PADRAO_MUNICIPIO',
+        'Vicente Dutra',
+      ),
+      uf: this.configuracao.get<string>('SECRETARIA_PADRAO_UF', 'RS').toUpperCase(),
+    };
   }
 
   private validarEscopoObrigatorioPorPerfil(
