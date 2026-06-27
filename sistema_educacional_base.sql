@@ -144,18 +144,23 @@ EXECUTE FUNCTION set_updated_at();
 CREATE TABLE IF NOT EXISTS alunos (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     escola_id UUID REFERENCES escolas(id) ON DELETE SET NULL,
+    turma_id UUID REFERENCES turmas(id) ON DELETE SET NULL,
     nome_completo VARCHAR(255) NOT NULL,
     cpf_ou_certidao VARCHAR(50),
     data_nascimento DATE,
+    sexo VARCHAR(20),
     responsavel_nome VARCHAR(255),
     responsavel_telefone VARCHAR(30),
+    situacao VARCHAR(20) NOT NULL DEFAULT 'active',
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_alunos_escola_id ON alunos(escola_id);
+CREATE INDEX IF NOT EXISTS idx_alunos_turma_id ON alunos(turma_id);
 CREATE INDEX IF NOT EXISTS idx_alunos_nome_completo ON alunos(nome_completo);
+CREATE INDEX IF NOT EXISTS idx_alunos_situacao ON alunos(situacao);
 CREATE INDEX IF NOT EXISTS idx_alunos_ativo ON alunos(ativo);
 
 CREATE TRIGGER trg_alunos_updated_at

@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "e0d9e34d-7ac9-4771-b9a8-61fe4f1e8a70",
     "name": "Sistema Escolar - Alunos",
-    "description": "Collection do modulo alunos. O campo escolaId e opcional para usuario global; para usuario com uma unica escola no escopo, a API assume essa escola quando omitido. Para demais escopos, informe escolaId.",
+    "description": "Collection do modulo alunos. O endpoint principal e /alunos; use tenantSlug=vicente-dutra para a resposta vir compatível com a rota do front /vicente-dutra/educacao/alunos. No cadastro, a API aceita os campos em portugues e aliases do front: name, document, birthDate, gender, guardian e phone. Todo aluno nasce ativo; o vinculo com escola e turma sera tratado pela matricula. No retorno e nos filtros, status=pending representa aluno ativo sem escola ou turma vinculada.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -15,8 +15,8 @@
       "value": ""
     },
     {
-      "key": "escolaId",
-      "value": ""
+      "key": "tenantSlug",
+      "value": "vicente-dutra"
     }
   ],
   "item": [
@@ -24,7 +24,7 @@
       "name": "POST Criar Aluno",
       "item": [
         {
-          "name": "Criar Aluno - Tela novo aluno",
+          "name": "Criar Aluno - Contrato do front",
           "event": [
             {
               "listen": "test",
@@ -49,15 +49,15 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/alunos",
+            "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nomeCompleto\": \"Ana Clara Martins\",\n  \"cpfOuCertidao\": \"12345678900\",\n  \"dataNascimento\": \"2016-05-10\",\n  \"ativo\": true,\n  \"responsavelNome\": \"Camila Martins\",\n  \"responsavelTelefone\": \"49999112200\"\n}"
+              "raw": "{\n  \"name\": \"Ana Clara Martins\",\n  \"document\": \"12345678900\",\n  \"birthDate\": \"2016-05-10\",\n  \"gender\": \"feminino\",\n  \"guardian\": \"Camila Martins\",\n  \"phone\": \"49999112200\"\n}"
             }
           }
         },
         {
-          "name": "Criar Aluno - Com escola",
+          "name": "Criar Aluno - Campos da API",
           "event": [
             {
               "listen": "test",
@@ -82,17 +82,17 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/alunos",
+            "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"escolaId\": \"{{escolaId}}\",\n  \"nomeCompleto\": \"Ana Clara Martins\",\n  \"cpfOuCertidao\": \"12345678900\",\n  \"dataNascimento\": \"2016-05-10\",\n  \"ativo\": true,\n  \"responsavelNome\": \"Camila Martins\",\n  \"responsavelTelefone\": \"49999112200\"\n}"
+              "raw": "{\n  \"nomeCompleto\": \"Laura Beatriz Costa\",\n  \"cpfOuCertidao\": \"32165498710\",\n  \"dataNascimento\": \"2013-11-02\",\n  \"genero\": \"feminino\",\n  \"responsavelNome\": \"Marcos Costa\",\n  \"responsavelTelefone\": \"49999334411\"\n}"
             }
           }
         }
       ]
     },
     {
-      "name": "Listar Alunos",
+      "name": "GET Listar Alunos - Front",
       "request": {
         "method": "GET",
         "header": [
@@ -101,11 +101,11 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/alunos"
+        "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}"
       }
     },
     {
-      "name": "Buscar Aluno Por Id",
+      "name": "GET Listar Alunos - Filtros",
       "request": {
         "method": "GET",
         "header": [
@@ -114,14 +114,27 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/alunos/{{alunoId}}"
+        "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}&status=pending&busca=ana"
+      }
+    },
+    {
+      "name": "GET Buscar Aluno Por Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/alunos/{{alunoId}}?tenantSlug={{tenantSlug}}"
       }
     },
     {
       "name": "PATCH Atualizar Aluno",
       "item": [
         {
-          "name": "Atualizar Aluno - Tela novo aluno",
+          "name": "Atualizar Aluno - Contrato do front",
           "request": {
             "method": "PATCH",
             "header": [
@@ -134,38 +147,17 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/alunos/{{alunoId}}",
+            "url": "{{url_base}}/alunos/{{alunoId}}?tenantSlug={{tenantSlug}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nomeCompleto\": \"Ana Clara Martins Silva\",\n  \"cpfOuCertidao\": \"12345678900\",\n  \"dataNascimento\": \"2016-05-10\",\n  \"ativo\": true,\n  \"responsavelNome\": \"Camila Martins\",\n  \"responsavelTelefone\": \"49999112200\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Atualizar Aluno - Vincular escola",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "url": "{{url_base}}/alunos/{{alunoId}}",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"escolaId\": \"{{escolaId}}\"\n}"
+              "raw": "{\n  \"name\": \"Ana Clara Martins Silva\",\n  \"document\": \"12345678900\",\n  \"birthDate\": \"2016-05-10\",\n  \"gender\": \"feminino\",\n  \"guardian\": \"Camila Martins\",\n  \"phone\": \"49999112200\",\n  \"status\": \"active\"\n}"
             }
           }
         }
       ]
     },
     {
-      "name": "Inativar Aluno",
+      "name": "PATCH Inativar Aluno",
       "request": {
         "method": "PATCH",
         "header": [
@@ -174,11 +166,11 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/alunos/{{alunoId}}/inativar"
+        "url": "{{url_base}}/alunos/{{alunoId}}/inativar?tenantSlug={{tenantSlug}}"
       }
     },
     {
-      "name": "Remover Aluno",
+      "name": "DELETE Remover Aluno",
       "request": {
         "method": "DELETE",
         "header": [

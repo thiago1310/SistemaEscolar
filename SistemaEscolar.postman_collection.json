@@ -1,0 +1,2169 @@
+{
+  "info": {
+    "_postman_id": "f86563a4-9b0f-4d1e-a427-000000000001",
+    "name": "Sistema Escolar - API Completa",
+    "description": "Collection consolidada para testar as APIs do backend Sistema Escolar.\nImporte este arquivo no Postman e use as variaveis da collection ou os environments postman_environment_local.json/postman_environment_producao.json.\nPara desenvolvimento local atual, url_base aponta para http://localhost:3333.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "url_base",
+      "value": "http://localhost:3333"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "identificador",
+      "value": "admin"
+    },
+    {
+      "key": "senha",
+      "value": "123456"
+    },
+    {
+      "key": "tenantSlug",
+      "value": "vicente-dutra"
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    },
+    {
+      "key": "perfilId",
+      "value": ""
+    },
+    {
+      "key": "permissaoId",
+      "value": ""
+    },
+    {
+      "key": "secretariaId",
+      "value": ""
+    },
+    {
+      "key": "escolaId",
+      "value": ""
+    },
+    {
+      "key": "turmaId",
+      "value": ""
+    },
+    {
+      "key": "alunoId",
+      "value": ""
+    },
+    {
+      "key": "professorId",
+      "value": ""
+    },
+    {
+      "key": "disciplinaId",
+      "value": ""
+    },
+    {
+      "key": "usuarioAcessoId",
+      "value": ""
+    },
+    {
+      "key": "auditoriaId",
+      "value": ""
+    },
+    {
+      "key": "entidadeId",
+      "value": ""
+    },
+    {
+      "key": "diretorId",
+      "value": ""
+    },
+    {
+      "key": "professorRegenteId",
+      "value": ""
+    },
+    {
+      "key": "perfilProfessorId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Autenticacao",
+      "description": "Collection do modulo autenticacao.",
+      "item": [
+        {
+          "name": "Entrar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.accessToken) pm.collectionVariables.set('accessToken', resposta.accessToken);",
+                  "if (resposta.refreshToken) pm.collectionVariables.set('refreshToken', resposta.refreshToken);",
+                  "if (resposta.usuario && resposta.usuario.id) pm.collectionVariables.set('usuarioId', resposta.usuario.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_base}}/autenticacao/entrar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identificador\": \"{{identificador}}\",\n  \"senha\": \"{{senha}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Renovar Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.accessToken) pm.collectionVariables.set('accessToken', resposta.accessToken);",
+                  "if (resposta.refreshToken) pm.collectionVariables.set('refreshToken', resposta.refreshToken);",
+                  "if (resposta.usuario && resposta.usuario.id) pm.collectionVariables.set('usuarioId', resposta.usuario.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_base}}/autenticacao/renovar-token",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Perfil Autenticado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/autenticacao/perfil"
+          }
+        },
+        {
+          "name": "Sair",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_base}}/autenticacao/sair",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Secretarias",
+      "description": "Collection do modulo secretarias com exemplos essenciais e completos.",
+      "item": [
+        {
+          "name": "POST Criar Secretaria",
+          "item": [
+            {
+              "name": "Criar Secretaria - Dados essenciais",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('secretariaId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/secretarias",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Secretaria Municipal {{$timestamp}}\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Secretaria - Dados completos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('secretariaId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/secretarias",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Secretaria Completa {{$timestamp}}\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"cnpj\": \"00000000000101\",\n  \"telefone\": \"1130000001\",\n  \"email\": \"secretaria{{$timestamp}}@sistema.local\",\n  \"ativa\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Secretarias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/secretarias"
+          }
+        },
+        {
+          "name": "Buscar Secretaria Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/secretarias/{{secretariaId}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Secretaria",
+          "item": [
+            {
+              "name": "Atualizar Secretaria - Dados essenciais",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/secretarias/{{secretariaId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Secretaria Atualizada\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Secretaria - Dados completos",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/secretarias/{{secretariaId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Secretaria Completa Atualizada\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"cnpj\": \"00000000000109\",\n  \"telefone\": \"1130000009\",\n  \"email\": \"secretaria.atualizada@sistema.local\",\n  \"ativa\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inativar Secretaria",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/secretarias/{{secretariaId}}/inativar"
+          }
+        },
+        {
+          "name": "Remover Secretaria",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/secretarias/{{secretariaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Escolas",
+      "description": "Collection do modulo escolas com exemplos essenciais e completos.",
+      "item": [
+        {
+          "name": "POST Criar Escola",
+          "item": [
+            {
+              "name": "Criar Escola - Dados essenciais",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('escolaId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/escolas",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Municipal {{$timestamp}}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Escola - Dados completos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('escolaId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/escolas",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa {{$timestamp}}\",\n  \"codigoInep\": \"INEP{{$timestamp}}\",\n  \"tipoEscola\": \"Urbana\",\n  \"modalidadesEnsino\": [\n    \"Creche\",\n    \"Pré-escola\",\n    \"Ensino Fundamental - Anos Iniciais\",\n    \"Ensino Fundamental - Anos Finais\"\n  ],\n  \"diretorId\": \"{{diretorId}}\",\n  \"cnpj\": \"00000000000102\",\n  \"telefone\": \"1130000002\",\n  \"email\": \"escola{{$timestamp}}@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Praca da Se\",\n  \"numero\": \"100\",\n  \"complemento\": \"Predio Principal\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true,\n  \"observacoes\": \"Informacoes diversas sobre a unidade escolar.\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Escolas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas"
+          }
+        },
+        {
+          "name": "Buscar Escola Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Escola",
+          "item": [
+            {
+              "name": "Atualizar Escola - Dados essenciais",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/escolas/{{escolaId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Escola Atualizada\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Escola - Dados completos",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/escolas/{{escolaId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa Atualizada\",\n  \"codigoInep\": \"INEP0002\",\n  \"tipoEscola\": \"Urbana\",\n  \"modalidadesEnsino\": [\n    \"Creche\",\n    \"Pré-escola\"\n  ],\n  \"diretorId\": \"{{diretorId}}\",\n  \"cnpj\": \"00000000000108\",\n  \"telefone\": \"1130000008\",\n  \"email\": \"escola.atualizada@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Rua Direita\",\n  \"numero\": \"200\",\n  \"complemento\": \"Bloco A\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true,\n  \"observacoes\": \"Observacao atualizada da unidade escolar.\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inativar Escola",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}/inativar"
+          }
+        },
+        {
+          "name": "Remover Escola",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perfis e Permissoes",
+      "description": "Collection do modulo perfis-permissoes com exemplos essenciais e completos.",
+      "item": [
+        {
+          "name": "POST Criar Perfil",
+          "item": [
+            {
+              "name": "Criar Perfil - Dados essenciais",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('perfilId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/perfis",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Perfil Teste {{$timestamp}}\",\n  \"codigo\": \"PERFIL_TESTE_{{$timestamp}}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Perfil - Dados completos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('perfilId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/perfis",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Perfil Completo {{$timestamp}}\",\n  \"codigo\": \"PERFIL_COMPLETO_{{$timestamp}}\",\n  \"descricao\": \"Perfil completo para testes.\",\n  \"nivel\": 10,\n  \"sistema\": false,\n  \"ativo\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Perfis",
+          "request": {
+            "description": "Retorna apenas perfis com nivel menor ou igual ao maior nivel do usuario autenticado.",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/perfis"
+          }
+        },
+        {
+          "name": "Buscar Perfil Por Id",
+          "request": {
+            "description": "Retorna o perfil apenas se o nivel for menor ou igual ao maior nivel do usuario autenticado.",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/perfis/{{perfilId}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Perfil",
+          "item": [
+            {
+              "name": "Atualizar Perfil - Dados essenciais",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/perfis/{{perfilId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"descricao\": \"Perfil atualizado.\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Perfil - Dados completos",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/perfis/{{perfilId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Perfil Completo Atualizado\",\n  \"codigo\": \"PERFIL_COMPLETO_ATUALIZADO\",\n  \"descricao\": \"Perfil completo atualizado.\",\n  \"nivel\": 20,\n  \"sistema\": false,\n  \"ativo\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remover Perfil",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/perfis/{{perfilId}}"
+          }
+        },
+        {
+          "name": "POST Criar Permissao",
+          "item": [
+            {
+              "name": "Criar Permissao - Dados essenciais",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('permissaoId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/permissoes",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"modulo\": \"usuarios\",\n  \"acao\": \"listar\",\n  \"codigo\": \"USUARIOS_LISTAR_{{$timestamp}}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Permissao - Dados completos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('permissaoId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/permissoes",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"modulo\": \"usuarios\",\n  \"acao\": \"criar\",\n  \"codigo\": \"USUARIOS_CRIAR_{{$timestamp}}\",\n  \"descricao\": \"Permite criar usuarios.\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Permissoes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/permissoes"
+          }
+        },
+        {
+          "name": "Buscar Permissao Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/permissoes/{{permissaoId}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Permissao",
+          "item": [
+            {
+              "name": "Atualizar Permissao - Dados essenciais",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/permissoes/{{permissaoId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"descricao\": \"Permissao atualizada.\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Permissao - Dados completos",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/permissoes/{{permissaoId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"modulo\": \"usuarios\",\n  \"acao\": \"atualizar\",\n  \"codigo\": \"USUARIOS_ATUALIZAR\",\n  \"descricao\": \"Permite atualizar usuarios.\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remover Permissao",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/permissoes/{{permissaoId}}"
+          }
+        },
+        {
+          "name": "Vincular Permissao Ao Perfil",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/perfis/{{perfilId}}/permissoes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissaoId\": \"{{permissaoId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar Permissoes Do Perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/perfis/{{perfilId}}/permissoes"
+          }
+        },
+        {
+          "name": "Desvincular Permissao Do Perfil",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/perfis/{{perfilId}}/permissoes/{{permissaoId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "description": "Collection do modulo usuarios com exemplos essenciais e completos. Ao vincular o usuario ao perfil PROFESSOR em usuario-acessos, o cadastro de professor e criado automaticamente.",
+      "item": [
+        {
+          "name": "POST Criar Usuario",
+          "item": [
+            {
+              "name": "Criar Usuario - Dados essenciais",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('usuarioId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuarios",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Usuario Teste {{$timestamp}}\",\n  \"username\": \"usuario{{$timestamp}}\",\n  \"enviarEmailBoasVindas\": false\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Usuario - Dados completos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('usuarioId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuarios",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Usuario Completo {{$timestamp}}\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.completo{{$timestamp}}@sistema.local\",\n  \"telefone\": \"11999999999\",\n  \"dataNascimento\": \"1990-10-13\",\n  \"cargo\": \"Professor\",\n  \"observacoes\": \"Conta criada para teste completo.\",\n  \"username\": \"usuario.completo{{$timestamp}}\",\n  \"ativo\": true,\n  \"enviarEmailBoasVindas\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuarios"
+          }
+        },
+        {
+          "name": "Buscar Usuario Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Usuario",
+          "item": [
+            {
+              "name": "Atualizar Usuario - Dados essenciais",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuarios/{{usuarioId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Usuario Atualizado\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Usuario - Dados completos",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuarios/{{usuarioId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Usuario Completo Atualizado\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"usuario.atualizado@sistema.local\",\n  \"telefone\": \"11888888888\",\n  \"dataNascimento\": \"1991-10-13\",\n  \"cargo\": \"Coordenador\",\n  \"observacoes\": \"Observacao interna atualizada.\",\n  \"username\": \"usuario.atualizado\",\n  \"ativo\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Redefinir Senha",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuarios/{{usuarioId}}/senha",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"senha\": \"654321\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Inativar Usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuarios/{{usuarioId}}/inativar"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuario Acessos",
+      "description": "Collection do modulo usuario-acessos. Gestor escolar deve informar escolaId; para mais de uma escola, crie um acesso por escola. Ao criar/ativar acesso com perfil PROFESSOR, o cadastro de professor e criado automaticamente; ao remover/inativar o ultimo acesso PROFESSOR ativo, o professor e inativado. Ao criar/ativar acesso GESTOR_ESCOLAR com escola, o usuario vira diretor da escola; ao remover/inativar/trocar esse vinculo, o diretor da escola e limpo quando ainda aponta para o mesmo usuario.",
+      "item": [
+        {
+          "name": "POST Criar Usuario Acesso",
+          "item": [
+            {
+              "name": "Criar Acesso - Gestor escolar com escola",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('usuarioAcessoId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuario-acessos",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Acesso - Professor",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('usuarioAcessoId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "description": "Ao criar este acesso com perfil PROFESSOR, o cadastro em /professores e criado automaticamente para o usuario.",
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuario-acessos",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilProfessorId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Acesso - Dados completos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('usuarioAcessoId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuario-acessos",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Usuario Acessos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuario-acessos"
+          }
+        },
+        {
+          "name": "Buscar Usuario Acesso Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Usuario Acesso",
+          "item": [
+            {
+              "name": "Atualizar Acesso - Ativo",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ativo\": true\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Acesso - Dados completos",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Professor para Gestor Escolar",
+              "request": {
+                "description": "Altera somente o vinculo selecionado. Se o usuario ainda tiver outro acesso PROFESSOR ativo, o cadastro de professor permanece ativo.",
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
+                }
+              }
+            },
+            {
+              "name": "Remover Gestor Escolar da Direcao",
+              "request": {
+                "description": "Troca o vinculo selecionado para outro perfil. Se ele era GESTOR_ESCOLAR da escola, o diretorId da escola sera limpo quando ainda apontar para este usuario.",
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": null,\n  \"ativo\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inativar Usuario Acesso",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}/inativar"
+          }
+        },
+        {
+          "name": "Remover Usuario Acesso",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Professores",
+      "description": "Collection do modulo professores. O cadastro cria ou atualiza usuario, acesso PROFESSOR e professor em uma unica chamada. Se o vinculo ja existir, ele e reativado/atualizado.",
+      "item": [
+        {
+          "name": "POST Criar Professor",
+          "item": [
+            {
+              "name": "Criar Professor - Dados essenciais",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('professorId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/professores",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Professor Teste {{$timestamp}}\",\n  \"email\": \"professor{{$timestamp}}@sistema.local\",\n  \"username\": \"professor{{$timestamp}}\",\n  \"enviarEmailBoasVindas\": false\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Professor - Dados completos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('professorId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/professores",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Professor Completo {{$timestamp}}\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"professor.completo{{$timestamp}}@sistema.local\",\n  \"telefone\": \"11999999999\",\n  \"dataNascimento\": \"1990-10-13\",\n  \"cargo\": \"Professor\",\n  \"observacoes\": \"Conta de professor criada pelo modulo professores.\",\n  \"username\": \"professor.completo{{$timestamp}}\",\n  \"matricula\": \"PROF{{$timestamp}}\",\n  \"dataAdmissao\": \"2024-02-01\",\n  \"formacao\": \"Licenciatura em Letras\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaIds\": [\"{{escolaId}}\"],\n  \"ativo\": true,\n  \"enviarEmailBoasVindas\": false\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Professores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/professores"
+          }
+        },
+        {
+          "name": "Buscar Professor Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/professores/{{professorId}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Professor",
+          "item": [
+            {
+              "name": "Atualizar Professor - Dados essenciais",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/professores/{{professorId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"formacao\": \"Licenciatura atualizada\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Professor - Dados completos",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/professores/{{professorId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Professor Completo Atualizado\",\n  \"cpf\": \"12345678901\",\n  \"email\": \"professor.atualizado@sistema.local\",\n  \"telefone\": \"11888888888\",\n  \"dataNascimento\": \"1991-10-13\",\n  \"cargo\": \"Professor Regente\",\n  \"observacoes\": \"Observacao interna atualizada.\",\n  \"username\": \"professor.atualizado\",\n  \"matricula\": \"PROF-ATUALIZADA\",\n  \"dataAdmissao\": \"2024-03-01\",\n  \"formacao\": \"Licenciatura em Matematica\",\n  \"ativo\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inativar Professor",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/professores/{{professorId}}/inativar"
+          }
+        },
+        {
+          "name": "Remover Professor",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/professores/{{professorId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Disciplinas",
+      "description": "Collection do modulo disciplinas com exemplos essenciais e completos.",
+      "item": [
+        {
+          "name": "POST Criar Disciplina",
+          "item": [
+            {
+              "name": "Criar Disciplina - Dados essenciais",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('disciplinaId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/disciplinas",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Matematica {{$timestamp}}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Disciplina - Dados completos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('disciplinaId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/disciplinas",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Matematica Completa {{$timestamp}}\",\n  \"ativa\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Disciplinas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/disciplinas"
+          }
+        },
+        {
+          "name": "Buscar Disciplina Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/disciplinas/{{disciplinaId}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Disciplina",
+          "item": [
+            {
+              "name": "Atualizar Disciplina - Dados essenciais",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/disciplinas/{{disciplinaId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Disciplina Atualizada\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Disciplina - Dados completos",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/disciplinas/{{disciplinaId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Disciplina Completa Atualizada\",\n  \"ativa\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inativar Disciplina",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/disciplinas/{{disciplinaId}}/inativar"
+          }
+        },
+        {
+          "name": "Remover Disciplina",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/disciplinas/{{disciplinaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Turmas",
+      "description": "Collection do modulo turmas com exemplos essenciais e completos.",
+      "item": [
+        {
+          "name": "POST Criar Turma",
+          "item": [
+            {
+              "name": "Criar Turma - Dados essenciais",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('turmaId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/turmas",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"escolaId\": \"{{escolaId}}\",\n  \"nome\": \"5ºA {{$timestamp}}\",\n  \"anoLetivo\": 2026,\n  \"etapaEnsino\": \"Ensino Fundamental - Anos Iniciais\",\n  \"anoSerie\": \"1º Ano\",\n  \"turno\": \"Matutino\",\n  \"capacidade\": 30\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Turma - Dados completos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('turmaId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/turmas",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"escolaId\": \"{{escolaId}}\",\n  \"nome\": \"5ºA Completa {{$timestamp}}\",\n  \"salaReferencia\": \"Sala 04, Bloco B\",\n  \"anoLetivo\": 2026,\n  \"etapaEnsino\": \"Ensino Fundamental - Anos Iniciais\",\n  \"anoSerie\": \"1º Ano\",\n  \"turno\": \"Matutino\",\n  \"capacidade\": 30,\n  \"professorRegenteId\": \"{{professorRegenteId}}\",\n  \"ativa\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Turmas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/turmas"
+          }
+        },
+        {
+          "name": "Buscar Turma Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/turmas/{{turmaId}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Turma",
+          "item": [
+            {
+              "name": "Atualizar Turma - Dados essenciais",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/turmas/{{turmaId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"5ºA Atualizada\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Turma - Dados completos",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/turmas/{{turmaId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"escolaId\": \"{{escolaId}}\",\n  \"nome\": \"5ºA Completa Atualizada\",\n  \"salaReferencia\": \"Sala 05, Bloco C\",\n  \"anoLetivo\": 2026,\n  \"etapaEnsino\": \"Ensino Fundamental - Anos Iniciais\",\n  \"anoSerie\": \"1º Ano\",\n  \"turno\": \"Vespertino\",\n  \"capacidade\": 32,\n  \"professorRegenteId\": \"{{professorRegenteId}}\",\n  \"ativa\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inativar Turma",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/turmas/{{turmaId}}/inativar"
+          }
+        },
+        {
+          "name": "Remover Turma",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/turmas/{{turmaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alunos",
+      "description": "Collection do modulo alunos. O endpoint principal e /alunos; use tenantSlug=vicente-dutra para a resposta vir compatível com a rota do front /vicente-dutra/educacao/alunos. A API aceita os campos em portugues e aliases do front: name, document, birthDate, guardian, phone, status, schoolId e classId.",
+      "item": [
+        {
+          "name": "POST Criar Aluno",
+          "item": [
+            {
+              "name": "Criar Aluno - Contrato do front",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('alunoId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ana Clara Martins\",\n  \"document\": \"12345678900\",\n  \"birthDate\": \"2016-05-10\",\n  \"guardian\": \"Camila Martins\",\n  \"phone\": \"49999112200\",\n  \"status\": \"active\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Aluno - Com escola e turma",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('alunoId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"schoolId\": \"{{escolaId}}\",\n  \"classId\": \"{{turmaId}}\",\n  \"name\": \"Joao Pedro Silva\",\n  \"document\": \"Certidao 98231\",\n  \"birthDate\": \"2015-07-19\",\n  \"guardian\": \"Renata Silva\",\n  \"phone\": \"49999223311\",\n  \"status\": \"pending\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Criar Aluno - Campos da API",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const resposta = pm.response.json();",
+                      "if (resposta.id) pm.collectionVariables.set('alunoId', resposta.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"escolaId\": \"{{escolaId}}\",\n  \"turmaId\": \"{{turmaId}}\",\n  \"nomeCompleto\": \"Laura Beatriz Costa\",\n  \"cpfOuCertidao\": \"32165498710\",\n  \"dataNascimento\": \"2013-11-02\",\n  \"responsavelNome\": \"Marcos Costa\",\n  \"responsavelTelefone\": \"49999334411\",\n  \"situacao\": \"active\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Listar Alunos - Front",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}"
+          }
+        },
+        {
+          "name": "GET Listar Alunos - Filtros",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}&status=active&busca=ana"
+          }
+        },
+        {
+          "name": "GET Buscar Aluno Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/alunos/{{alunoId}}?tenantSlug={{tenantSlug}}"
+          }
+        },
+        {
+          "name": "PATCH Atualizar Aluno",
+          "item": [
+            {
+              "name": "Atualizar Aluno - Contrato do front",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/alunos/{{alunoId}}?tenantSlug={{tenantSlug}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ana Clara Martins Silva\",\n  \"document\": \"12345678900\",\n  \"birthDate\": \"2016-05-10\",\n  \"guardian\": \"Camila Martins\",\n  \"phone\": \"49999112200\",\n  \"status\": \"active\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Aluno - Vincular turma",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/alunos/{{alunoId}}?tenantSlug={{tenantSlug}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"schoolId\": \"{{escolaId}}\",\n  \"classId\": \"{{turmaId}}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Atualizar Aluno - Remover turma",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": "{{url_base}}/alunos/{{alunoId}}?tenantSlug={{tenantSlug}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"classId\": null\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH Inativar Aluno",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/alunos/{{alunoId}}/inativar?tenantSlug={{tenantSlug}}"
+          }
+        },
+        {
+          "name": "DELETE Remover Aluno",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/alunos/{{alunoId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auditoria",
+      "description": "Collection do modulo auditoria com consulta simples e consulta filtrada.",
+      "item": [
+        {
+          "name": "Listar Auditoria",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/auditoria"
+          }
+        },
+        {
+          "name": "Listar Auditoria - Com filtros",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/auditoria?usuarioId={{usuarioId}}&entidade=usuarios&entidadeId={{entidadeId}}&acao=CRIAR&dataInicio=2026-01-01&dataFim=2026-12-31"
+          }
+        },
+        {
+          "name": "Buscar Auditoria Por Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/auditoria/{{auditoriaId}}"
+          }
+        }
+      ]
+    }
+  ]
+}
