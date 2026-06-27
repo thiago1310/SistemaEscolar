@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "74a5667c-1b5f-1511-673a-1c770c62df55",
     "name": "Sistema Escolar - Usuario Acessos",
-    "description": "Collection do modulo usuario-acessos. Gestor escolar deve informar escolaId; para mais de uma escola, crie um acesso por escola. Ao criar/ativar acesso com perfil PROFESSOR, o cadastro de professor e criado automaticamente; ao remover/inativar o ultimo acesso PROFESSOR ativo, o professor e inativado.",
+    "description": "Collection do modulo usuario-acessos. Gestor escolar deve informar escolaId; para mais de uma escola, crie um acesso por escola. Ao criar/ativar acesso com perfil PROFESSOR, o cadastro de professor e criado automaticamente; ao remover/inativar o ultimo acesso PROFESSOR ativo, o professor e inativado. Ao criar/ativar acesso GESTOR_ESCOLAR com escola, o usuario vira diretor da escola; ao remover/inativar/trocar esse vinculo, o diretor da escola e limpo quando ainda aponta para o mesmo usuario.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -231,6 +231,28 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": \"{{escolaId}}\",\n  \"ativo\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Remover Gestor Escolar da Direcao",
+          "request": {
+            "description": "Troca o vinculo selecionado para outro perfil. Se ele era GESTOR_ESCOLAR da escola, o diretorId da escola sera limpo quando ainda apontar para este usuario.",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/usuario-acessos/{{usuarioAcessoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"perfilId\": \"{{perfilId}}\",\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"escolaId\": null,\n  \"ativo\": true\n}"
             }
           }
         }

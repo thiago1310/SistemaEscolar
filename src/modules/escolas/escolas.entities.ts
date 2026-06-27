@@ -9,6 +9,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { Usuario } from '../autenticacao/autenticacao.entities';
 import { Secretaria } from '../secretarias/secretarias.entities';
 
 @Entity('escolas')
@@ -39,6 +40,13 @@ export class Escola {
 
   @Column({ name: 'modalidades_ensino', type: 'json', nullable: true })
   modalidadesEnsino: string[] | null;
+
+  @Column({ name: 'diretor_id', type: 'varchar', length: 36, nullable: true })
+  diretorId: string | null;
+
+  @ManyToOne(() => Usuario, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'diretor_id' })
+  diretor: Usuario | null;
 
   @Column({ type: 'varchar', length: 14, nullable: true })
   cnpj: string | null;

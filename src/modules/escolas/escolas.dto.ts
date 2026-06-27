@@ -54,6 +54,10 @@ export class CriarEscolaDto {
   @IsIn(modalidadesEnsino, { each: true })
   modalidadesEnsino?: string[];
 
+  @IsUUID()
+  @IsOptional()
+  diretorId?: string | null;
+
   @IsString()
   @IsOptional()
   @Length(14, 14)
@@ -144,6 +148,10 @@ export class AtualizarEscolaDto {
   @IsString({ each: true })
   @IsIn(modalidadesEnsino, { each: true })
   modalidadesEnsino?: string[];
+
+  @IsUUID()
+  @IsOptional()
+  diretorId?: string | null;
 
   @IsString()
   @IsOptional()

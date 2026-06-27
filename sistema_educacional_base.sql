@@ -138,6 +138,32 @@ FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
 -- =========================================================
+-- Alunos
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS alunos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    escola_id UUID REFERENCES escolas(id) ON DELETE SET NULL,
+    nome_completo VARCHAR(255) NOT NULL,
+    cpf_ou_certidao VARCHAR(50),
+    data_nascimento DATE,
+    responsavel_nome VARCHAR(255),
+    responsavel_telefone VARCHAR(30),
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_alunos_escola_id ON alunos(escola_id);
+CREATE INDEX IF NOT EXISTS idx_alunos_nome_completo ON alunos(nome_completo);
+CREATE INDEX IF NOT EXISTS idx_alunos_ativo ON alunos(ativo);
+
+CREATE TRIGGER trg_alunos_updated_at
+BEFORE UPDATE ON alunos
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+-- =========================================================
 -- Anos Letivos
 -- =========================================================
 

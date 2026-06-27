@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AlunosModule } from './modules/alunos/alunos.module';
 import { AutenticacaoModule } from './modules/autenticacao/autenticacao.module';
 import { AuditoriaModule } from './modules/auditoria/auditoria.module';
 import { AutorizacaoModule } from './modules/autorizacao/autorizacao.module';
@@ -42,6 +43,7 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module';
     UsuarioAcessosModule,
     DisciplinasModule,
     TurmasModule,
+    AlunosModule,
   ],
 })
 export class AppModule {}

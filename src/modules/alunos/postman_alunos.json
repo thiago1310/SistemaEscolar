@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "662c1276-edbe-8a40-6b5d-e9105a2fe573",
-    "name": "Sistema Escolar - Escolas",
-    "description": "Collection do modulo escolas com exemplos essenciais e completos.",
+    "_postman_id": "e0d9e34d-7ac9-4771-b9a8-61fe4f1e8a70",
+    "name": "Sistema Escolar - Alunos",
+    "description": "Collection do modulo alunos. O campo escolaId e opcional para usuario global; para usuario com uma unica escola no escopo, a API assume essa escola quando omitido. Para demais escopos, informe escolaId.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -11,24 +11,20 @@
       "value": ""
     },
     {
-      "key": "secretariaId",
+      "key": "alunoId",
       "value": ""
     },
     {
       "key": "escolaId",
       "value": ""
-    },
-    {
-      "key": "diretorId",
-      "value": ""
     }
   ],
   "item": [
     {
-      "name": "POST Criar Escola",
+      "name": "POST Criar Aluno",
       "item": [
         {
-          "name": "Criar Escola - Dados essenciais",
+          "name": "Criar Aluno - Tela novo aluno",
           "event": [
             {
               "listen": "test",
@@ -36,7 +32,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const resposta = pm.response.json();",
-                  "if (resposta.id) pm.collectionVariables.set('escolaId', resposta.id);"
+                  "if (resposta.id) pm.collectionVariables.set('alunoId', resposta.id);"
                 ]
               }
             }
@@ -53,15 +49,15 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/escolas",
+            "url": "{{url_base}}/alunos",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Municipal {{$timestamp}}\"\n}"
+              "raw": "{\n  \"nomeCompleto\": \"Ana Clara Martins\",\n  \"cpfOuCertidao\": \"12345678900\",\n  \"dataNascimento\": \"2016-05-10\",\n  \"ativo\": true,\n  \"responsavelNome\": \"Camila Martins\",\n  \"responsavelTelefone\": \"49999112200\"\n}"
             }
           }
         },
         {
-          "name": "Criar Escola - Dados completos",
+          "name": "Criar Aluno - Com escola",
           "event": [
             {
               "listen": "test",
@@ -69,7 +65,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const resposta = pm.response.json();",
-                  "if (resposta.id) pm.collectionVariables.set('escolaId', resposta.id);"
+                  "if (resposta.id) pm.collectionVariables.set('alunoId', resposta.id);"
                 ]
               }
             }
@@ -86,17 +82,17 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/escolas",
+            "url": "{{url_base}}/alunos",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa {{$timestamp}}\",\n  \"codigoInep\": \"INEP{{$timestamp}}\",\n  \"tipoEscola\": \"Urbana\",\n  \"modalidadesEnsino\": [\n    \"Creche\",\n    \"Pré-escola\",\n    \"Ensino Fundamental - Anos Iniciais\",\n    \"Ensino Fundamental - Anos Finais\"\n  ],\n  \"diretorId\": \"{{diretorId}}\",\n  \"cnpj\": \"00000000000102\",\n  \"telefone\": \"1130000002\",\n  \"email\": \"escola{{$timestamp}}@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Praca da Se\",\n  \"numero\": \"100\",\n  \"complemento\": \"Predio Principal\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true,\n  \"observacoes\": \"Informacoes diversas sobre a unidade escolar.\"\n}"
+              "raw": "{\n  \"escolaId\": \"{{escolaId}}\",\n  \"nomeCompleto\": \"Ana Clara Martins\",\n  \"cpfOuCertidao\": \"12345678900\",\n  \"dataNascimento\": \"2016-05-10\",\n  \"ativo\": true,\n  \"responsavelNome\": \"Camila Martins\",\n  \"responsavelTelefone\": \"49999112200\"\n}"
             }
           }
         }
       ]
     },
     {
-      "name": "Listar Escolas",
+      "name": "Listar Alunos",
       "request": {
         "method": "GET",
         "header": [
@@ -105,11 +101,11 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/escolas"
+        "url": "{{url_base}}/alunos"
       }
     },
     {
-      "name": "Buscar Escola Por Id",
+      "name": "Buscar Aluno Por Id",
       "request": {
         "method": "GET",
         "header": [
@@ -118,14 +114,14 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/escolas/{{escolaId}}"
+        "url": "{{url_base}}/alunos/{{alunoId}}"
       }
     },
     {
-      "name": "PATCH Atualizar Escola",
+      "name": "PATCH Atualizar Aluno",
       "item": [
         {
-          "name": "Atualizar Escola - Dados essenciais",
+          "name": "Atualizar Aluno - Tela novo aluno",
           "request": {
             "method": "PATCH",
             "header": [
@@ -138,15 +134,15 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/escolas/{{escolaId}}",
+            "url": "{{url_base}}/alunos/{{alunoId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Escola Atualizada\"\n}"
+              "raw": "{\n  \"nomeCompleto\": \"Ana Clara Martins Silva\",\n  \"cpfOuCertidao\": \"12345678900\",\n  \"dataNascimento\": \"2016-05-10\",\n  \"ativo\": true,\n  \"responsavelNome\": \"Camila Martins\",\n  \"responsavelTelefone\": \"49999112200\"\n}"
             }
           }
         },
         {
-          "name": "Atualizar Escola - Dados completos",
+          "name": "Atualizar Aluno - Vincular escola",
           "request": {
             "method": "PATCH",
             "header": [
@@ -159,17 +155,17 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{url_base}}/escolas/{{escolaId}}",
+            "url": "{{url_base}}/alunos/{{alunoId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa Atualizada\",\n  \"codigoInep\": \"INEP0002\",\n  \"tipoEscola\": \"Urbana\",\n  \"modalidadesEnsino\": [\n    \"Creche\",\n    \"Pré-escola\"\n  ],\n  \"diretorId\": \"{{diretorId}}\",\n  \"cnpj\": \"00000000000108\",\n  \"telefone\": \"1130000008\",\n  \"email\": \"escola.atualizada@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Rua Direita\",\n  \"numero\": \"200\",\n  \"complemento\": \"Bloco A\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true,\n  \"observacoes\": \"Observacao atualizada da unidade escolar.\"\n}"
+              "raw": "{\n  \"escolaId\": \"{{escolaId}}\"\n}"
             }
           }
         }
       ]
     },
     {
-      "name": "Inativar Escola",
+      "name": "Inativar Aluno",
       "request": {
         "method": "PATCH",
         "header": [
@@ -178,11 +174,11 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/escolas/{{escolaId}}/inativar"
+        "url": "{{url_base}}/alunos/{{alunoId}}/inativar"
       }
     },
     {
-      "name": "Remover Escola",
+      "name": "Remover Aluno",
       "request": {
         "method": "DELETE",
         "header": [
@@ -191,7 +187,7 @@
             "value": "Bearer {{accessToken}}"
           }
         ],
-        "url": "{{url_base}}/escolas/{{escolaId}}"
+        "url": "{{url_base}}/alunos/{{alunoId}}"
       }
     }
   ]

@@ -58,6 +58,7 @@ export class UsuarioAcessosService {
 
       const acessoSalvo =
         await this.usuarioAcessosRepositorio.save(acessoExistente);
+      await this.sincronizarDiretorGestorEscolar(acessoSalvo);
       await this.professoresService.sincronizarUsuarioProfessor(
         acessoSalvo.usuarioId,
       );
@@ -73,6 +74,7 @@ export class UsuarioAcessosService {
     });
 
     const acessoSalvo = await this.usuarioAcessosRepositorio.save(acesso);
+    await this.sincronizarDiretorGestorEscolar(acessoSalvo);
     await this.professoresService.sincronizarUsuarioProfessor(acessoSalvo.usuarioId);
 
     return acessoSalvo;
@@ -126,6 +128,7 @@ export class UsuarioAcessosService {
   ) {
     const acesso = await this.buscarPorId(id, usuarioExecutorId);
     const usuarioIdAnterior = acesso.usuarioId;
+    const acessoAnterior = this.clonarDadosAcesso(acesso);
     const dadosCompletos = {
       usuarioId:
         dados.usuarioId === undefined ? acesso.usuarioId : dados.usuarioId,
@@ -148,6 +151,8 @@ export class UsuarioAcessosService {
       ativo: dadosCompletos.ativo,
     });
 
+    await this.limparDiretorGestorEscolarSeNecessario(acessoAnterior);
+    await this.sincronizarDiretorGestorEscolar(dadosCompletos);
     await this.professoresService.sincronizarUsuarioProfessor(usuarioIdAnterior);
 
     if (usuarioIdAnterior !== dadosCompletos.usuarioId) {
@@ -160,6 +165,7 @@ export class UsuarioAcessosService {
   async remover(id: string, usuarioExecutorId: string) {
     const acesso = await this.buscarPorId(id, usuarioExecutorId);
     const usuarioId = acesso.usuarioId;
+    await this.limparDiretorGestorEscolarSeNecessario(acesso);
     await this.usuarioAcessosRepositorio.remove(acesso);
     await this.professoresService.sincronizarUsuarioProfessor(usuarioId);
 
@@ -171,6 +177,7 @@ export class UsuarioAcessosService {
     acesso.ativo = false;
 
     const acessoSalvo = await this.usuarioAcessosRepositorio.save(acesso);
+    await this.limparDiretorGestorEscolarSeNecessario(acessoSalvo);
     await this.professoresService.sincronizarUsuarioProfessor(acessoSalvo.usuarioId);
 
     return acessoSalvo;
@@ -320,5 +327,57 @@ export class UsuarioAcessosService {
     return valor
       ? `acesso.${coluna} = '${valor}'`
       : `acesso.${coluna} IS NULL`;
+  }
+
+  private clonarDadosAcesso(acesso: UsuarioAcesso): DadosUsuarioAcesso {
+    return {
+      usuarioId: acesso.usuarioId,
+      perfilId: acesso.perfilId,
+      secretariaId: acesso.secretariaId,
+      escolaId: acesso.escolaId,
+      ativo: acesso.ativo,
+    };
+  }
+
+  private async sincronizarDiretorGestorEscolar(dados: DadosUsuarioAcesso) {
+    if (!dados.ativo || !dados.escolaId) {
+      return;
+    }
+
+    const perfil = await this.perfisRepositorio.findOneBy({ id: dados.perfilId });
+
+    if (perfil?.codigo !== 'GESTOR_ESCOLAR') {
+      return;
+    }
+
+    await this.escolasRepositorio.update(
+      { id: dados.escolaId },
+      { diretorId: dados.usuarioId },
+    );
+  }
+
+  private async limparDiretorGestorEscolarSeNecessario(
+    dados: DadosUsuarioAcesso,
+  ) {
+    if (!dados.escolaId) {
+      return;
+    }
+
+    const perfil = await this.perfisRepositorio.findOneBy({ id: dados.perfilId });
+
+    if (perfil?.codigo !== 'GESTOR_ESCOLAR') {
+      return;
+    }
+
+    const escola = await this.escolasRepositorio.findOneBy({ id: dados.escolaId });
+
+    if (escola?.diretorId !== dados.usuarioId) {
+      return;
+    }
+
+    await this.escolasRepositorio.update(
+      { id: dados.escolaId },
+      { diretorId: null },
+    );
   }
 }
