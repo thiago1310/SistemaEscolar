@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "9a0e9d1d-0a15-4113-b5cb-83f81d6c91d6",
     "name": "Sistema Escolar - Professores",
-    "description": "Collection do modulo professores. O cadastro cria ou atualiza usuario, acesso PROFESSOR e professor em uma unica chamada. Se o vinculo ja existir, ele e reativado/atualizado.",
+    "description": "Collection do modulo professores. O cadastro cria ou atualiza usuario, acesso PROFESSOR e professor em uma unica chamada. Se o vinculo ja existir, ele e reativado/atualizado. A listagem sincroniza usuarios com acesso PROFESSOR ativo para recuperar cadastros legados sem registro em professores.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

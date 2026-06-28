@@ -152,6 +152,7 @@ CREATE TABLE IF NOT EXISTS alunos (
     sexo VARCHAR(20),
     responsavel_nome VARCHAR(255),
     responsavel_telefone VARCHAR(30),
+    responsaveis JSON,
     situacao VARCHAR(20) NOT NULL DEFAULT 'pending',
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -392,6 +393,36 @@ CREATE INDEX IF NOT EXISTS idx_disciplinas_ativa ON disciplinas(ativa);
 
 CREATE TRIGGER trg_disciplinas_updated_at
 BEFORE UPDATE ON disciplinas
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE IF NOT EXISTS turma_vinculos_docentes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    turma_id UUID NOT NULL REFERENCES turmas(id) ON DELETE CASCADE,
+    professor_id UUID NOT NULL REFERENCES professores(id) ON DELETE RESTRICT,
+    disciplina_id UUID NOT NULL REFERENCES disciplinas(id) ON DELETE RESTRICT,
+    carga_horaria_semanal INTEGER NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_turma_vinculos_docentes_turma_professor_disciplina UNIQUE (
+        turma_id,
+        professor_id,
+        disciplina_id
+    )
+);
+
+CREATE INDEX IF NOT EXISTS idx_turma_vinculos_docentes_turma_id
+ON turma_vinculos_docentes(turma_id);
+CREATE INDEX IF NOT EXISTS idx_turma_vinculos_docentes_professor_id
+ON turma_vinculos_docentes(professor_id);
+CREATE INDEX IF NOT EXISTS idx_turma_vinculos_docentes_disciplina_id
+ON turma_vinculos_docentes(disciplina_id);
+CREATE INDEX IF NOT EXISTS idx_turma_vinculos_docentes_ativo
+ON turma_vinculos_docentes(ativo);
+
+CREATE TRIGGER trg_turma_vinculos_docentes_updated_at
+BEFORE UPDATE ON turma_vinculos_docentes
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 

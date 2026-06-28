@@ -21,6 +21,12 @@ export enum SexoAluno {
   FEMININO = 'feminino',
 }
 
+export type ResponsavelAluno = {
+  nome: string;
+  telefone: string | null;
+  parentesco: string | null;
+};
+
 @Entity('alunos')
 export class Aluno {
   @PrimaryGeneratedColumn('uuid')
@@ -69,6 +75,9 @@ export class Aluno {
 
   @Column({ name: 'responsavel_telefone', type: 'varchar', length: 30, nullable: true })
   responsavelTelefone: string | null;
+
+  @Column({ name: 'responsaveis', type: 'json', nullable: true })
+  responsaveis: ResponsavelAluno[] | null;
 
   @Column({
     name: 'situacao',

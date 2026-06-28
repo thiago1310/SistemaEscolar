@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsDateString,
   IsEnum,
@@ -8,6 +9,38 @@ import {
   MaxLength,
 } from 'class-validator';
 import { SituacaoAluno } from './alunos.entities';
+
+export class ResponsavelAlunoDto {
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  nome?: string | null;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  name?: string | null;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(30)
+  telefone?: string | null;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(30)
+  phone?: string | null;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(80)
+  parentesco?: string | null;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(80)
+  relationship?: string | null;
+}
 
 export class CriarAlunoDto {
   @IsString()
@@ -77,6 +110,14 @@ export class CriarAlunoDto {
   @IsOptional()
   @MaxLength(30)
   phone?: string | null;
+
+  @IsArray()
+  @IsOptional()
+  responsaveis?: ResponsavelAlunoDto[] | null;
+
+  @IsArray()
+  @IsOptional()
+  guardians?: ResponsavelAlunoDto[] | null;
 }
 
 export class AtualizarAlunoDto {
@@ -147,6 +188,14 @@ export class AtualizarAlunoDto {
   @IsOptional()
   @MaxLength(30)
   phone?: string | null;
+
+  @IsArray()
+  @IsOptional()
+  responsaveis?: ResponsavelAlunoDto[] | null;
+
+  @IsArray()
+  @IsOptional()
+  guardians?: ResponsavelAlunoDto[] | null;
 
   @IsEnum(SituacaoAluno)
   @IsOptional()

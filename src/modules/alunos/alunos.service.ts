@@ -8,8 +8,18 @@ import { Brackets, In, Repository } from 'typeorm';
 import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import { Escola } from '../escolas/escolas.entities';
 import { Turma } from '../turmas/turmas.entities';
-import { AtualizarAlunoDto, CriarAlunoDto, ListarAlunosDto } from './alunos.dto';
-import { Aluno, SexoAluno, SituacaoAluno } from './alunos.entities';
+import {
+  AtualizarAlunoDto,
+  CriarAlunoDto,
+  ListarAlunosDto,
+  ResponsavelAlunoDto,
+} from './alunos.dto';
+import {
+  Aluno,
+  ResponsavelAluno,
+  SexoAluno,
+  SituacaoAluno,
+} from './alunos.entities';
 
 type ValorOpcional<T> = T | null | undefined;
 
@@ -40,6 +50,14 @@ export class AlunosService {
     filtros: Pick<ListarAlunosDto, 'tenantSlug'> = {},
   ) {
     const situacao = SituacaoAluno.PENDENTE;
+    const responsaveis = this.normalizarResponsaveis(
+      this.primeiroDefinido(dados.responsaveis, dados.guardians),
+      {
+        nome: this.primeiroDefinido(dados.responsavelNome, dados.guardian),
+        telefone: this.primeiroDefinido(dados.responsavelTelefone, dados.phone),
+      },
+    );
+    const responsavelPrincipal = responsaveis?.[0] ?? null;
 
     const aluno = this.alunosRepositorio.create({
       escolaId: null,
@@ -62,12 +80,9 @@ export class AlunosService {
           dados.sex,
         ),
       ),
-      responsavelNome: this.normalizarTextoOpcional(
-        this.primeiroDefinido(dados.responsavelNome, dados.guardian),
-      ),
-      responsavelTelefone: this.normalizarTextoOpcional(
-        this.primeiroDefinido(dados.responsavelTelefone, dados.phone),
-      ),
+      responsavelNome: responsavelPrincipal?.nome ?? null,
+      responsavelTelefone: responsavelPrincipal?.telefone ?? null,
+      responsaveis,
       situacao,
       ativo: this.obterAtivoPorSituacao(situacao),
     });
@@ -220,6 +235,10 @@ export class AlunosService {
       dados.responsavelTelefone,
       dados.phone,
     );
+    const responsaveisRecebidos = this.primeiroDefinido(
+      dados.responsaveis,
+      dados.guardians,
+    );
     const situacaoRecebida = this.primeiroDefinido(dados.situacao, dados.status);
 
     if (cpfOuCertidao !== undefined) {
@@ -241,6 +260,15 @@ export class AlunosService {
     if (responsavelTelefone !== undefined) {
       aluno.responsavelTelefone =
         this.normalizarTextoOpcional(responsavelTelefone);
+    }
+
+    if (responsaveisRecebidos !== undefined) {
+      const responsaveis = this.normalizarResponsaveis(responsaveisRecebidos);
+      const responsavelPrincipal = responsaveis?.[0] ?? null;
+
+      aluno.responsaveis = responsaveis;
+      aluno.responsavelNome = responsavelPrincipal?.nome ?? null;
+      aluno.responsavelTelefone = responsavelPrincipal?.telefone ?? null;
     }
 
     if (situacaoRecebida !== undefined || dados.ativo !== undefined) {
@@ -403,6 +431,7 @@ export class AlunosService {
   private serializarAluno(aluno: Aluno, tenantSlug?: string) {
     const situacao = aluno.situacao ?? this.obterSituacaoPorAtivo(aluno.ativo);
     const status = this.obterStatusAluno(aluno, situacao);
+    const responsaveis = this.obterResponsaveisSerializados(aluno);
 
     return {
       ...aluno,
@@ -420,8 +449,10 @@ export class AlunosService {
       sex: aluno.sexo,
       school: aluno.escola?.nome ?? 'Sem escola vinculada',
       className: aluno.turma?.nome ?? 'Sem turma vinculada',
-      guardian: aluno.responsavelNome ?? '',
-      phone: aluno.responsavelTelefone ?? '',
+      responsaveis,
+      guardians: responsaveis,
+      guardian: responsaveis[0]?.nome ?? '',
+      phone: responsaveis[0]?.telefone ?? '',
       status,
     };
   }
@@ -448,6 +479,80 @@ export class AlunosService {
     const texto = valor.trim();
 
     return texto.length > 0 ? texto : null;
+  }
+
+  private normalizarResponsaveis(
+    responsaveis?: ResponsavelAlunoDto[] | null,
+    responsavelPrincipal?: {
+      nome?: string | null;
+      telefone?: string | null;
+    },
+  ): ResponsavelAluno[] | null {
+    const lista = responsaveis ?? [];
+    const normalizados = lista
+      .map((responsavel) => {
+        const nome = this.normalizarTextoOpcional(
+          this.primeiroDefinido(responsavel.nome, responsavel.name),
+        );
+
+        if (!nome) {
+          return null;
+        }
+
+        return {
+          nome,
+          telefone: this.normalizarTextoOpcional(
+            this.primeiroDefinido(responsavel.telefone, responsavel.phone),
+          ),
+          parentesco: this.normalizarTextoOpcional(
+            this.primeiroDefinido(
+              responsavel.parentesco,
+              responsavel.relationship,
+            ),
+          ),
+        };
+      })
+      .filter(
+        (responsavel): responsavel is ResponsavelAluno => responsavel !== null,
+      );
+
+    if (normalizados.length > 0) {
+      return normalizados;
+    }
+
+    const nomePrincipal = this.normalizarTextoOpcional(responsavelPrincipal?.nome);
+
+    if (!nomePrincipal) {
+      return null;
+    }
+
+    return [
+      {
+        nome: nomePrincipal,
+        telefone: this.normalizarTextoOpcional(responsavelPrincipal?.telefone),
+        parentesco: null,
+      },
+    ];
+  }
+
+  private obterResponsaveisSerializados(aluno: Aluno) {
+    if (aluno.responsaveis?.length) {
+      return aluno.responsaveis;
+    }
+
+    const nome = this.normalizarTextoOpcional(aluno.responsavelNome);
+
+    if (!nome) {
+      return [];
+    }
+
+    return [
+      {
+        nome,
+        telefone: this.normalizarTextoOpcional(aluno.responsavelTelefone),
+        parentesco: null,
+      },
+    ];
   }
 
   private obterSexoObrigatorio(valor: ValorOpcional<string>) {

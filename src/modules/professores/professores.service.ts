@@ -181,6 +181,8 @@ export class ProfessoresService {
   }
 
   async listar(usuarioExecutorId: string) {
+    await this.sincronizarProfessoresComAcessosAtivos();
+
     const where = await this.filtroProfessoresGerenciaveis(usuarioExecutorId);
 
     if (where === null) {
@@ -298,6 +300,29 @@ export class ProfessoresService {
     }
 
     await this.inativarPorUsuario(usuarioId);
+  }
+
+  private async sincronizarProfessoresComAcessosAtivos() {
+    const acessos = await this.usuarioAcessosRepositorio.find({
+      where: { ativo: true },
+      relations: { perfil: true, usuario: true },
+    });
+    const usuarioIds = [
+      ...new Set(
+        acessos
+          .filter(
+            (acesso) =>
+              acesso.perfil?.ativo &&
+              acesso.perfil.codigo === 'PROFESSOR' &&
+              acesso.usuario?.deletedAt === null,
+          )
+          .map((acesso) => acesso.usuarioId),
+      ),
+    ];
+
+    for (const usuarioId of usuarioIds) {
+      await this.garantirProfessorPorUsuario(usuarioId);
+    }
   }
 
   async garantirProfessorPorUsuario(usuarioId: string) {

@@ -21,6 +21,18 @@
     {
       "key": "professorRegenteId",
       "value": ""
+    },
+    {
+      "key": "professorId",
+      "value": ""
+    },
+    {
+      "key": "disciplinaId",
+      "value": ""
+    },
+    {
+      "key": "vinculoDocenteId",
+      "value": ""
     }
   ],
   "item": [
@@ -120,6 +132,93 @@
         ],
         "url": "{{url_base}}/turmas/{{turmaId}}"
       }
+    },
+    {
+      "name": "Vinculos Docentes",
+      "item": [
+        {
+          "name": "Listar Vinculos Docentes da Turma",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/turmas/{{turmaId}}/vinculos-docentes"
+          }
+        },
+        {
+          "name": "Criar Vinculo Docente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('vinculoDocenteId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "description": "Vincula professor, disciplina, turma e carga horaria semanal. Escrita permitida para ADMIN_GERAL, SECRETARIA_MUNICIPAL, GESTOR_ESCOLAR e SECRETARIO_ESCOLAR.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/turmas/{{turmaId}}/vinculos-docentes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"professorId\": \"{{professorId}}\",\n  \"disciplinaId\": \"{{disciplinaId}}\",\n  \"cargaHorariaSemanal\": 5,\n  \"ativo\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Atualizar Vinculo Docente",
+          "request": {
+            "description": "Atualiza somente o vinculo selecionado na turma.",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/turmas/{{turmaId}}/vinculos-docentes/{{vinculoDocenteId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cargaHorariaSemanal\": 6,\n  \"ativo\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Remover Vinculo Docente",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/turmas/{{turmaId}}/vinculos-docentes/{{vinculoDocenteId}}"
+          }
+        }
+      ]
     },
     {
       "name": "PATCH Atualizar Turma",

@@ -9,7 +9,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Usuario } from '../autenticacao/autenticacao.entities';
+import { Disciplina } from '../disciplinas/disciplinas.entities';
 import { Escola } from '../escolas/escolas.entities';
+import { Professor } from '../professores/professores.entities';
 
 export enum EtapaEnsinoTurma {
   CRECHE = 'Creche',
@@ -73,6 +75,50 @@ export class Turma {
 
   @Column({ type: 'boolean', default: true })
   ativa: boolean;
+
+  @CreateDateColumn({ name: 'created_at', type: 'datetime' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'datetime' })
+  updatedAt: Date;
+}
+
+@Entity('turma_vinculos_docentes')
+@Unique('uq_turma_vinculos_docentes_turma_professor_disciplina', [
+  'turmaId',
+  'professorId',
+  'disciplinaId',
+])
+export class TurmaVinculoDocente {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ name: 'turma_id', type: 'varchar', length: 36 })
+  turmaId: string;
+
+  @ManyToOne(() => Turma, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'turma_id' })
+  turma: Turma;
+
+  @Column({ name: 'professor_id', type: 'varchar', length: 36 })
+  professorId: string;
+
+  @ManyToOne(() => Professor, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'professor_id' })
+  professor: Professor;
+
+  @Column({ name: 'disciplina_id', type: 'varchar', length: 36 })
+  disciplinaId: string;
+
+  @ManyToOne(() => Disciplina, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'disciplina_id' })
+  disciplina: Disciplina;
+
+  @Column({ name: 'carga_horaria_semanal', type: 'int' })
+  cargaHorariaSemanal: number;
+
+  @Column({ type: 'boolean', default: true })
+  ativo: boolean;
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime' })
   createdAt: Date;

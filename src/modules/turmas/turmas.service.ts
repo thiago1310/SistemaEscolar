@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,10 +8,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Usuario } from '../autenticacao/autenticacao.entities';
 import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
+import { Disciplina } from '../disciplinas/disciplinas.entities';
 import { Escola } from '../escolas/escolas.entities';
+import { Professor } from '../professores/professores.entities';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
-import { AtualizarTurmaDto, CriarTurmaDto } from './turmas.dto';
-import { Turma } from './turmas.entities';
+import {
+  AtualizarTurmaDto,
+  AtualizarVinculoDocenteTurmaDto,
+  CriarTurmaDto,
+  CriarVinculoDocenteTurmaDto,
+} from './turmas.dto';
+import { Turma, TurmaVinculoDocente } from './turmas.entities';
 
 @Injectable()
 export class TurmasService {
@@ -23,6 +31,12 @@ export class TurmasService {
     private readonly usuariosRepositorio: Repository<Usuario>,
     @InjectRepository(UsuarioAcesso)
     private readonly usuarioAcessosRepositorio: Repository<UsuarioAcesso>,
+    @InjectRepository(Disciplina)
+    private readonly disciplinasRepositorio: Repository<Disciplina>,
+    @InjectRepository(Professor)
+    private readonly professoresRepositorio: Repository<Professor>,
+    @InjectRepository(TurmaVinculoDocente)
+    private readonly vinculosDocentesRepositorio: Repository<TurmaVinculoDocente>,
     private readonly escopoUsuarioService: EscopoUsuarioService,
   ) {}
 
@@ -130,6 +144,126 @@ export class TurmasService {
     return { mensagem: 'Turma removida com sucesso.' };
   }
 
+  async listarVinculosDocentes(turmaId: string, usuarioId: string) {
+    await this.buscarPorId(turmaId, usuarioId);
+
+    const vinculos = await this.vinculosDocentesRepositorio.find({
+      where: { turmaId },
+      relations: {
+        turma: true,
+        professor: { usuario: true },
+        disciplina: true,
+      },
+      order: { createdAt: 'DESC' },
+    });
+
+    return vinculos.map((vinculo) => this.serializarVinculoDocente(vinculo));
+  }
+
+  async criarVinculoDocente(
+    turmaId: string,
+    dados: CriarVinculoDocenteTurmaDto,
+    usuarioId: string,
+  ) {
+    const turma = await this.buscarPorId(turmaId, usuarioId);
+    await this.validarDadosVinculoDocente(turma, dados.professorId, dados.disciplinaId);
+
+    const vinculoExistente = await this.vinculosDocentesRepositorio.findOne({
+      where: {
+        turmaId,
+        professorId: dados.professorId,
+        disciplinaId: dados.disciplinaId,
+      },
+    });
+
+    if (vinculoExistente) {
+      Object.assign(vinculoExistente, {
+        cargaHorariaSemanal: dados.cargaHorariaSemanal,
+        ativo: dados.ativo ?? true,
+      });
+
+      await this.vinculosDocentesRepositorio.save(vinculoExistente);
+      return this.buscarVinculoDocentePorId(turmaId, vinculoExistente.id, usuarioId);
+    }
+
+    const vinculo = await this.vinculosDocentesRepositorio.save(
+      this.vinculosDocentesRepositorio.create({
+        turmaId,
+        professorId: dados.professorId,
+        disciplinaId: dados.disciplinaId,
+        cargaHorariaSemanal: dados.cargaHorariaSemanal,
+        ativo: dados.ativo ?? true,
+      }),
+    );
+
+    return this.buscarVinculoDocentePorId(turmaId, vinculo.id, usuarioId);
+  }
+
+  async atualizarVinculoDocente(
+    turmaId: string,
+    vinculoId: string,
+    dados: AtualizarVinculoDocenteTurmaDto,
+    usuarioId: string,
+  ) {
+    const turma = await this.buscarPorId(turmaId, usuarioId);
+    const vinculo = await this.obterVinculoDocente(turmaId, vinculoId);
+    const professorId = dados.professorId ?? vinculo.professorId;
+    const disciplinaId = dados.disciplinaId ?? vinculo.disciplinaId;
+
+    await this.validarDadosVinculoDocente(turma, professorId, disciplinaId);
+    await this.garantirVinculoDocenteNaoDuplicado(
+      turmaId,
+      professorId,
+      disciplinaId,
+      vinculoId,
+    );
+
+    Object.assign(vinculo, {
+      professorId,
+      disciplinaId,
+      cargaHorariaSemanal:
+        dados.cargaHorariaSemanal ?? vinculo.cargaHorariaSemanal,
+      ativo: dados.ativo ?? vinculo.ativo,
+    });
+
+    await this.vinculosDocentesRepositorio.save(vinculo);
+    return this.buscarVinculoDocentePorId(turmaId, vinculoId, usuarioId);
+  }
+
+  async removerVinculoDocente(
+    turmaId: string,
+    vinculoId: string,
+    usuarioId: string,
+  ) {
+    await this.buscarPorId(turmaId, usuarioId);
+    const vinculo = await this.obterVinculoDocente(turmaId, vinculoId);
+    await this.vinculosDocentesRepositorio.remove(vinculo);
+
+    return { mensagem: 'Vinculo docente removido com sucesso.' };
+  }
+
+  private async buscarVinculoDocentePorId(
+    turmaId: string,
+    vinculoId: string,
+    usuarioId: string,
+  ) {
+    await this.buscarPorId(turmaId, usuarioId);
+    const vinculo = await this.vinculosDocentesRepositorio.findOne({
+      where: { id: vinculoId, turmaId },
+      relations: {
+        turma: true,
+        professor: { usuario: true },
+        disciplina: true,
+      },
+    });
+
+    if (!vinculo) {
+      throw new NotFoundException('Vinculo docente da turma nao encontrado.');
+    }
+
+    return this.serializarVinculoDocente(vinculo);
+  }
+
   private async buscarEscola(escolaId: string) {
     const escola = await this.escolasRepositorio.findOneBy({ id: escolaId });
 
@@ -138,6 +272,100 @@ export class TurmasService {
     }
 
     return escola;
+  }
+
+  private async validarDadosVinculoDocente(
+    turma: Turma,
+    professorId: string,
+    disciplinaId: string,
+  ) {
+    const disciplina = await this.disciplinasRepositorio.findOneBy({
+      id: disciplinaId,
+      ativa: true,
+    });
+
+    if (!disciplina) {
+      throw new NotFoundException('Disciplina nao encontrada.');
+    }
+
+    if (disciplina.secretariaId !== turma.escola.secretariaId) {
+      throw new BadRequestException(
+        'Disciplina deve pertencer a mesma secretaria da escola da turma.',
+      );
+    }
+
+    const professor = await this.professoresRepositorio.findOne({
+      where: { id: professorId, ativo: true },
+      relations: { usuario: true },
+    });
+
+    if (!professor || !professor.usuario?.ativo) {
+      throw new NotFoundException('Professor nao encontrado.');
+    }
+
+    const acessos = await this.usuarioAcessosRepositorio.find({
+      where: { usuarioId: professor.usuarioId, ativo: true },
+      relations: { perfil: true },
+    });
+    const acessosProfessor = acessos.filter(
+      (acesso) => acesso.perfil?.ativo && acesso.perfil.codigo === 'PROFESSOR',
+    );
+
+    if (acessosProfessor.length === 0) {
+      throw new BadRequestException(
+        'Professor deve possuir perfil PROFESSOR ativo.',
+      );
+    }
+
+    const possuiAcessoNaTurma = acessosProfessor.some(
+      (acesso) =>
+        (!acesso.secretariaId && !acesso.escolaId) ||
+        acesso.escolaId === turma.escolaId ||
+        acesso.secretariaId === turma.escola.secretariaId,
+    );
+
+    if (!possuiAcessoNaTurma) {
+      throw new ForbiddenException(
+        'Professor nao possui acesso a escola ou secretaria da turma.',
+      );
+    }
+  }
+
+  private async obterVinculoDocente(turmaId: string, vinculoId: string) {
+    const vinculo = await this.vinculosDocentesRepositorio.findOne({
+      where: { id: vinculoId, turmaId },
+    });
+
+    if (!vinculo) {
+      throw new NotFoundException('Vinculo docente da turma nao encontrado.');
+    }
+
+    return vinculo;
+  }
+
+  private async garantirVinculoDocenteNaoDuplicado(
+    turmaId: string,
+    professorId: string,
+    disciplinaId: string,
+    ignorarId?: string,
+  ) {
+    const consulta = this.vinculosDocentesRepositorio
+      .createQueryBuilder('vinculo')
+      .where('vinculo.turma_id = :turmaId', { turmaId })
+      .andWhere('vinculo.professor_id = :professorId', { professorId })
+      .andWhere('vinculo.disciplina_id = :disciplinaId', { disciplinaId });
+
+    if (ignorarId) {
+      consulta.andWhere('vinculo.id != :ignorarId', { ignorarId });
+    }
+
+    const existente = await consulta.getOne();
+
+    if (existente) {
+      throw new BadRequestException(
+        'Ja existe vinculo docente para esta turma, professor e disciplina.',
+      );
+    }
   }
 
   private async validarProfessorRegente(professorRegenteId?: string | null) {
@@ -226,5 +454,36 @@ export class TurmasService {
     }
 
     return filtros.length > 0 ? filtros : null;
+  }
+
+  private serializarVinculoDocente(vinculo: TurmaVinculoDocente) {
+    return {
+      id: vinculo.id,
+      turmaId: vinculo.turmaId,
+      professorId: vinculo.professorId,
+      disciplinaId: vinculo.disciplinaId,
+      cargaHorariaSemanal: vinculo.cargaHorariaSemanal,
+      ativo: vinculo.ativo,
+      anoLetivo: vinculo.turma?.anoLetivo,
+      professor: vinculo.professor
+        ? {
+            id: vinculo.professor.id,
+            usuarioId: vinculo.professor.usuarioId,
+            matricula: vinculo.professor.matricula,
+            nome: vinculo.professor.usuario?.nome,
+            email: vinculo.professor.usuario?.email,
+          }
+        : null,
+      disciplina: vinculo.disciplina
+        ? {
+            id: vinculo.disciplina.id,
+            nome: vinculo.disciplina.nome,
+            secretariaId: vinculo.disciplina.secretariaId,
+            ativa: vinculo.disciplina.ativa,
+          }
+        : null,
+      createdAt: vinculo.createdAt,
+      updatedAt: vinculo.updatedAt,
+    };
   }
 }

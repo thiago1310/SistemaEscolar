@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "e0d9e34d-7ac9-4771-b9a8-61fe4f1e8a70",
     "name": "Sistema Escolar - Alunos",
-    "description": "Collection do modulo alunos. O endpoint principal e /alunos; use tenantSlug=vicente-dutra para a resposta vir compatível com a rota do front /vicente-dutra/educacao/alunos. No cadastro, a API aceita os campos em portugues e aliases do front: name, document, birthDate, gender, guardian e phone. Todo aluno nasce ativo; o vinculo com escola e turma sera tratado pela matricula. No retorno e nos filtros, status=pending representa aluno ativo sem escola ou turma vinculada.",
+    "description": "Collection do modulo alunos. O endpoint principal e /alunos; use tenantSlug=vicente-dutra para a resposta vir compatível com a rota do front /vicente-dutra/educacao/alunos. No cadastro, a API aceita os campos em portugues e aliases do front: name, document, birthDate, gender, guardian e phone. Todo aluno nasce pending; o vinculo com escola e turma sera tratado pela matricula. No retorno e nos filtros, status=pending representa aluno ativo sem escola ou turma vinculada.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -86,6 +86,74 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nomeCompleto\": \"Laura Beatriz Costa\",\n  \"cpfOuCertidao\": \"32165498710\",\n  \"dataNascimento\": \"2013-11-02\",\n  \"genero\": \"feminino\",\n  \"responsavelNome\": \"Marcos Costa\",\n  \"responsavelTelefone\": \"49999334411\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Criar Aluno - Sem CPF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('alunoId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "description": "Cadastro de aluno sem CPF/certidao. O backend grava cpfOuCertidao como null quando document/cpfOuCertidao nao e enviado ou vem vazio.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aluno Sem CPF\",\n  \"birthDate\": \"2016-05-10\",\n  \"gender\": \"feminino\",\n  \"guardian\": \"Responsavel Sem CPF\",\n  \"phone\": \"49999112200\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Criar Aluno - Multiplos responsaveis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "if (resposta.id) pm.collectionVariables.set('alunoId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "description": "Cadastro de aluno com mais de um responsavel. O primeiro item da lista tambem preenche guardian/phone no retorno para compatibilidade.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/alunos?tenantSlug={{tenantSlug}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aluno Com Responsaveis\",\n  \"birthDate\": \"2016-05-10\",\n  \"gender\": \"feminino\",\n  \"responsaveis\": [\n    {\n      \"nome\": \"Camila Martins\",\n      \"telefone\": \"49999112200\",\n      \"parentesco\": \"Mae\"\n    },\n    {\n      \"nome\": \"Marcos Martins\",\n      \"telefone\": \"49999223300\",\n      \"parentesco\": \"Pai\"\n    }\n  ]\n}"
             }
           }
         }

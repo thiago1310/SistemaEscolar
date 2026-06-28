@@ -104,3 +104,40 @@ export class AtualizarTurmaDto {
   @IsOptional()
   ativa?: boolean;
 }
+
+export class CriarVinculoDocenteTurmaDto {
+  @IsUUID()
+  professorId: string;
+
+  @IsUUID()
+  disciplinaId: string;
+
+  @IsInt()
+  @Min(1)
+  @Max(999)
+  cargaHorariaSemanal: number;
+
+  @IsBoolean()
+  @IsOptional()
+  ativo?: boolean;
+}
+
+export class AtualizarVinculoDocenteTurmaDto {
+  @IsUUID()
+  @IsOptional()
+  professorId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  disciplinaId?: string;
+
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  @Max(999)
+  cargaHorariaSemanal?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  ativo?: boolean;
+}
