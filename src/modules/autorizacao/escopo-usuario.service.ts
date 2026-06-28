@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { Escola } from '../escolas/escolas.entities';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
 
 export interface EscopoUsuario {
@@ -16,6 +17,8 @@ export class EscopoUsuarioService {
   constructor(
     @InjectRepository(UsuarioAcesso)
     private readonly usuarioAcessosRepositorio: Repository<UsuarioAcesso>,
+    @InjectRepository(Escola)
+    private readonly escolasRepositorio: Repository<Escola>,
   ) {}
 
   async obterEscopo(usuarioId: string): Promise<EscopoUsuario> {
@@ -89,8 +92,11 @@ export class EscopoUsuarioService {
       return undefined;
     }
 
-    return escopo.secretariaIds.length > 0
-      ? { id: In(escopo.secretariaIds) }
+    const secretariaIdsPermitidas =
+      await this.obterSecretariaIdsPermitidasPorEscopo(escopo);
+
+    return secretariaIdsPermitidas.length > 0
+      ? { id: In(secretariaIdsPermitidas) }
       : null;
   }
 
@@ -101,8 +107,11 @@ export class EscopoUsuarioService {
       return undefined;
     }
 
-    return escopo.secretariaIds.length > 0
-      ? { secretariaId: In(escopo.secretariaIds) }
+    const secretariaIdsPermitidas =
+      await this.obterSecretariaIdsPermitidasPorEscopo(escopo);
+
+    return secretariaIdsPermitidas.length > 0
+      ? { secretariaId: In(secretariaIdsPermitidas) }
       : null;
   }
 
@@ -128,5 +137,22 @@ export class EscopoUsuarioService {
 
   private unicos(valores: Array<string | null>) {
     return [...new Set(valores.filter((valor): valor is string => Boolean(valor)))];
+  }
+
+  private async obterSecretariaIdsPermitidasPorEscopo(escopo: EscopoUsuario) {
+    const secretariaIds = new Set(escopo.secretariaIds);
+
+    if (escopo.escolaIds.length > 0) {
+      const escolas = await this.escolasRepositorio.find({
+        where: { id: In(escopo.escolaIds) },
+        select: { secretariaId: true },
+      });
+
+      for (const escola of escolas) {
+        secretariaIds.add(escola.secretariaId);
+      }
+    }
+
+    return [...secretariaIds];
   }
 }

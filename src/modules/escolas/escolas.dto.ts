@@ -11,6 +11,7 @@ import {
   Length,
   Matches,
   MaxLength,
+  ValidateIf,
 } from 'class-validator';
 
 const ufsBrasileiras = [
@@ -54,6 +55,7 @@ export class CriarEscolaDto {
   @IsIn(modalidadesEnsino, { each: true })
   modalidadesEnsino?: string[];
 
+  @ValidateIf((dados) => dados.diretorId !== null)
   @IsUUID()
   @IsOptional()
   diretorId?: string | null;
@@ -149,6 +151,7 @@ export class AtualizarEscolaDto {
   @IsIn(modalidadesEnsino, { each: true })
   modalidadesEnsino?: string[];
 
+  @ValidateIf((dados) => dados.diretorId !== null)
   @IsUUID()
   @IsOptional()
   diretorId?: string | null;

@@ -114,8 +114,12 @@ export class EscolasService {
       await this.garantirDiretorExiste(dados.diretorId);
     }
 
-    Object.assign(escola, {
-      ...dados,
+    const dadosAtualizados = {
+      secretariaId:
+        dados.secretariaId === undefined ? escola.secretariaId : dados.secretariaId,
+      nome: dados.nome === undefined ? escola.nome : dados.nome,
+      codigoInep:
+        dados.codigoInep === undefined ? escola.codigoInep : dados.codigoInep ?? null,
       tipoEscola:
         dados.tipoEscola === undefined ? escola.tipoEscola : dados.tipoEscola ?? null,
       modalidadesEnsino:
@@ -124,22 +128,41 @@ export class EscolasService {
           : dados.modalidadesEnsino ?? null,
       diretorId:
         dados.diretorId === undefined ? escola.diretorId : dados.diretorId ?? null,
+      cnpj: dados.cnpj === undefined ? escola.cnpj : dados.cnpj ?? null,
+      telefone:
+        dados.telefone === undefined ? escola.telefone : dados.telefone ?? null,
+      email: dados.email === undefined ? escola.email : dados.email ?? null,
+      cep: dados.cep === undefined ? escola.cep : dados.cep ?? null,
+      endereco:
+        dados.endereco === undefined ? escola.endereco : dados.endereco ?? null,
+      numero: dados.numero === undefined ? escola.numero : dados.numero ?? null,
+      complemento:
+        dados.complemento === undefined
+          ? escola.complemento
+          : dados.complemento ?? null,
+      bairro: dados.bairro === undefined ? escola.bairro : dados.bairro ?? null,
+      municipio:
+        dados.municipio === undefined ? escola.municipio : dados.municipio ?? null,
       observacoes:
         dados.observacoes === undefined
           ? escola.observacoes
           : dados.observacoes ?? null,
       uf: dados.uf?.toUpperCase() ?? escola.uf,
-    });
+      ativa: dados.ativa ?? escola.ativa,
+    };
 
-    const escolaSalva = await this.escolasRepositorio.save(escola);
+    await this.escolasRepositorio.update(id, dadosAtualizados);
     await this.sincronizarDiretorGestorEscolar(
       diretorAnteriorId,
-      escolaSalva.diretorId,
-      escolaSalva,
+      dadosAtualizados.diretorId,
+      {
+        id: escola.id,
+        secretariaId: dadosAtualizados.secretariaId,
+      },
       secretariaAnteriorId,
     );
 
-    return this.buscarPorId(escolaSalva.id, usuarioId);
+    return this.buscarPorId(id, usuarioId);
   }
 
   async remover(id: string, usuarioId: string) {
@@ -199,7 +222,7 @@ export class EscolasService {
   private async sincronizarDiretorGestorEscolar(
     diretorAnteriorId: string | null,
     diretorAtualId: string | null,
-    escola: Escola,
+    escola: { id: string; secretariaId: string },
     secretariaAnteriorId: string | null,
   ) {
     if (!diretorAnteriorId && !diretorAtualId) {

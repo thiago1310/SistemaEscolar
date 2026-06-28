@@ -5,10 +5,16 @@ import {
   Headers,
   Ip,
   Post,
+  Patch,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { EntrarDto, RenovarTokenDto, SairDto } from './autenticacao.dto';
+import {
+  AlterarSenhaDto,
+  EntrarDto,
+  RenovarTokenDto,
+  SairDto,
+} from './autenticacao.dto';
 import { RequisicaoAutenticada, TokenAcessoGuard } from './autenticacao.guard';
 import { AutenticacaoService } from './autenticacao.service';
 
@@ -47,5 +53,14 @@ export class AutenticacaoController {
   @UseGuards(TokenAcessoGuard)
   perfil(@Req() requisicao: RequisicaoAutenticada) {
     return this.autenticacaoService.obterPerfil(requisicao.usuario.id);
+  }
+
+  @Patch('senha')
+  @UseGuards(TokenAcessoGuard)
+  alterarSenha(
+    @Req() requisicao: RequisicaoAutenticada,
+    @Body() dados: AlterarSenhaDto,
+  ) {
+    return this.autenticacaoService.alterarSenha(requisicao.usuario.id, dados);
   }
 }

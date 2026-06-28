@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS alunos (
     sexo VARCHAR(20),
     responsavel_nome VARCHAR(255),
     responsavel_telefone VARCHAR(30),
-    situacao VARCHAR(20) NOT NULL DEFAULT 'active',
+    situacao VARCHAR(20) NOT NULL DEFAULT 'pending',
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()

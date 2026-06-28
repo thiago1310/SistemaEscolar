@@ -26,14 +26,26 @@ export class Aluno {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'escola_id', type: 'varchar', length: 36, nullable: true })
+  @Column({
+    name: 'escola_id',
+    type: 'varchar',
+    length: 36,
+    nullable: true,
+    default: null,
+  })
   escolaId: string | null;
 
   @ManyToOne(() => Escola, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'escola_id' })
   escola: Escola | null;
 
-  @Column({ name: 'turma_id', type: 'varchar', length: 36, nullable: true })
+  @Column({
+    name: 'turma_id',
+    type: 'varchar',
+    length: 36,
+    nullable: true,
+    default: null,
+  })
   turmaId: string | null;
 
   @ManyToOne(() => Turma, { onDelete: 'SET NULL', nullable: true })
@@ -49,7 +61,7 @@ export class Aluno {
   @Column({ name: 'data_nascimento', type: 'date', nullable: true })
   dataNascimento: string | null;
 
-  @Column({ name: 'sexo', type: 'varchar', length: 20, nullable: true })
+  @Column({ name: 'sexo', type: 'varchar', length: 20, nullable: true, default: null })
   sexo: SexoAluno | null;
 
   @Column({ name: 'responsavel_nome', type: 'varchar', length: 255, nullable: true })
@@ -62,7 +74,7 @@ export class Aluno {
     name: 'situacao',
     type: 'varchar',
     length: 20,
-    default: SituacaoAluno.ATIVO,
+    default: SituacaoAluno.PENDENTE,
   })
   situacao: SituacaoAluno;
 

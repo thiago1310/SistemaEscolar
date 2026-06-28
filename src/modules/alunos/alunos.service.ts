@@ -39,7 +39,7 @@ export class AlunosService {
     usuarioId: string,
     filtros: Pick<ListarAlunosDto, 'tenantSlug'> = {},
   ) {
-    const situacao = SituacaoAluno.ATIVO;
+    const situacao = SituacaoAluno.PENDENTE;
 
     const aluno = this.alunosRepositorio.create({
       escolaId: null,

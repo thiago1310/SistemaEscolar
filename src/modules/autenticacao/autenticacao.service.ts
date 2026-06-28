@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import {
+  BadRequestException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -10,7 +11,12 @@ import * as bcrypt from 'bcryptjs';
 import { IsNull, Repository } from 'typeorm';
 import { Secretaria } from '../secretarias/secretarias.entities';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
-import { EntrarDto, RenovarTokenDto, SairDto } from './autenticacao.dto';
+import {
+  AlterarSenhaDto,
+  EntrarDto,
+  RenovarTokenDto,
+  SairDto,
+} from './autenticacao.dto';
 import { SessaoUsuario, Usuario } from './autenticacao.entities';
 import { UsuarioAutenticado } from './autenticacao.guard';
 
@@ -224,6 +230,43 @@ export class AutenticacaoService {
           : null,
       })),
     };
+  }
+
+  async alterarSenha(usuarioId: string, dados: AlterarSenhaDto) {
+    if (dados.novaSenha !== dados.confirmacaoSenha) {
+      throw new BadRequestException('A confirmacao da senha nao confere.');
+    }
+
+    if (dados.senhaAtual === dados.novaSenha) {
+      throw new BadRequestException('A nova senha deve ser diferente da senha atual.');
+    }
+
+    const usuario = await this.usuariosRepositorio.findOneBy({
+      id: usuarioId,
+      ativo: true,
+      deletedAt: IsNull(),
+    });
+
+    if (!usuario?.senhaHash) {
+      throw new UnauthorizedException('Usuario nao encontrado.');
+    }
+
+    const senhaAtualValida = await bcrypt.compare(
+      dados.senhaAtual,
+      usuario.senhaHash,
+    );
+
+    if (!senhaAtualValida) {
+      throw new UnauthorizedException('Senha atual invalida.');
+    }
+
+    usuario.senhaHash = await bcrypt.hash(dados.novaSenha, 12);
+    usuario.primeiroAcesso = false;
+    usuario.updatedAt = new Date();
+
+    await this.usuariosRepositorio.save(usuario);
+
+    return { mensagem: 'Senha alterada com sucesso.' };
   }
 
   private async buscarUsuarioParaLogin(identificador: string) {

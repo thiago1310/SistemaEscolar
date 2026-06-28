@@ -89,7 +89,7 @@
             "url": "{{url_base}}/escolas",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa {{$timestamp}}\",\n  \"codigoInep\": \"INEP{{$timestamp}}\",\n  \"tipoEscola\": \"Urbana\",\n  \"modalidadesEnsino\": [\n    \"Creche\",\n    \"Pré-escola\",\n    \"Ensino Fundamental - Anos Iniciais\",\n    \"Ensino Fundamental - Anos Finais\"\n  ],\n  \"diretorId\": \"{{diretorId}}\",\n  \"cnpj\": \"00000000000102\",\n  \"telefone\": \"1130000002\",\n  \"email\": \"escola{{$timestamp}}@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Praca da Se\",\n  \"numero\": \"100\",\n  \"complemento\": \"Predio Principal\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true,\n  \"observacoes\": \"Informacoes diversas sobre a unidade escolar.\"\n}"
+              "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa {{$timestamp}}\",\n  \"codigoInep\": \"INEP{{$timestamp}}\",\n  \"tipoEscola\": \"Urbana\",\n  \"modalidadesEnsino\": [\n    \"Creche\",\n    \"Pré-escola\",\n    \"Ensino Fundamental - Anos Iniciais\",\n    \"Ensino Fundamental - Anos Finais\"\n  ],\n  \"cnpj\": \"00000000000102\",\n  \"telefone\": \"1130000002\",\n  \"email\": \"escola{{$timestamp}}@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Praca da Se\",\n  \"numero\": \"100\",\n  \"complemento\": \"Predio Principal\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true,\n  \"observacoes\": \"Informacoes diversas sobre a unidade escolar.\"\n}"
             }
           }
         }
@@ -163,6 +163,28 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"nome\": \"Escola Completa Atualizada\",\n  \"codigoInep\": \"INEP0002\",\n  \"tipoEscola\": \"Urbana\",\n  \"modalidadesEnsino\": [\n    \"Creche\",\n    \"Pré-escola\"\n  ],\n  \"diretorId\": \"{{diretorId}}\",\n  \"cnpj\": \"00000000000108\",\n  \"telefone\": \"1130000008\",\n  \"email\": \"escola.atualizada@sistema.local\",\n  \"cep\": \"01001000\",\n  \"endereco\": \"Rua Direita\",\n  \"numero\": \"200\",\n  \"complemento\": \"Bloco A\",\n  \"bairro\": \"Centro\",\n  \"municipio\": \"Sao Paulo\",\n  \"uf\": \"SP\",\n  \"ativa\": true,\n  \"observacoes\": \"Observacao atualizada da unidade escolar.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Atualizar Escola - Remover diretor",
+          "request": {
+            "description": "Remove o diretor da escola e tambem remove o acesso GESTOR_ESCOLAR daquele usuario para esta escola.",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diretorId\": null\n}"
             }
           }
         }
