@@ -120,7 +120,7 @@ export class UsuarioAcessosService {
       throw new NotFoundException('Acesso do usuario nao encontrado.');
     }
 
-    await this.garantirEscopoGerenciavel(usuarioExecutorId, acesso);
+    await this.garantirEscopoVisualizavel(usuarioExecutorId, acesso);
 
     return acesso;
   }
@@ -320,6 +320,25 @@ export class UsuarioAcessosService {
       throw new ForbiddenException('Usuario sem permissao para gerenciar escopo global.');
     }
 
+    if (dados.escolaId && !escopo.escolaIds.includes(dados.escolaId)) {
+      const escola = await this.escolasRepositorio.findOneBy({ id: dados.escolaId });
+
+      if (
+        !escola ||
+        escopo.escolaIds.length > 0 ||
+        !escopo.secretariaIds.includes(escola.secretariaId)
+      ) {
+        throw new ForbiddenException('Usuario sem acesso a esta escola.');
+      }
+    }
+
+    if (
+      !dados.escolaId &&
+      escopo.escolaIds.length > 0
+    ) {
+      throw new ForbiddenException('Usuario sem permissao para gerenciar escopo de secretaria.');
+    }
+
     if (
       dados.secretariaId &&
       !escopo.secretariaIds.includes(dados.secretariaId)
@@ -327,14 +346,49 @@ export class UsuarioAcessosService {
       throw new ForbiddenException('Usuario sem acesso a esta secretaria.');
     }
 
-    if (dados.escolaId && !escopo.escolaIds.includes(dados.escolaId)) {
+  }
+
+  private async garantirEscopoVisualizavel(
+    usuarioExecutorId: string,
+    dados: {
+      secretariaId?: string | null;
+      escolaId?: string | null;
+    },
+  ) {
+    const escopo = await this.escopoUsuarioService.obterEscopo(usuarioExecutorId);
+
+    if (escopo.global) {
+      return;
+    }
+
+    if (!dados.secretariaId && !dados.escolaId) {
+      throw new ForbiddenException('Usuario sem permissao para visualizar escopo global.');
+    }
+
+    if (dados.escolaId && escopo.escolaIds.includes(dados.escolaId)) {
+      return;
+    }
+
+    if (escopo.escolaIds.length > 0) {
+      throw new ForbiddenException('Usuario sem acesso a este escopo.');
+    }
+
+    if (
+      dados.secretariaId &&
+      escopo.secretariaIds.includes(dados.secretariaId)
+    ) {
+      return;
+    }
+
+    if (dados.escolaId) {
       const escola = await this.escolasRepositorio.findOneBy({ id: dados.escolaId });
 
-      if (!escola || !escopo.secretariaIds.includes(escola.secretariaId)) {
-        throw new ForbiddenException('Usuario sem acesso a esta escola.');
+      if (escola && escopo.secretariaIds.includes(escola.secretariaId)) {
+        return;
       }
     }
 
+    throw new ForbiddenException('Usuario sem acesso a este escopo.');
   }
 
   private async filtroAcessosGerenciaveis(usuarioExecutorId: string) {
@@ -346,12 +400,10 @@ export class UsuarioAcessosService {
 
     const filtros = [];
 
-    if (escopo.secretariaIds.length > 0) {
-      filtros.push({ secretariaId: In(escopo.secretariaIds) });
-    }
-
     if (escopo.escolaIds.length > 0) {
       filtros.push({ escolaId: In(escopo.escolaIds) });
+    } else if (escopo.secretariaIds.length > 0) {
+      filtros.push({ secretariaId: In(escopo.secretariaIds) });
     }
 
     return filtros.length > 0 ? filtros : null;

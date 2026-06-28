@@ -86,12 +86,10 @@ export class UsuariosService {
 
     const filtros = [];
 
-    if (escopo.secretariaIds.length > 0) {
-      filtros.push({ secretariaId: In(escopo.secretariaIds), ativo: true });
-    }
-
     if (escopo.escolaIds.length > 0) {
       filtros.push({ escolaId: In(escopo.escolaIds), ativo: true });
+    } else if (escopo.secretariaIds.length > 0) {
+      filtros.push({ secretariaId: In(escopo.secretariaIds), ativo: true });
     }
 
     if (filtros.length === 0) {
@@ -265,16 +263,14 @@ export class UsuariosService {
 
     const filtros = [];
 
-    if (escopo.secretariaIds.length > 0) {
+    if (escopo.escolaIds.length > 0) {
+      filtros.push({ usuarioId, escolaId: In(escopo.escolaIds), ativo: true });
+    } else if (escopo.secretariaIds.length > 0) {
       filtros.push({
         usuarioId,
         secretariaId: In(escopo.secretariaIds),
         ativo: true,
       });
-    }
-
-    if (escopo.escolaIds.length > 0) {
-      filtros.push({ usuarioId, escolaId: In(escopo.escolaIds), ativo: true });
     }
 
     if (filtros.length === 0) {

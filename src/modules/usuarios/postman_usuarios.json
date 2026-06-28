@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "03f99621-4fba-4a1d-05a6-8b18fece8e71",
     "name": "Sistema Escolar - Usuarios",
-    "description": "Collection do modulo usuarios com exemplos essenciais e completos. Ao vincular o usuario ao perfil PROFESSOR em usuario-acessos, o cadastro de professor e criado automaticamente.",
+    "description": "Collection do modulo usuarios com exemplos essenciais e completos. Ao vincular o usuario ao perfil PROFESSOR em usuario-acessos, o cadastro de professor e criado automaticamente. A leitura fica disponivel para usuario autenticado com perfil ativo e retorna apenas usuarios dentro do escopo de secretaria/escola permitido.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

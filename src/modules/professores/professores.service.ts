@@ -18,7 +18,11 @@ import { Escola } from '../escolas/escolas.entities';
 import { Perfil } from '../perfis-permissoes/perfis-permissoes.entities';
 import { Secretaria } from '../secretarias/secretarias.entities';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
-import { AtualizarProfessorDto, CriarProfessorDto } from './professores.dto';
+import {
+  AtualizarProfessorDto,
+  CriarProfessorDto,
+  ListarProfessoresDto,
+} from './professores.dto';
 import { Professor } from './professores.entities';
 
 @Injectable()
@@ -180,10 +184,13 @@ export class ProfessoresService {
     };
   }
 
-  async listar(usuarioExecutorId: string) {
+  async listar(usuarioExecutorId: string, filtros: ListarProfessoresDto = {}) {
     await this.sincronizarProfessoresComAcessosAtivos();
 
-    const where = await this.filtroProfessoresGerenciaveis(usuarioExecutorId);
+    const where = await this.filtroProfessoresGerenciaveis(
+      usuarioExecutorId,
+      filtros,
+    );
 
     if (where === null) {
       return [];
@@ -326,6 +333,8 @@ export class ProfessoresService {
   }
 
   async garantirProfessorPorUsuario(usuarioId: string) {
+    const possuiPerfilProfessorAtivo =
+      await this.usuarioPossuiPerfilProfessorAtivo(usuarioId);
     const usuario = await this.usuariosRepositorio.findOneBy({
       id: usuarioId,
       deletedAt: IsNull(),
@@ -340,7 +349,7 @@ export class ProfessoresService {
     });
 
     if (professor) {
-      if (!professor.ativo && usuario.ativo) {
+      if (!professor.ativo && possuiPerfilProfessorAtivo) {
         professor.ativo = true;
         await this.professoresRepositorio.save(professor);
       }
@@ -353,7 +362,7 @@ export class ProfessoresService {
         matricula: null,
         dataAdmissao: null,
         formacao: null,
-        ativo: usuario.ativo,
+        ativo: possuiPerfilProfessorAtivo,
       }),
     );
   }
@@ -559,19 +568,27 @@ export class ProfessoresService {
       throw new ForbiddenException('Usuario sem permissao para gerenciar escopo global.');
     }
 
+    if (dados.escolaId && !escopo.escolaIds.includes(dados.escolaId)) {
+      const escola = await this.escolasRepositorio.findOneBy({ id: dados.escolaId });
+
+      if (
+        !escola ||
+        escopo.escolaIds.length > 0 ||
+        !escopo.secretariaIds.includes(escola.secretariaId)
+      ) {
+        throw new ForbiddenException('Usuario sem acesso a esta escola.');
+      }
+    }
+
+    if (!dados.escolaId && escopo.escolaIds.length > 0) {
+      throw new ForbiddenException('Usuario sem permissao para gerenciar escopo de secretaria.');
+    }
+
     if (
       dados.secretariaId &&
       !escopo.secretariaIds.includes(dados.secretariaId)
     ) {
       throw new ForbiddenException('Usuario sem acesso a esta secretaria.');
-    }
-
-    if (dados.escolaId && !escopo.escolaIds.includes(dados.escolaId)) {
-      const escola = await this.escolasRepositorio.findOneBy({ id: dados.escolaId });
-
-      if (!escola || !escopo.secretariaIds.includes(escola.secretariaId)) {
-        throw new ForbiddenException('Usuario sem acesso a esta escola.');
-      }
     }
 
     await this.validarRelacionamentosEscopo(dados);
@@ -607,27 +624,79 @@ export class ProfessoresService {
 
   }
 
-  private async filtroProfessoresGerenciaveis(usuarioExecutorId: string) {
+  private async filtroProfessoresGerenciaveis(
+    usuarioExecutorId: string,
+    filtros: ListarProfessoresDto = {},
+  ) {
     const escopo = await this.escopoUsuarioService.obterEscopo(usuarioExecutorId);
+    const filtrosAcesso = [];
 
     if (escopo.global) {
-      return undefined;
+      const filtroGlobal = {
+        ...(filtros.secretariaId ? { secretariaId: filtros.secretariaId } : {}),
+        ...(filtros.escolaId ? { escolaId: filtros.escolaId } : {}),
+        ativo: true,
+      };
+
+      if (filtros.secretariaId || filtros.escolaId) {
+        filtrosAcesso.push(filtroGlobal);
+      }
+
+      if (filtrosAcesso.length === 0) {
+        return undefined;
+      }
+
+      return this.filtrarProfessoresPorAcessos(filtrosAcesso);
     }
 
-    const filtros = [];
+    if (filtros.escolaId) {
+      const escolaPermitida = escopo.escolaIds.includes(filtros.escolaId);
 
-    if (escopo.secretariaIds.length > 0) {
-      filtros.push({ secretariaId: In(escopo.secretariaIds), ativo: true });
+      if (!escolaPermitida) {
+        const escola = await this.escolasRepositorio.findOneBy({
+          id: filtros.escolaId,
+        });
+
+        if (
+          !escola ||
+          escopo.escolaIds.length > 0 ||
+          !escopo.secretariaIds.includes(escola.secretariaId)
+        ) {
+          return null;
+        }
+      }
+
+      filtrosAcesso.push({ escolaId: filtros.escolaId, ativo: true });
+    } else if (escopo.escolaIds.length > 0) {
+      filtrosAcesso.push({ escolaId: In(escopo.escolaIds), ativo: true });
+    } else if (filtros.secretariaId) {
+      const secretariaPermitida = escopo.secretariaIds.includes(
+        filtros.secretariaId,
+      );
+
+      if (!secretariaPermitida) {
+        return null;
+      }
+
+      filtrosAcesso.push({ secretariaId: filtros.secretariaId, ativo: true });
+    } else if (escopo.secretariaIds.length > 0) {
+      filtrosAcesso.push({ secretariaId: In(escopo.secretariaIds), ativo: true });
     }
 
-    if (escopo.escolaIds.length > 0) {
-      filtros.push({ escolaId: In(escopo.escolaIds), ativo: true });
-    }
-
-    if (filtros.length === 0) {
+    if (filtrosAcesso.length === 0) {
       return null;
     }
 
+    return this.filtrarProfessoresPorAcessos(filtrosAcesso);
+  }
+
+  private async filtrarProfessoresPorAcessos(
+    filtros: Array<{
+      secretariaId?: string | ReturnType<typeof In>;
+      escolaId?: string | ReturnType<typeof In>;
+      ativo: boolean;
+    }>,
+  ) {
     const acessos = await this.usuarioAcessosRepositorio.find({
       where: filtros,
       relations: { perfil: true },
@@ -655,12 +724,10 @@ export class ProfessoresService {
 
     const filtros = [];
 
-    if (escopo.secretariaIds.length > 0) {
-      filtros.push({ usuarioId, secretariaId: In(escopo.secretariaIds), ativo: true });
-    }
-
     if (escopo.escolaIds.length > 0) {
       filtros.push({ usuarioId, escolaId: In(escopo.escolaIds), ativo: true });
+    } else if (escopo.secretariaIds.length > 0) {
+      filtros.push({ usuarioId, secretariaId: In(escopo.secretariaIds), ativo: true });
     }
 
     if (filtros.length === 0) {

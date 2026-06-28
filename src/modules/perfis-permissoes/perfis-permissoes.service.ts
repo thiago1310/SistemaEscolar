@@ -137,7 +137,9 @@ export class PerfisPermissoesService {
     return { mensagem: 'Permissão removida do perfil com sucesso.' };
   }
 
-  listarPermissoesDoPerfil(perfilId: string) {
+  async listarPermissoesDoPerfil(perfilId: string, usuarioExecutorId?: string) {
+    await this.buscarPerfilPorId(perfilId, usuarioExecutorId);
+
     return this.perfilPermissoesRepositorio.find({
       where: { perfilId },
       relations: { permissao: true },

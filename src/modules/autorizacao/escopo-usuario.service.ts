@@ -61,7 +61,14 @@ export class EscopoUsuarioService {
   async garantirSecretariaPermitida(usuarioId: string, secretariaId: string) {
     const escopo = await this.obterEscopo(usuarioId);
 
-    if (escopo.global || escopo.secretariaIds.includes(secretariaId)) {
+    if (escopo.global) {
+      return;
+    }
+
+    if (
+      escopo.escolaIds.length === 0 &&
+      escopo.secretariaIds.includes(secretariaId)
+    ) {
       return;
     }
 
@@ -74,9 +81,16 @@ export class EscopoUsuarioService {
   ) {
     const escopo = await this.obterEscopo(usuarioId);
 
+    if (escopo.global) {
+      return;
+    }
+
+    if (escopo.escolaIds.length > 0 && escopo.escolaIds.includes(escola.id)) {
+      return;
+    }
+
     if (
-      escopo.global ||
-      escopo.escolaIds.includes(escola.id) ||
+      escopo.escolaIds.length === 0 &&
       escopo.secretariaIds.includes(escola.secretariaId)
     ) {
       return;
@@ -122,17 +136,15 @@ export class EscopoUsuarioService {
       return undefined;
     }
 
-    const filtros = [];
+    if (escopo.escolaIds.length > 0) {
+      return { id: In(escopo.escolaIds) };
+    }
 
     if (escopo.secretariaIds.length > 0) {
-      filtros.push({ secretariaId: In(escopo.secretariaIds) });
+      return { secretariaId: In(escopo.secretariaIds) };
     }
 
-    if (escopo.escolaIds.length > 0) {
-      filtros.push({ id: In(escopo.escolaIds) });
-    }
-
-    return filtros.length > 0 ? filtros : null;
+    return null;
   }
 
   private unicos(valores: Array<string | null>) {

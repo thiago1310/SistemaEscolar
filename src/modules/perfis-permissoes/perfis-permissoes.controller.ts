@@ -36,13 +36,13 @@ export class PerfisPermissoesController {
   }
 
   @Get('perfis')
-  @NivelMinimo(80)
+  @NivelMinimo(10)
   listarPerfis(@Req() req: RequisicaoAutenticada) {
     return this.perfisPermissoesService.listarPerfis(req.usuario.id);
   }
 
   @Get('perfis/:id')
-  @NivelMinimo(80)
+  @NivelMinimo(10)
   buscarPerfilPorId(
     @Param('id') id: string,
     @Req() req: RequisicaoAutenticada,
@@ -69,13 +69,13 @@ export class PerfisPermissoesController {
   }
 
   @Get('permissoes')
-  @NivelMinimo(80)
+  @NivelMinimo(10)
   listarPermissoes() {
     return this.perfisPermissoesService.listarPermissoes();
   }
 
   @Get('permissoes/:id')
-  @NivelMinimo(80)
+  @NivelMinimo(10)
   buscarPermissaoPorId(@Param('id') id: string) {
     return this.perfisPermissoesService.buscarPermissaoPorId(id);
   }
@@ -108,9 +108,15 @@ export class PerfisPermissoesController {
   }
 
   @Get('perfis/:perfilId/permissoes')
-  @NivelMinimo(80)
-  listarPermissoesDoPerfil(@Param('perfilId') perfilId: string) {
-    return this.perfisPermissoesService.listarPermissoesDoPerfil(perfilId);
+  @NivelMinimo(10)
+  listarPermissoesDoPerfil(
+    @Param('perfilId') perfilId: string,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.perfisPermissoesService.listarPermissoesDoPerfil(
+      perfilId,
+      req.usuario.id,
+    );
   }
 
   @Delete('perfis/:perfilId/permissoes/:permissaoId')

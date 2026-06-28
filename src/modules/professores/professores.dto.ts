@@ -146,3 +146,13 @@ export class AtualizarProfessorDto {
   @IsOptional()
   ativo?: boolean;
 }
+
+export class ListarProfessoresDto {
+  @IsUUID()
+  @IsOptional()
+  secretariaId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  escolaId?: string;
+}

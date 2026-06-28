@@ -506,7 +506,9 @@ export class MatriculasService {
       return undefined;
     }
 
-    const escolaIds = new Set<string>(escopo.escolaIds);
+    if (escopo.escolaIds.length > 0) {
+      return escopo.escolaIds;
+    }
 
     if (escopo.secretariaIds.length > 0) {
       const escolas = await this.escolasRepositorio.find({
@@ -514,12 +516,10 @@ export class MatriculasService {
         select: { id: true },
       });
 
-      for (const escola of escolas) {
-        escolaIds.add(escola.id);
-      }
+      return escolas.map((escola) => escola.id);
     }
 
-    return escolaIds.size > 0 ? [...escolaIds] : null;
+    return null;
   }
 
   private async buscarAluno(alunoId: string) {

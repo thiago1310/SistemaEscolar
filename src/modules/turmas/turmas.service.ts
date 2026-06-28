@@ -435,10 +435,8 @@ export class TurmasService {
       return undefined;
     }
 
-    const filtros = [];
-
     if (escopo.escolaIds.length > 0) {
-      filtros.push({ escolaId: In(escopo.escolaIds) });
+      return { escolaId: In(escopo.escolaIds) };
     }
 
     if (escopo.secretariaIds.length > 0) {
@@ -449,11 +447,11 @@ export class TurmasService {
       const escolaIds = escolas.map((escola) => escola.id);
 
       if (escolaIds.length > 0) {
-        filtros.push({ escolaId: In(escolaIds) });
+        return { escolaId: In(escolaIds) };
       }
     }
 
-    return filtros.length > 0 ? filtros : null;
+    return null;
   }
 
   private serializarVinculoDocente(vinculo: TurmaVinculoDocente) {

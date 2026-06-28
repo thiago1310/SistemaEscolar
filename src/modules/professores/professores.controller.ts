@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -15,7 +16,11 @@ import {
 } from '../autenticacao/autenticacao.guard';
 import { NivelMinimo, Perfis } from '../autorizacao/permissao.decorator';
 import { PermissaoGuard } from '../autorizacao/permissao.guard';
-import { AtualizarProfessorDto, CriarProfessorDto } from './professores.dto';
+import {
+  AtualizarProfessorDto,
+  CriarProfessorDto,
+  ListarProfessoresDto,
+} from './professores.dto';
 import { ProfessoresService } from './professores.service';
 
 @Controller('professores')
@@ -30,13 +35,16 @@ export class ProfessoresController {
   }
 
   @Get()
-  @NivelMinimo(80)
-  listar(@Req() req: RequisicaoAutenticada) {
-    return this.professoresService.listar(req.usuario.id);
+  @NivelMinimo(10)
+  listar(
+    @Query() filtros: ListarProfessoresDto,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.professoresService.listar(req.usuario.id, filtros);
   }
 
   @Get(':id')
-  @NivelMinimo(80)
+  @NivelMinimo(10)
   buscarPorId(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
     return this.professoresService.buscarPorId(id, req.usuario.id);
   }

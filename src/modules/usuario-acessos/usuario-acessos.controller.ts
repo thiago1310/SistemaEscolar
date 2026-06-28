@@ -36,13 +36,13 @@ export class UsuarioAcessosController {
   }
 
   @Get()
-  @NivelMinimo(80)
+  @NivelMinimo(10)
   listar(@Req() req: RequisicaoAutenticada) {
     return this.usuarioAcessosService.listar(req.usuario.id);
   }
 
   @Get(':id')
-  @NivelMinimo(80)
+  @NivelMinimo(10)
   buscarPorId(@Param('id') id: string, @Req() req: RequisicaoAutenticada) {
     return this.usuarioAcessosService.buscarPorId(id, req.usuario.id);
   }

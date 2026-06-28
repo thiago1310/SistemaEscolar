@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "53a4da7c-acc7-e16f-84e6-7f71971fad40",
     "name": "Sistema Escolar - Perfis e Permissoes",
-    "description": "Collection do modulo perfis-permissoes com exemplos essenciais e completos.",
+    "description": "Collection do modulo perfis-permissoes com exemplos essenciais e completos. A leitura fica disponivel para usuario autenticado com perfil ativo; perfis sao filtrados pelo maior nivel do usuario.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

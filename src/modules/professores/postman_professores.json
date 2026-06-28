@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "9a0e9d1d-0a15-4113-b5cb-83f81d6c91d6",
     "name": "Sistema Escolar - Professores",
-    "description": "Collection do modulo professores. O cadastro cria ou atualiza usuario, acesso PROFESSOR e professor em uma unica chamada. Se o vinculo ja existir, ele e reativado/atualizado. A listagem sincroniza usuarios com acesso PROFESSOR ativo para recuperar cadastros legados sem registro em professores.",
+    "description": "Collection do modulo professores. O cadastro cria ou atualiza usuario, acesso PROFESSOR e professor em uma unica chamada. Se o vinculo ja existir, ele e reativado/atualizado. A listagem e o detalhe sincronizam usuarios com acesso PROFESSOR ativo e respeitam o escopo do usuario autenticado; a listagem aceita filtros opcionais por secretariaId e escolaId.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -106,6 +106,32 @@
           }
         ],
         "url": "{{url_base}}/professores"
+      }
+    },
+    {
+      "name": "Listar Professores - Por Secretaria",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/professores?secretariaId={{secretariaId}}"
+      }
+    },
+    {
+      "name": "Listar Professores - Por Escola",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/professores?escolaId={{escolaId}}"
       }
     },
     {
