@@ -102,7 +102,7 @@
         "url": "{{url_base}}/diario-classe/turmas/{{turmaId}}/observacoes",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"alunoId\": \"{{alunoId}}\",\n  \"data\": \"2026-06-30\",\n  \"tipo\": \"ACOMPANHAMENTO\",\n  \"resumo\": \"Dificuldade em fracoes\",\n  \"descricao\": \"Aluno precisa retomar operacoes com fracoes.\",\n  \"encaminhamentos\": \"Atividade dirigida na proxima aula.\"\n}"
+          "raw": "{\n  \"alunoId\": \"{{alunoId}}\",\n  \"data\": \"2026-06-30\",\n  \"tipo\": \"ACOMPANHAMENTO\",\n  \"resumo\": \"Dificuldade em fracoes\",\n  \"descricao\": \"Aluno precisa retomar operacoes com fracoes.\"\n}"
         }
       }
     }
