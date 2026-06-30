@@ -53,6 +53,41 @@ $$ LANGUAGE plpgsql;
 -- Secretaria Municipal
 -- =========================================================
 
+-- =========================================================
+-- Modulos adicionados: Diario de Classe e Planejamento Pedagogico
+-- Observacao: o projeto atual usa NestJS + TypeORM + MySQL com synchronize=true.
+-- Este bloco documenta as tabelas esperadas; a criacao em ambiente local ocorre
+-- automaticamente pelas entities ao reiniciar a API.
+-- =========================================================
+
+-- Diario de classe:
+-- diario_frequencias: turma_id, disciplina_id, professor_id, vinculo_docente_id,
+-- aluno_id, data, situacao e observacao. Unico por turma/data/aluno.
+-- diario_aulas: turma_id, disciplina_id, professor_id, vinculo_docente_id,
+-- data, horarios, titulo, conteudo, habilidades, recursos, periodo e ativo.
+-- diario_avaliacoes: turma_id, disciplina_id, professor_id, nome, periodo,
+-- peso, data, observacao e ativo.
+-- diario_notas: avaliacao_id, aluno_id, valor e observacao. Unico por
+-- avaliacao/aluno.
+-- diario_observacoes: turma_id, aluno_id opcional, professor_id, data, tipo,
+-- situacao, resumo, descricao, encaminhamentos, proxima_data e comunicacao.
+
+-- Planejamento pedagogico:
+-- documentos_curriculares: secretaria_id, titulo, municipio, uf, url_fonte,
+-- versao e ativo.
+-- anos_series_curriculares: codigo, etapa_ensino, numero e rotulo.
+-- areas_conhecimento: nome e slug.
+-- componentes_curriculares: area_id, disciplina_id opcional, nome e slug.
+-- planos_pedagogicos: documento_id, ano_serie_id, componente_id, titulo e ativo.
+-- periodos_planejamento: tipo, numero e rotulo.
+-- unidades_tematicas: plano_id, nome, slug e ordem.
+-- objetos_conhecimento: plano_id, unidade_id, nome, slug e ordem.
+-- habilidades_curriculares: componente_id opcional, codigo unico e texto.
+-- itens_planejamento_pedagogico: plano_id, unidade_id, objeto_id, ordem,
+-- pagina_fonte e observacoes.
+-- itens_planejamento_periodos: item_id e periodo_id.
+-- itens_planejamento_habilidades: item_id, habilidade_id e ordem.
+
 CREATE TABLE IF NOT EXISTS secretarias (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nome VARCHAR(255) NOT NULL,

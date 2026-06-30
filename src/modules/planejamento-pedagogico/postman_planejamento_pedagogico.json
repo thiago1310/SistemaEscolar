@@ -1,0 +1,63 @@
+{
+  "info": {
+    "_postman_id": "bbd8b0fd-30aa-459d-planejamento-pedagogico",
+    "name": "Sistema Escolar - Planejamento Pedagogico",
+    "description": "Collection do modulo planejamento-pedagogico. Usa TypeORM/MySQL, escopo por secretaria/escola e importacao JSON revisavel.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "accessToken", "value": "" },
+    { "key": "secretariaId", "value": "" },
+    { "key": "disciplinaId", "value": "" },
+    { "key": "itemPlanejamentoId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Listar itens",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/planejamento-pedagogico?anoSerie=1&area=linguagens&limite=20"
+      }
+    },
+    {
+      "name": "Listar opcoes",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/planejamento-pedagogico/opcoes"
+      }
+    },
+    {
+      "name": "Listar planos",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/planejamento-pedagogico/planos"
+      }
+    },
+    {
+      "name": "Buscar por habilidade",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/planejamento-pedagogico/habilidades/EF15LP01"
+      }
+    },
+    {
+      "name": "Importar amostra",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{url_base}}/planejamento-pedagogico/importar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"secretariaId\": \"{{secretariaId}}\",\n  \"tituloDocumento\": \"Plano Curricular da Rede Municipal\",\n  \"municipio\": \"Biguacu\",\n  \"uf\": \"SC\",\n  \"versao\": \"2026\",\n  \"itens\": [\n    {\n      \"anoSerie\": 1,\n      \"etapaEnsino\": \"Ensino Fundamental - Anos Iniciais\",\n      \"area\": \"Linguagens\",\n      \"componente\": \"Lingua Portuguesa\",\n      \"disciplinaId\": \"{{disciplinaId}}\",\n      \"periodos\": [1, 2, 3],\n      \"tipoPeriodo\": \"TRIMESTRE\",\n      \"unidadeTematica\": \"Leitura e escuta compartilhada e autonoma\",\n      \"objetoConhecimento\": \"Estrategia de leitura\",\n      \"habilidades\": [\n        {\n          \"codigo\": \"EF15LP01\",\n          \"texto\": \"Identificar a funcao social de textos que circulam em campos da vida social.\"\n        }\n      ],\n      \"paginaFonte\": 321,\n      \"ordem\": 1\n    }\n  ]\n}"
+        }
+      }
+    }
+  ]
+}

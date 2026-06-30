@@ -9,6 +9,8 @@ import { EscolasModule } from './modules/escolas/escolas.module';
 import { DisciplinasModule } from './modules/disciplinas/disciplinas.module';
 import { MatriculasModule } from './modules/matriculas/matriculas.module';
 import { PerfisPermissoesModule } from './modules/perfis-permissoes/perfis-permissoes.module';
+import { DiarioClasseModule } from './modules/diario-classe/diario-classe.module';
+import { PlanejamentoPedagogicoModule } from './modules/planejamento-pedagogico/planejamento-pedagogico.module';
 import { ProfessoresModule } from './modules/professores/professores.module';
 import { SecretariasModule } from './modules/secretarias/secretarias.module';
 import { TurmasModule } from './modules/turmas/turmas.module';
@@ -46,6 +48,8 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module';
     TurmasModule,
     AlunosModule,
     MatriculasModule,
+    DiarioClasseModule,
+    PlanejamentoPedagogicoModule,
   ],
 })
 export class AppModule {}
