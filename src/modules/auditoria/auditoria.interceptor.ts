@@ -45,7 +45,7 @@ export class AuditoriaInterceptor implements NestInterceptor {
   }
 
   private deveAuditar(requisicao: Request) {
-    const metodosAuditaveis = ['POST', 'PATCH', 'DELETE'];
+    const metodosAuditaveis = ['POST', 'PUT', 'PATCH', 'DELETE'];
     return (
       metodosAuditaveis.includes(requisicao.method) &&
       !requisicao.path.startsWith('/auditoria')
@@ -59,6 +59,7 @@ export class AuditoriaInterceptor implements NestInterceptor {
   private extrairAcao(metodo: string) {
     const acoes: Record<string, string> = {
       POST: 'criar',
+      PUT: 'atualizar',
       PATCH: 'atualizar',
       DELETE: 'remover',
     };

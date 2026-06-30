@@ -114,16 +114,17 @@ export class DiarioClasseService {
       .addOrderBy('turma.nome', 'ASC')
       .getMany();
 
+    const grupos = this.agruparVinculosPorTurmaProfessor(vinculos);
     const turmaIds = [...new Set(vinculos.map((vinculo) => vinculo.turmaId))];
     const totaisAlunos = await this.contarAlunosPorTurma(turmaIds);
     const progresso = await this.calcularProgressoPorTurma(turmaIds);
 
     return {
-      turmas: vinculos.map((vinculo) =>
+      turmas: grupos.map((vinculosGrupo) =>
         this.serializarTurmaDiario(
-          vinculo,
-          totaisAlunos.get(vinculo.turmaId) ?? 0,
-          progresso.get(vinculo.turmaId) ?? 0,
+          vinculosGrupo,
+          totaisAlunos.get(vinculosGrupo[0].turmaId) ?? 0,
+          progresso.get(vinculosGrupo[0].turmaId) ?? 0,
         ),
       ),
       resumo: {
@@ -841,7 +842,24 @@ export class DiarioClasseService {
       : 0;
   }
 
-  private serializarTurmaDiario(vinculo: TurmaVinculoDocente, studentCount: number, progress: number) {
+  private agruparVinculosPorTurmaProfessor(vinculos: TurmaVinculoDocente[]) {
+    const grupos = new Map<string, TurmaVinculoDocente[]>();
+
+    for (const vinculo of vinculos) {
+      const chave = `${vinculo.turmaId}:${vinculo.professorId}`;
+      const grupo = grupos.get(chave) ?? [];
+      grupo.push(vinculo);
+      grupos.set(chave, grupo);
+    }
+
+    return [...grupos.values()];
+  }
+
+  private serializarTurmaDiario(vinculos: TurmaVinculoDocente[], studentCount: number, progress: number) {
+    const vinculo = vinculos[0];
+    const disciplinas = this.serializarDisciplinasVinculadas(vinculos);
+    const nomesDisciplinas = disciplinas.map((disciplina) => disciplina.nome);
+
     return {
       id: vinculo.id,
       classId: vinculo.turmaId,
@@ -851,15 +869,45 @@ export class DiarioClasseService {
       name: vinculo.turma?.nome,
       school: vinculo.turma?.escola?.nome ?? 'Escola nao informada',
       schoolId: vinculo.turma?.escolaId,
-      subject: vinculo.disciplina?.nome ?? 'Componente nao informado',
+      subject: nomesDisciplinas[0] ?? 'Componente nao informado',
+      subjects: nomesDisciplinas,
+      disciplinas,
       teacher: vinculo.professor?.usuario?.nome ?? 'Professor nao informado',
       shift: vinculo.turma?.turno,
       year: vinculo.turma?.anoLetivo,
       studentCount,
       progress,
       nextClass: 'Sem aula agendada',
-      cargaHorariaSemanal: vinculo.cargaHorariaSemanal,
+      cargaHorariaSemanal: vinculos.reduce(
+        (total, item) => total + Number(item.cargaHorariaSemanal ?? 0),
+        0,
+      ),
     };
+  }
+
+  private serializarDisciplinasVinculadas(vinculos: TurmaVinculoDocente[]) {
+    const disciplinas = new Map<string, {
+      id: string | null;
+      nome: string;
+      vinculoDocenteId: string;
+      cargaHorariaSemanal: number;
+    }>();
+
+    for (const vinculo of vinculos) {
+      const nome = vinculo.disciplina?.nome ?? 'Componente nao informado';
+      const chave = vinculo.disciplinaId ?? nome;
+
+      if (!disciplinas.has(chave)) {
+        disciplinas.set(chave, {
+          id: vinculo.disciplinaId ?? null,
+          nome,
+          vinculoDocenteId: vinculo.id,
+          cargaHorariaSemanal: Number(vinculo.cargaHorariaSemanal ?? 0),
+        });
+      }
+    }
+
+    return [...disciplinas.values()];
   }
 
   private serializarTurma(turma: Turma) {

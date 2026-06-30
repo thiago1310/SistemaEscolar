@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "7e02fd2d-9f78-4d11-a93b-diario-classe",
     "name": "Sistema Escolar - Diario de Classe",
-    "description": "Collection do modulo diario-classe. Leitura respeita escopo no backend; escrita exige professor com vinculo docente ativo na turma.",
+    "description": "Collection do modulo diario-classe. Leitura respeita escopo no backend; escrita exige professor com vinculo docente ativo na turma. A listagem de turmas agrupa disciplinas do mesmo professor na mesma turma em subjects/disciplinas.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "bc4cf798-5df0-ab50-79ec-dbd87c7bee79",
     "name": "Sistema Escolar - Auditoria",
-    "description": "Collection do modulo auditoria com consulta simples e consulta filtrada.",
+    "description": "Collection do modulo auditoria com consulta simples e consulta filtrada. A auditoria registra POST, PUT, PATCH e DELETE.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -48,6 +48,19 @@
           }
         ],
         "url": "{{url_base}}/auditoria?usuarioId={{usuarioId}}&entidade=usuarios&entidadeId={{entidadeId}}&acao=CRIAR&dataInicio=2026-01-01&dataFim=2026-12-31"
+      }
+    },
+    {
+      "name": "Listar Auditoria - Atualizacoes Diario",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{url_base}}/auditoria?entidade=diario-classe&acao=atualizar"
       }
     },
     {
