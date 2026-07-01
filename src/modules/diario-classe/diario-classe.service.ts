@@ -9,7 +9,10 @@ import { Brackets, In, Repository } from 'typeorm';
 import { Aluno, SituacaoAluno } from '../alunos/alunos.entities';
 import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import { Disciplina } from '../disciplinas/disciplinas.entities';
-import { Escola } from '../escolas/escolas.entities';
+import {
+  Escola,
+  EscolaConfiguracaoPedagogica,
+} from '../escolas/escolas.entities';
 import { Matricula, SituacaoMatricula } from '../matriculas/matriculas.entities';
 import { Professor } from '../professores/professores.entities';
 import { Turma, TurmaVinculoDocente } from '../turmas/turmas.entities';
@@ -55,6 +58,8 @@ export class DiarioClasseService {
     private readonly disciplinasRepositorio: Repository<Disciplina>,
     @InjectRepository(Escola)
     private readonly escolasRepositorio: Repository<Escola>,
+    @InjectRepository(EscolaConfiguracaoPedagogica)
+    private readonly configuracoesPedagogicasRepositorio: Repository<EscolaConfiguracaoPedagogica>,
     @InjectRepository(DiarioFrequencia)
     private readonly frequenciasRepositorio: Repository<DiarioFrequencia>,
     @InjectRepository(DiarioAula)
@@ -374,6 +379,10 @@ export class DiarioClasseService {
       usuarioId,
       dados.disciplinaId,
     );
+    const periodoAtual = await this.garantirDataNoPeriodoLetivoAtual(
+      vinculo.turma,
+      dados.data,
+    );
     const avaliacao = this.avaliacoesRepositorio.create({
       ...dados,
       turmaId,
@@ -381,6 +390,7 @@ export class DiarioClasseService {
       vinculoDocenteId: vinculo.id,
       peso: String(dados.peso),
       data: dados.data ?? null,
+      periodo: dados.periodo ?? periodoAtual?.label,
       observacao: dados.observacao ?? null,
       ativo: true,
     });
@@ -399,6 +409,11 @@ export class DiarioClasseService {
       avaliacao.turmaId,
       usuarioId,
       avaliacao.disciplinaId,
+    );
+    const turma = await this.buscarTurmaPermitida(avaliacao.turmaId, usuarioId);
+    await this.garantirDataNoPeriodoLetivoAtual(
+      turma,
+      dados.data ?? avaliacao.data,
     );
     Object.assign(avaliacao, {
       ...dados,
@@ -558,7 +573,8 @@ export class DiarioClasseService {
     usuarioId: string,
   ) {
     const professor = await this.obterProfessorUsuario(usuarioId);
-    await this.garantirProfessorPodeEscrever(turmaId, usuarioId);
+    const vinculo = await this.garantirProfessorPodeEscrever(turmaId, usuarioId);
+    await this.garantirDataNoPeriodoLetivoAtual(vinculo.turma, dados.data);
     if (dados.alunoId) {
       await this.garantirAlunoTurma(dados.alunoId, turmaId);
     }
@@ -585,6 +601,11 @@ export class DiarioClasseService {
   ) {
     const observacao = await this.buscarObservacao(id, usuarioId);
     await this.garantirProfessorPodeEscrever(observacao.turmaId, usuarioId);
+    const turma = await this.buscarTurmaPermitida(observacao.turmaId, usuarioId);
+    await this.garantirDataNoPeriodoLetivoAtual(
+      turma,
+      dados.data ?? observacao.data,
+    );
     if (dados.alunoId) {
       await this.garantirAlunoTurma(dados.alunoId, observacao.turmaId);
     }
@@ -710,6 +731,65 @@ export class DiarioClasseService {
     return professor;
   }
 
+  private async garantirDataNoPeriodoLetivoAtual(
+    turma: Turma,
+    dataRegistro?: string | null,
+  ) {
+    const configuracao = await this.configuracoesPedagogicasRepositorio.findOne({
+      where: {
+        escolaId: turma.escolaId,
+        anoLetivo: turma.anoLetivo,
+        ativa: true,
+      },
+      relations: { periodos: true },
+    });
+
+    if (!configuracao?.tipoPeriodoLetivo) {
+      return null;
+    }
+
+    const periodos = [...(configuracao.periodos ?? [])]
+      .filter((periodo) => periodo.ativo)
+      .sort((a, b) => a.numero - b.numero);
+
+    if (
+      periodos.length === 0 ||
+      periodos.some((periodo) => !periodo.dataInicio || !periodo.dataFim)
+    ) {
+      return null;
+    }
+
+    const hoje = this.formatarData(new Date());
+    const periodoAtual = periodos.find(
+      (periodo) =>
+        periodo.dataInicio &&
+        periodo.dataFim &&
+        periodo.dataInicio <= hoje &&
+        periodo.dataFim >= hoje,
+    );
+
+    if (!periodoAtual) {
+      throw new BadRequestException(
+        'Nao ha periodo letivo atual aberto para lancamentos nesta escola.',
+      );
+    }
+
+    const data = dataRegistro ?? hoje;
+
+    if (
+      !periodoAtual.dataInicio ||
+      !periodoAtual.dataFim ||
+      data < periodoAtual.dataInicio ||
+      data > periodoAtual.dataFim
+    ) {
+      throw new BadRequestException(
+        `Lancamentos permitidos apenas no ${periodoAtual.label}.`,
+      );
+    }
+
+    return periodoAtual;
+  }
+
   private async listarAlunosTurma(turmaId: string) {
     const matriculas = await this.matriculasRepositorio.find({
       where: { turmaId, ativa: true, situacao: SituacaoMatricula.ATIVA },
@@ -804,6 +884,10 @@ export class DiarioClasseService {
       resultado.set(turma?.id ?? turmaId, progresso);
     }
     return resultado;
+  }
+
+  private formatarData(data: Date) {
+    return data.toISOString().slice(0, 10);
   }
 
   private calcularMedia(avaliacoes: DiarioAvaliacao[], notas: Array<{ valor: number | null }>) {

@@ -5,12 +5,19 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Usuario } from '../autenticacao/autenticacao.entities';
 import { Secretaria } from '../secretarias/secretarias.entities';
+
+export enum TipoPeriodoLetivo {
+  BIMESTRAL = 'BIMESTRAL',
+  TRIMESTRAL = 'TRIMESTRAL',
+  SEMESTRAL = 'SEMESTRAL',
+}
 
 @Entity('escolas')
 @Unique('uq_escolas_secretaria_nome', ['secretariaId', 'nome'])
@@ -83,6 +90,97 @@ export class Escola {
 
   @Column({ type: 'boolean', default: true })
   ativa: boolean;
+
+  @CreateDateColumn({ name: 'created_at', type: 'datetime' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'datetime' })
+  updatedAt: Date;
+}
+
+@Entity('escola_configuracoes_pedagogicas')
+@Unique('uq_escola_configuracao_ano', ['escolaId', 'anoLetivo'])
+export class EscolaConfiguracaoPedagogica {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ name: 'escola_id', type: 'varchar', length: 36 })
+  escolaId: string;
+
+  @ManyToOne(() => Escola, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'escola_id' })
+  escola: Escola;
+
+  @Column({ name: 'ano_letivo', type: 'int' })
+  anoLetivo: number;
+
+  @Column({
+    name: 'media_minima_aprovacao',
+    type: 'decimal',
+    precision: 4,
+    scale: 2,
+    nullable: true,
+  })
+  mediaMinimaAprovacao: string | null;
+
+  @Column({
+    name: 'tipo_periodo_letivo',
+    type: 'enum',
+    enum: TipoPeriodoLetivo,
+    nullable: true,
+  })
+  tipoPeriodoLetivo: TipoPeriodoLetivo | null;
+
+  @Column({ type: 'boolean', default: true })
+  ativa: boolean;
+
+  @OneToMany(
+    () => EscolaPeriodoLetivo,
+    (periodoLetivo) => periodoLetivo.configuracaoPedagogica,
+  )
+  periodos: EscolaPeriodoLetivo[];
+
+  @CreateDateColumn({ name: 'created_at', type: 'datetime' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'datetime' })
+  updatedAt: Date;
+}
+
+@Entity('escola_periodos_letivos')
+@Unique('uq_escola_periodo_configuracao_numero', [
+  'configuracaoPedagogicaId',
+  'numero',
+])
+export class EscolaPeriodoLetivo {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ name: 'configuracao_pedagogica_id', type: 'varchar', length: 36 })
+  configuracaoPedagogicaId: string;
+
+  @ManyToOne(
+    () => EscolaConfiguracaoPedagogica,
+    (configuracaoPedagogica) => configuracaoPedagogica.periodos,
+    { onDelete: 'CASCADE' },
+  )
+  @JoinColumn({ name: 'configuracao_pedagogica_id' })
+  configuracaoPedagogica: EscolaConfiguracaoPedagogica;
+
+  @Column({ type: 'int' })
+  numero: number;
+
+  @Column({ type: 'varchar', length: 50 })
+  label: string;
+
+  @Column({ name: 'data_inicio', type: 'date', nullable: true })
+  dataInicio: string | null;
+
+  @Column({ name: 'data_fim', type: 'date', nullable: true })
+  dataFim: string | null;
+
+  @Column({ type: 'boolean', default: true })
+  ativo: boolean;
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime' })
   createdAt: Date;

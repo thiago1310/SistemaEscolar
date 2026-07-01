@@ -8,14 +8,26 @@ import { Perfil } from '../perfis-permissoes/perfis-permissoes.entities';
 import { Secretaria } from '../secretarias/secretarias.entities';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
 import { EscolasController } from './escolas.controller';
-import { Escola } from './escolas.entities';
+import {
+  Escola,
+  EscolaConfiguracaoPedagogica,
+  EscolaPeriodoLetivo,
+} from './escolas.entities';
 import { EscolasService } from './escolas.service';
 
 @Module({
   imports: [
     AutenticacaoModule,
     AutorizacaoModule,
-    TypeOrmModule.forFeature([Escola, Secretaria, Usuario, Perfil, UsuarioAcesso]),
+    TypeOrmModule.forFeature([
+      Escola,
+      EscolaConfiguracaoPedagogica,
+      EscolaPeriodoLetivo,
+      Secretaria,
+      Usuario,
+      Perfil,
+      UsuarioAcesso,
+    ]),
   ],
   controllers: [EscolasController],
   providers: [EscolasService, TokenAcessoGuard],

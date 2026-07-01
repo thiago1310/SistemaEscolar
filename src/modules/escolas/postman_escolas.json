@@ -21,6 +21,10 @@
     {
       "key": "diretorId",
       "value": ""
+    },
+    {
+      "key": "anoLetivo",
+      "value": "2026"
     }
   ],
   "item": [
@@ -120,6 +124,115 @@
         ],
         "url": "{{url_base}}/escolas/{{escolaId}}"
       }
+    },
+    {
+      "name": "Configuracao Pedagogica",
+      "item": [
+        {
+          "name": "Salvar Configuracao - Semestral",
+          "request": {
+            "description": "Cria ou atualiza a configuracao pedagogica da escola para o ano letivo informado. A leitura desta configuracao pode ser feita por qualquer perfil autenticado com escopo na escola; a escrita exige perfil administrativo/gestor.",
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}/configuracao-pedagogica",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anoLetivo\": {{anoLetivo}},\n  \"mediaMinimaAprovacao\": 6,\n  \"tipoPeriodoLetivo\": \"SEMESTRAL\",\n  \"periodos\": [\n    {\n      \"numero\": 1,\n      \"dataInicio\": \"2026-02-02\",\n      \"dataFim\": \"2026-07-10\"\n    },\n    {\n      \"numero\": 2,\n      \"dataInicio\": \"2026-07-27\",\n      \"dataFim\": \"2026-12-18\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Salvar Configuracao - Bimestral",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}/configuracao-pedagogica",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anoLetivo\": {{anoLetivo}},\n  \"mediaMinimaAprovacao\": 6,\n  \"tipoPeriodoLetivo\": \"BIMESTRAL\",\n  \"periodos\": [\n    {\n      \"numero\": 1,\n      \"dataInicio\": \"2026-02-02\",\n      \"dataFim\": \"2026-04-17\"\n    },\n    {\n      \"numero\": 2,\n      \"dataInicio\": \"2026-04-22\",\n      \"dataFim\": \"2026-07-10\"\n    },\n    {\n      \"numero\": 3,\n      \"dataInicio\": \"2026-07-27\",\n      \"dataFim\": \"2026-09-30\"\n    },\n    {\n      \"numero\": 4,\n      \"dataInicio\": \"2026-10-01\",\n      \"dataFim\": \"2026-12-18\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Salvar Configuracao - Sem periodo letivo",
+          "request": {
+            "description": "Limpa a organizacao do periodo letivo, mantendo apenas a media minima quando enviada.",
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}/configuracao-pedagogica",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anoLetivo\": {{anoLetivo}},\n  \"mediaMinimaAprovacao\": 6,\n  \"tipoPeriodoLetivo\": null,\n  \"periodos\": []\n}"
+            }
+          }
+        },
+        {
+          "name": "Buscar Configuracao Pedagogica",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}/configuracao-pedagogica?anoLetivo={{anoLetivo}}"
+          }
+        },
+        {
+          "name": "Listar Periodos Letivos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}/periodos-letivos?anoLetivo={{anoLetivo}}"
+          }
+        },
+        {
+          "name": "Buscar Periodo Letivo Atual",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{url_base}}/escolas/{{escolaId}}/periodo-letivo-atual?anoLetivo={{anoLetivo}}"
+          }
+        }
+      ]
     },
     {
       "name": "PATCH Atualizar Escola",

@@ -142,6 +142,61 @@ BEFORE UPDATE ON escolas
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
+CREATE TABLE IF NOT EXISTS escola_configuracoes_pedagogicas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    escola_id UUID NOT NULL REFERENCES escolas(id) ON DELETE CASCADE,
+    ano_letivo INTEGER NOT NULL,
+    media_minima_aprovacao NUMERIC(4, 2),
+    tipo_periodo_letivo VARCHAR(20),
+    ativa BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_escola_configuracao_ano UNIQUE (escola_id, ano_letivo),
+    CONSTRAINT ck_escola_configuracao_tipo_periodo CHECK (
+        tipo_periodo_letivo IS NULL OR
+        tipo_periodo_letivo IN ('BIMESTRAL', 'TRIMESTRAL', 'SEMESTRAL')
+    )
+);
+
+CREATE INDEX IF NOT EXISTS idx_escola_configuracoes_escola_id
+    ON escola_configuracoes_pedagogicas(escola_id);
+CREATE INDEX IF NOT EXISTS idx_escola_configuracoes_ano_letivo
+    ON escola_configuracoes_pedagogicas(ano_letivo);
+
+CREATE TRIGGER trg_escola_configuracoes_pedagogicas_updated_at
+BEFORE UPDATE ON escola_configuracoes_pedagogicas
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE IF NOT EXISTS escola_periodos_letivos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    configuracao_pedagogica_id UUID NOT NULL
+        REFERENCES escola_configuracoes_pedagogicas(id) ON DELETE CASCADE,
+    numero INTEGER NOT NULL,
+    label VARCHAR(50) NOT NULL,
+    data_inicio DATE,
+    data_fim DATE,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_escola_periodo_configuracao_numero UNIQUE (
+        configuracao_pedagogica_id,
+        numero
+    ),
+    CONSTRAINT ck_escola_periodo_numero CHECK (numero BETWEEN 1 AND 4),
+    CONSTRAINT ck_escola_periodo_datas CHECK (
+        data_inicio IS NULL OR data_fim IS NULL OR data_inicio <= data_fim
+    )
+);
+
+CREATE INDEX IF NOT EXISTS idx_escola_periodos_configuracao_id
+    ON escola_periodos_letivos(configuracao_pedagogica_id);
+
+CREATE TRIGGER trg_escola_periodos_letivos_updated_at
+BEFORE UPDATE ON escola_periodos_letivos
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
 -- =========================================================
 -- Turmas
 -- =========================================================

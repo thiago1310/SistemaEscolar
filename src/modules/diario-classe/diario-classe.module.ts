@@ -4,7 +4,11 @@ import { Aluno } from '../alunos/alunos.entities';
 import { AutenticacaoModule } from '../autenticacao/autenticacao.module';
 import { AutorizacaoModule } from '../autorizacao/autorizacao.module';
 import { Disciplina } from '../disciplinas/disciplinas.entities';
-import { Escola } from '../escolas/escolas.entities';
+import {
+  Escola,
+  EscolaConfiguracaoPedagogica,
+  EscolaPeriodoLetivo,
+} from '../escolas/escolas.entities';
 import { Matricula } from '../matriculas/matriculas.entities';
 import { Professor } from '../professores/professores.entities';
 import { Turma, TurmaVinculoDocente } from '../turmas/turmas.entities';
@@ -29,6 +33,8 @@ import { DiarioClasseService } from './diario-classe.service';
       Matricula,
       Disciplina,
       Escola,
+      EscolaConfiguracaoPedagogica,
+      EscolaPeriodoLetivo,
       DiarioFrequencia,
       DiarioAula,
       DiarioAvaliacao,

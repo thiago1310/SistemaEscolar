@@ -1,18 +1,26 @@
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsDateString,
   IsEmail,
   IsIn,
+  IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
   Length,
   Matches,
+  Max,
   MaxLength,
+  Min,
+  ValidateNested,
   ValidateIf,
 } from 'class-validator';
+import { TipoPeriodoLetivo } from './escolas.entities';
 
 const ufsBrasileiras = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
@@ -29,6 +37,8 @@ const modalidadesEnsino = [
   'Ensino Fundamental - Anos Iniciais',
   'Ensino Fundamental - Anos Finais',
 ];
+
+const tiposPeriodoLetivo = Object.values(TipoPeriodoLetivo);
 
 export class CriarEscolaDto {
   @IsUUID()
@@ -219,4 +229,59 @@ export class AtualizarEscolaDto {
   @IsBoolean()
   @IsOptional()
   ativa?: boolean;
+}
+
+export class ConsultarConfiguracaoPedagogicaDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
+  anoLetivo: number;
+
+  @IsDateString()
+  @IsOptional()
+  data?: string;
+}
+
+export class SalvarPeriodoLetivoDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(4)
+  numero: number;
+
+  @IsDateString()
+  @IsOptional()
+  dataInicio?: string | null;
+
+  @IsDateString()
+  @IsOptional()
+  dataFim?: string | null;
+}
+
+export class SalvarConfiguracaoPedagogicaDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
+  anoLetivo: number;
+
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(10)
+  @IsOptional()
+  mediaMinimaAprovacao?: number | null;
+
+  @ValidateIf((dados) => dados.tipoPeriodoLetivo !== null)
+  @IsIn(tiposPeriodoLetivo)
+  @IsOptional()
+  tipoPeriodoLetivo?: TipoPeriodoLetivo | null;
+
+  @IsArray()
+  @ArrayMaxSize(4)
+  @ValidateNested({ each: true })
+  @Type(() => SalvarPeriodoLetivoDto)
+  @IsOptional()
+  periodos?: SalvarPeriodoLetivoDto[];
 }
