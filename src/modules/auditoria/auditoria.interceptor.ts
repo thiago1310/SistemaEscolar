@@ -11,6 +11,26 @@ import { AuditoriaService } from './auditoria.service';
 
 @Injectable()
 export class AuditoriaInterceptor implements NestInterceptor {
+  private readonly camposSensiveis = new Set([
+    'authorization',
+    'accesstoken',
+    'access_token',
+    'refreshtoken',
+    'refresh_token',
+    'token',
+    'senha',
+    'senhahash',
+    'senha_hash',
+    'senhatemporaria',
+    'senha_temporaria',
+    'senhapadrao',
+    'senha_padrao',
+    'senhaatual',
+    'senha_atual',
+    'novasenha',
+    'nova_senha',
+  ]);
+
   constructor(private readonly auditoriaService: AuditoriaService) {}
 
   intercept(contexto: ExecutionContext, proximo: CallHandler): Observable<unknown> {
@@ -48,8 +68,19 @@ export class AuditoriaInterceptor implements NestInterceptor {
     const metodosAuditaveis = ['POST', 'PUT', 'PATCH', 'DELETE'];
     return (
       metodosAuditaveis.includes(requisicao.method) &&
-      !requisicao.path.startsWith('/auditoria')
+      !requisicao.path.startsWith('/auditoria') &&
+      !this.ehFluxoOperacionalDeAutenticacao(requisicao)
     );
+  }
+
+  private ehFluxoOperacionalDeAutenticacao(requisicao: Request) {
+    const caminhosIgnorados = [
+      '/autenticacao/entrar',
+      '/autenticacao/renovar-token',
+      '/autenticacao/sair',
+    ];
+
+    return caminhosIgnorados.includes(requisicao.path);
   }
 
   private extrairEntidade(caminho: string) {
@@ -83,6 +114,33 @@ export class AuditoriaInterceptor implements NestInterceptor {
       return null;
     }
 
-    return dados as Record<string, unknown>;
+    return this.sanitizarDados(dados) as Record<string, unknown>;
+  }
+
+  private sanitizarDados(dados: unknown): unknown {
+    if (Array.isArray(dados)) {
+      return dados.map((item) => this.sanitizarDados(item));
+    }
+
+    if (!dados || typeof dados !== 'object') {
+      return dados;
+    }
+
+    const dadosSanitizados: Record<string, unknown> = {};
+
+    for (const [chave, valor] of Object.entries(dados)) {
+      if (this.camposSensiveis.has(this.normalizarChave(chave))) {
+        dadosSanitizados[chave] = '[REMOVIDO]';
+        continue;
+      }
+
+      dadosSanitizados[chave] = this.sanitizarDados(valor);
+    }
+
+    return dadosSanitizados;
+  }
+
+  private normalizarChave(chave: string) {
+    return chave.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
   }
 }

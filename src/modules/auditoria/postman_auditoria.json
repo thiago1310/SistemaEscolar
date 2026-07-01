@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "bc4cf798-5df0-ab50-79ec-dbd87c7bee79",
     "name": "Sistema Escolar - Auditoria",
-    "description": "Collection do modulo auditoria com consulta simples e consulta filtrada. A auditoria registra POST, PUT, PATCH e DELETE.",
+    "description": "Collection do modulo auditoria com consulta simples e consulta filtrada. A auditoria registra POST, PUT, PATCH e DELETE de acoes de negocio. Fluxos operacionais de autenticacao como entrar, renovar-token e sair nao sao auditados automaticamente, e campos sensiveis sao mascarados.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
