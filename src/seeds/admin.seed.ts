@@ -1,7 +1,12 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { NestFactory } from '@nestjs/core';
 import * as bcrypt from 'bcryptjs';
-import { DataSource, IsNull } from 'typeorm';
+import { DataSource, In, IsNull, Repository } from 'typeorm';
 import { AppModule } from '../app.module';
+import {
+  CodigoBncc,
+} from '../modules/planejamento-pedagogico/planejamento-pedagogico.entities';
 import {
   OrigemAutenticacao,
   Usuario,
@@ -60,6 +65,38 @@ const perfisSistema = [
   },
 ];
 
+interface FaixaEtariaBnccSeed {
+  codigo: string;
+  nome: string;
+  idadeInicialAnos: number;
+  idadeFinalAnos: number;
+  descricao: string;
+}
+
+interface CodigoBnccSeed {
+  codigo: string;
+  etapa: string;
+  series?: number[];
+  componenteOuArea?: string;
+  primeiraOcorrenciaTexto?: number;
+}
+
+interface CodigoBnccInfantilSeed {
+  codigo: string;
+  etapa: string;
+  faixaEtaria: FaixaEtariaBnccSeed;
+  campoExperiencia: string;
+  primeiraOcorrenciaTexto?: number;
+}
+
+interface ArquivoBnccCodigosSeed {
+  fonte?: {
+    url?: string;
+  };
+  educacaoInfantil?: CodigoBnccInfantilSeed[];
+  codigos?: CodigoBnccSeed[];
+}
+
 async function executarSeed() {
   const app = await NestFactory.createApplicationContext(AppModule, {
     logger: ['error', 'warn', 'log'],
@@ -70,6 +107,7 @@ async function executarSeed() {
     const perfisRepositorio = dataSource.getRepository(Perfil);
     const usuariosRepositorio = dataSource.getRepository(Usuario);
     const usuarioAcessosRepositorio = dataSource.getRepository(UsuarioAcesso);
+    const codigosBnccRepositorio = dataSource.getRepository(CodigoBncc);
 
     const perfis = new Map<string, Perfil>();
 
@@ -168,12 +206,86 @@ async function executarSeed() {
       await usuarioAcessosRepositorio.save(acessoAdmin);
     }
 
+    const resultadoBncc = await sincronizarCodigosBncc(codigosBnccRepositorio);
     console.log('Seed concluido.');
     console.log(`Admin: ${adminUsername}`);
     console.log(`Perfis cadastrados: ${perfisSistema.length}`);
+    console.log(
+      `Codigos BNCC: ${resultadoBncc.criados} criados, ${resultadoBncc.atualizados} atualizados, ${resultadoBncc.total} processados.`,
+    );
   } finally {
     await app.close();
   }
+}
+
+async function sincronizarCodigosBncc(
+  codigosBnccRepositorio: Repository<CodigoBncc>,
+) {
+  const caminhoArquivo = join(process.cwd(), 'bncc_codigos.json');
+
+  if (!existsSync(caminhoArquivo)) {
+    return { total: 0, criados: 0, atualizados: 0 };
+  }
+
+  const arquivo = JSON.parse(
+    readFileSync(caminhoArquivo, 'utf8'),
+  ) as ArquivoBnccCodigosSeed;
+  const fonteUrl = arquivo.fonte?.url ?? null;
+  const registros = [
+    ...(arquivo.educacaoInfantil ?? []).map((item) => ({
+      codigo: item.codigo,
+      etapaEnsino: item.etapa,
+      series: null,
+      faixaEtaria: item.faixaEtaria,
+      componenteOuArea: item.campoExperiencia,
+      primeiraOcorrenciaTexto: item.primeiraOcorrenciaTexto ?? null,
+      fonteUrl,
+      ativo: true,
+    })),
+    ...(arquivo.codigos ?? []).map((item) => ({
+      codigo: item.codigo,
+      etapaEnsino: item.etapa,
+      series: item.series ?? [],
+      faixaEtaria: null,
+      componenteOuArea: item.componenteOuArea ?? 'Nao informado',
+      primeiraOcorrenciaTexto: item.primeiraOcorrenciaTexto ?? null,
+      fonteUrl,
+      ativo: true,
+    })),
+  ];
+
+  if (registros.length === 0) {
+    return { total: 0, criados: 0, atualizados: 0 };
+  }
+
+  const existentes = await codigosBnccRepositorio.find({
+    where: { codigo: In(registros.map((item) => item.codigo)) },
+  });
+  const existentesPorCodigo = new Map(
+    existentes.map((item) => [item.codigo, item]),
+  );
+  let criados = 0;
+  let atualizados = 0;
+
+  const entidades = registros.map((registro) => {
+    const existente = existentesPorCodigo.get(registro.codigo);
+
+    if (!existente) {
+      criados += 1;
+      return codigosBnccRepositorio.create(registro);
+    }
+
+    atualizados += 1;
+    Object.assign(existente, registro);
+    return existente;
+  });
+
+  const tamanhoLote = 200;
+  for (let indice = 0; indice < entidades.length; indice += tamanhoLote) {
+    await codigosBnccRepositorio.save(entidades.slice(indice, indice + tamanhoLote));
+  }
+
+  return { total: registros.length, criados, atualizados };
 }
 
 executarSeed().catch((erro) => {

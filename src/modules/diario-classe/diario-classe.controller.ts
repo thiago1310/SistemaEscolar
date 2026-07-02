@@ -23,12 +23,15 @@ import {
   CriarAulaDto,
   CriarAvaliacaoDto,
   CriarObservacaoDto,
+  FecharDiarioClasseDto,
   ListarAulasDto,
   ListarAvaliacoesDto,
   ListarDiarioTurmasDto,
+  ListarDiariosClasseDto,
   ListarFrequenciasDto,
   ListarNotasDto,
   ListarObservacoesDto,
+  ReabrirDiarioClasseDto,
   SalvarFrequenciasDto,
   SalvarNotasDto,
 } from './diario-classe.dto';
@@ -55,6 +58,48 @@ export class DiarioClasseController {
     @Req() req: RequisicaoAutenticada,
   ) {
     return this.diarioClasseService.obterResumoTurma(turmaId, req.usuario.id);
+  }
+
+  @Get('turmas/:turmaId/diarios')
+  @NivelMinimo(10)
+  listarDiarios(
+    @Param('turmaId') turmaId: string,
+    @Query() filtros: ListarDiariosClasseDto,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.diarioClasseService.listarDiarios(
+      turmaId,
+      req.usuario.id,
+      filtros,
+    );
+  }
+
+  @Post('diarios/:diarioId/fechar')
+  @NivelMinimo(10)
+  fecharDiario(
+    @Param('diarioId') diarioId: string,
+    @Body() dados: FecharDiarioClasseDto,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.diarioClasseService.fecharDiario(
+      diarioId,
+      dados,
+      req.usuario.id,
+    );
+  }
+
+  @Patch('diarios/:diarioId/reabrir')
+  @NivelMinimo(60)
+  reabrirDiario(
+    @Param('diarioId') diarioId: string,
+    @Body() dados: ReabrirDiarioClasseDto,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.diarioClasseService.reabrirDiario(
+      diarioId,
+      dados,
+      req.usuario.id,
+    );
   }
 
   @Get('turmas/:turmaId/frequencias')

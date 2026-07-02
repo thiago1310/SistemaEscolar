@@ -12,6 +12,7 @@ import { Disciplina } from '../disciplinas/disciplinas.entities';
 import {
   Escola,
   EscolaConfiguracaoPedagogica,
+  EscolaPeriodoLetivo,
 } from '../escolas/escolas.entities';
 import { Matricula, SituacaoMatricula } from '../matriculas/matriculas.entities';
 import { Professor } from '../professores/professores.entities';
@@ -26,19 +27,24 @@ import {
   ListarAulasDto,
   ListarAvaliacoesDto,
   ListarDiarioTurmasDto,
+  ListarDiariosClasseDto,
   ListarFrequenciasDto,
   ListarNotasDto,
   ListarObservacoesDto,
+  ReabrirDiarioClasseDto,
   SalvarFrequenciasDto,
   SalvarNotasDto,
+  FecharDiarioClasseDto,
 } from './diario-classe.dto';
 import {
+  DiarioClasse,
   DiarioAula,
   DiarioAvaliacao,
   DiarioFrequencia,
   DiarioNota,
   DiarioObservacao,
   SituacaoFrequenciaDiario,
+  StatusDiarioClasse,
 } from './diario-classe.entities';
 
 @Injectable()
@@ -60,6 +66,8 @@ export class DiarioClasseService {
     private readonly escolasRepositorio: Repository<Escola>,
     @InjectRepository(EscolaConfiguracaoPedagogica)
     private readonly configuracoesPedagogicasRepositorio: Repository<EscolaConfiguracaoPedagogica>,
+    @InjectRepository(DiarioClasse)
+    private readonly diariosRepositorio: Repository<DiarioClasse>,
     @InjectRepository(DiarioFrequencia)
     private readonly frequenciasRepositorio: Repository<DiarioFrequencia>,
     @InjectRepository(DiarioAula)
@@ -196,6 +204,112 @@ export class DiarioClasseService {
     };
   }
 
+  async listarDiarios(
+    turmaId: string,
+    usuarioId: string,
+    filtros: ListarDiariosClasseDto = {},
+  ) {
+    const turma = await this.buscarTurmaPermitida(turmaId, usuarioId);
+    await this.sincronizarDiariosDaTurma(turma);
+
+    const consulta = this.diariosRepositorio
+      .createQueryBuilder('diario')
+      .leftJoinAndSelect('diario.periodoLetivo', 'periodoLetivo')
+      .leftJoinAndSelect('diario.disciplina', 'disciplina')
+      .leftJoinAndSelect('diario.professor', 'professor')
+      .leftJoinAndSelect('professor.usuario', 'usuario')
+      .leftJoinAndSelect('diario.vinculoDocente', 'vinculoDocente')
+      .where('diario.turma_id = :turmaId', { turmaId });
+
+    if (filtros.disciplinaId) {
+      consulta.andWhere('diario.disciplina_id = :disciplinaId', {
+        disciplinaId: filtros.disciplinaId,
+      });
+    }
+
+    if (filtros.professorId) {
+      consulta.andWhere('diario.professor_id = :professorId', {
+        professorId: filtros.professorId,
+      });
+    }
+
+    if (filtros.periodoLetivoId) {
+      consulta.andWhere('diario.periodo_letivo_id = :periodoLetivoId', {
+        periodoLetivoId: filtros.periodoLetivoId,
+      });
+    }
+
+    const escopo = await this.escopoUsuarioService.obterEscopo(usuarioId);
+    if (!escopo.global && escopo.perfis.includes('PROFESSOR')) {
+      const professor = await this.professoresRepositorio.findOneBy({
+        usuarioId,
+        ativo: true,
+      });
+      if (professor) {
+        consulta.andWhere('diario.professor_id = :professorLogadoId', {
+          professorLogadoId: professor.id,
+        });
+      }
+    }
+
+    const diarios = await consulta
+      .orderBy('periodoLetivo.numero', 'ASC')
+      .addOrderBy('disciplina.nome', 'ASC')
+      .getMany();
+
+    return diarios.map((diario) => this.serializarDiario(diario));
+  }
+
+  async fecharDiario(
+    diarioId: string,
+    dados: FecharDiarioClasseDto,
+    usuarioId: string,
+  ) {
+    const diario = await this.buscarDiarioPermitido(diarioId, usuarioId);
+
+    if (
+      diario.status === StatusDiarioClasse.FECHADO ||
+      diario.status === StatusDiarioClasse.SUBSTITUIDO
+    ) {
+      throw new BadRequestException('Diario de classe ja esta encerrado.');
+    }
+
+    const vinculo = await this.garantirProfessorPodeEscrever(
+      diario.turmaId,
+      usuarioId,
+      diario.disciplinaId,
+    );
+    if (vinculo.id !== diario.vinculoDocenteId) {
+      throw new ForbiddenException('Professor nao pode fechar este diario.');
+    }
+
+    diario.status = StatusDiarioClasse.FECHADO;
+    diario.parecerFinal = dados.parecerFinal;
+    diario.fechadoEm = new Date();
+    diario.fechadoPorUsuarioId = usuarioId;
+
+    return this.serializarDiario(await this.diariosRepositorio.save(diario));
+  }
+
+  async reabrirDiario(
+    diarioId: string,
+    dados: ReabrirDiarioClasseDto,
+    usuarioId: string,
+  ) {
+    const diario = await this.buscarDiarioPermitido(diarioId, usuarioId);
+
+    if (diario.status === StatusDiarioClasse.SUBSTITUIDO) {
+      throw new BadRequestException('Diario substituido nao pode ser reaberto.');
+    }
+
+    diario.status = StatusDiarioClasse.REABERTO;
+    diario.reabertoEm = new Date();
+    diario.reabertoPorUsuarioId = usuarioId;
+    diario.motivoReabertura = dados.motivoReabertura;
+
+    return this.serializarDiario(await this.diariosRepositorio.save(diario));
+  }
+
   async listarFrequencias(
     turmaId: string,
     filtros: ListarFrequenciasDto,
@@ -236,6 +350,7 @@ export class DiarioClasseService {
       usuarioId,
       dados.disciplinaId,
     );
+    const diario = await this.garantirDiarioEditavel(vinculo, dados.data);
     const alunos = await this.listarAlunosTurma(turmaId);
     const alunosPermitidos = new Set(alunos.map((aluno) => aluno.id));
 
@@ -259,6 +374,7 @@ export class DiarioClasseService {
         disciplinaId: dados.disciplinaId ?? vinculo.disciplinaId,
         professorId: vinculo.professorId,
         vinculoDocenteId: vinculo.id,
+        diarioClasseId: diario?.id ?? null,
         situacao: registro.situacao,
         observacao: registro.observacao ?? null,
       });
@@ -319,11 +435,13 @@ export class DiarioClasseService {
       usuarioId,
       dados.disciplinaId,
     );
+    const diario = await this.garantirDiarioEditavel(vinculo, dados.data);
     const aula = this.aulasRepositorio.create({
       ...dados,
       turmaId,
       professorId: vinculo.professorId,
       vinculoDocenteId: vinculo.id,
+      diarioClasseId: diario?.id ?? null,
       horaInicio: dados.horaInicio ?? null,
       horaFim: dados.horaFim ?? null,
       habilidades: dados.habilidades ?? null,
@@ -337,18 +455,28 @@ export class DiarioClasseService {
 
   async atualizarAula(id: string, dados: AtualizarAulaDto, usuarioId: string) {
     const aula = await this.buscarAula(id, usuarioId);
-    await this.garantirProfessorPodeEscrever(
+    const vinculo = await this.garantirProfessorPodeEscrever(
       aula.turmaId,
       usuarioId,
       dados.disciplinaId ?? aula.disciplinaId,
     );
+    const diario = await this.garantirDiarioEditavel(
+      vinculo,
+      dados.data ?? aula.data,
+    );
+    aula.diarioClasseId = diario?.id ?? aula.diarioClasseId ?? null;
     Object.assign(aula, dados);
     return this.serializarAula(await this.aulasRepositorio.save(aula));
   }
 
   async inativarAula(id: string, usuarioId: string) {
     const aula = await this.buscarAula(id, usuarioId);
-    await this.garantirProfessorPodeEscrever(aula.turmaId, usuarioId, aula.disciplinaId);
+    const vinculo = await this.garantirProfessorPodeEscrever(
+      aula.turmaId,
+      usuarioId,
+      aula.disciplinaId,
+    );
+    await this.garantirDiarioEditavel(vinculo, aula.data);
     aula.ativo = false;
     return this.serializarAula(await this.aulasRepositorio.save(aula));
   }
@@ -379,8 +507,8 @@ export class DiarioClasseService {
       usuarioId,
       dados.disciplinaId,
     );
-    const periodoAtual = await this.garantirDataNoPeriodoLetivoAtual(
-      vinculo.turma,
+    const diario = await this.garantirDiarioEditavel(
+      vinculo,
       dados.data,
     );
     const avaliacao = this.avaliacoesRepositorio.create({
@@ -388,9 +516,10 @@ export class DiarioClasseService {
       turmaId,
       professorId: vinculo.professorId,
       vinculoDocenteId: vinculo.id,
+      diarioClasseId: diario?.id ?? null,
       peso: String(dados.peso),
       data: dados.data ?? null,
-      periodo: dados.periodo ?? periodoAtual?.label,
+      periodo: dados.periodo ?? diario?.periodoLabel,
       observacao: dados.observacao ?? null,
       ativo: true,
     });
@@ -405,16 +534,16 @@ export class DiarioClasseService {
     usuarioId: string,
   ) {
     const avaliacao = await this.buscarAvaliacao(id, usuarioId);
-    await this.garantirProfessorPodeEscrever(
+    const vinculo = await this.garantirProfessorPodeEscrever(
       avaliacao.turmaId,
       usuarioId,
       avaliacao.disciplinaId,
     );
-    const turma = await this.buscarTurmaPermitida(avaliacao.turmaId, usuarioId);
-    await this.garantirDataNoPeriodoLetivoAtual(
-      turma,
+    const diario = await this.garantirDiarioEditavel(
+      vinculo,
       dados.data ?? avaliacao.data,
     );
+    avaliacao.diarioClasseId = diario?.id ?? avaliacao.diarioClasseId ?? null;
     Object.assign(avaliacao, {
       ...dados,
       peso: dados.peso === undefined ? avaliacao.peso : String(dados.peso),
@@ -426,11 +555,12 @@ export class DiarioClasseService {
 
   async inativarAvaliacao(id: string, usuarioId: string) {
     const avaliacao = await this.buscarAvaliacao(id, usuarioId);
-    await this.garantirProfessorPodeEscrever(
+    const vinculo = await this.garantirProfessorPodeEscrever(
       avaliacao.turmaId,
       usuarioId,
       avaliacao.disciplinaId,
     );
+    await this.garantirDiarioEditavel(vinculo, avaliacao.data);
     avaliacao.ativo = false;
     return this.serializarAvaliacao(
       await this.avaliacoesRepositorio.save(avaliacao),
@@ -492,11 +622,12 @@ export class DiarioClasseService {
 
   async salvarNotas(avaliacaoId: string, dados: SalvarNotasDto, usuarioId: string) {
     const avaliacao = await this.buscarAvaliacao(avaliacaoId, usuarioId);
-    await this.garantirProfessorPodeEscrever(
+    const vinculo = await this.garantirProfessorPodeEscrever(
       avaliacao.turmaId,
       usuarioId,
       avaliacao.disciplinaId,
     );
+    await this.garantirDiarioEditavel(vinculo, avaliacao.data);
     const alunos = await this.listarAlunosTurma(avaliacao.turmaId);
     const alunosPermitidos = new Set(alunos.map((aluno) => aluno.id));
 
@@ -574,7 +705,7 @@ export class DiarioClasseService {
   ) {
     const professor = await this.obterProfessorUsuario(usuarioId);
     const vinculo = await this.garantirProfessorPodeEscrever(turmaId, usuarioId);
-    await this.garantirDataNoPeriodoLetivoAtual(vinculo.turma, dados.data);
+    const diario = await this.garantirDiarioEditavel(vinculo, dados.data);
     if (dados.alunoId) {
       await this.garantirAlunoTurma(dados.alunoId, turmaId);
     }
@@ -582,6 +713,7 @@ export class DiarioClasseService {
       ...dados,
       turmaId,
       professorId: professor.id,
+      diarioClasseId: diario?.id ?? null,
       alunoId: dados.alunoId ?? null,
       situacao: dados.situacao ?? undefined,
       encaminhamentos: dados.encaminhamentos ?? null,
@@ -600,12 +732,15 @@ export class DiarioClasseService {
     usuarioId: string,
   ) {
     const observacao = await this.buscarObservacao(id, usuarioId);
-    await this.garantirProfessorPodeEscrever(observacao.turmaId, usuarioId);
-    const turma = await this.buscarTurmaPermitida(observacao.turmaId, usuarioId);
-    await this.garantirDataNoPeriodoLetivoAtual(
-      turma,
+    const vinculo = await this.garantirProfessorPodeEscrever(
+      observacao.turmaId,
+      usuarioId,
+    );
+    const diario = await this.garantirDiarioEditavel(
+      vinculo,
       dados.data ?? observacao.data,
     );
+    observacao.diarioClasseId = diario?.id ?? observacao.diarioClasseId ?? null;
     if (dados.alunoId) {
       await this.garantirAlunoTurma(dados.alunoId, observacao.turmaId);
     }
@@ -620,7 +755,11 @@ export class DiarioClasseService {
 
   async inativarObservacao(id: string, usuarioId: string) {
     const observacao = await this.buscarObservacao(id, usuarioId);
-    await this.garantirProfessorPodeEscrever(observacao.turmaId, usuarioId);
+    const vinculo = await this.garantirProfessorPodeEscrever(
+      observacao.turmaId,
+      usuarioId,
+    );
+    await this.garantirDiarioEditavel(vinculo, observacao.data);
     observacao.ativo = false;
     return this.serializarObservacao(
       await this.observacoesRepositorio.save(observacao),
@@ -731,10 +870,103 @@ export class DiarioClasseService {
     return professor;
   }
 
-  private async garantirDataNoPeriodoLetivoAtual(
+  private async sincronizarDiariosDaTurma(turma: Turma) {
+    const periodos = await this.listarPeriodosLetivosTurma(turma);
+    if (periodos.length === 0) {
+      return;
+    }
+
+    const vinculos = await this.vinculosRepositorio.find({
+      where: { turmaId: turma.id, ativo: true },
+      relations: { turma: { escola: true }, disciplina: true, professor: { usuario: true } },
+    });
+
+    for (const vinculo of vinculos) {
+      for (const periodo of periodos) {
+        await this.obterOuCriarDiario(vinculo, periodo);
+      }
+    }
+  }
+
+  private async garantirDiarioEditavel(
+    vinculo: TurmaVinculoDocente,
+    dataRegistro?: string | null,
+  ) {
+    const periodo = await this.obterPeriodoPermitidoParaLancamento(
+      vinculo.turma,
+      dataRegistro,
+    );
+
+    if (!periodo) {
+      return null;
+    }
+
+    const diario = await this.obterOuCriarDiario(vinculo, periodo);
+
+    if (
+      diario.status === StatusDiarioClasse.FECHADO ||
+      diario.status === StatusDiarioClasse.SUBSTITUIDO
+    ) {
+      throw new BadRequestException(
+        'Diario de classe encerrado para este periodo.',
+      );
+    }
+
+    if (diario.status === StatusDiarioClasse.REABERTO) {
+      return diario;
+    }
+
+    const hoje = this.dataAtual();
+    if (
+      periodo.dataInicio &&
+      periodo.dataFim &&
+      (hoje < periodo.dataInicio || hoje > periodo.dataFim)
+    ) {
+      throw new BadRequestException(
+        'Lancamentos permitidos apenas no periodo letivo atual ou em diario reaberto.',
+      );
+    }
+
+    if (diario.status !== StatusDiarioClasse.ABERTO) {
+      diario.status = StatusDiarioClasse.ABERTO;
+      return this.diariosRepositorio.save(diario);
+    }
+
+    return diario;
+  }
+
+  private async obterPeriodoPermitidoParaLancamento(
     turma: Turma,
     dataRegistro?: string | null,
   ) {
+    const periodos = await this.listarPeriodosLetivosTurma(turma);
+    if (periodos.length === 0) {
+      return null;
+    }
+
+    if (periodos.some((periodo) => !periodo.dataInicio || !periodo.dataFim)) {
+      return null;
+    }
+
+    const data = dataRegistro ?? this.dataAtual();
+    const periodoRegistro = periodos.find(
+      (periodo) =>
+        periodo.dataInicio &&
+        periodo.dataFim &&
+        periodo.dataInicio <= data &&
+        periodo.dataFim >= data,
+    );
+
+    if (!periodoRegistro) {
+      throw new BadRequestException(
+        'Data fora dos periodos letivos configurados para esta escola.',
+      );
+    }
+
+    return periodoRegistro;
+  }
+
+  private async listarPeriodosLetivosTurma(turma: Turma) {
     const configuracao = await this.configuracoesPedagogicasRepositorio.findOne({
       where: {
         escolaId: turma.escolaId,
@@ -745,49 +977,110 @@ export class DiarioClasseService {
     });
 
     if (!configuracao?.tipoPeriodoLetivo) {
-      return null;
+      return [];
     }
 
-    const periodos = [...(configuracao.periodos ?? [])]
+    return [...(configuracao.periodos ?? [])]
       .filter((periodo) => periodo.ativo)
       .sort((a, b) => a.numero - b.numero);
+  }
+
+  private async obterOuCriarDiario(
+    vinculo: TurmaVinculoDocente,
+    periodo: EscolaPeriodoLetivo,
+  ) {
+    let diario = await this.diariosRepositorio.findOne({
+      where: {
+        vinculoDocenteId: vinculo.id,
+        periodoLetivoId: periodo.id,
+      },
+      relations: {
+        periodoLetivo: true,
+        disciplina: true,
+        professor: { usuario: true },
+        vinculoDocente: true,
+      },
+    });
+
+    const statusCalculado = this.calcularStatusInicialDiario(periodo);
+
+    if (!diario) {
+      diario = this.diariosRepositorio.create({
+        turmaId: vinculo.turmaId,
+        disciplinaId: vinculo.disciplinaId,
+        professorId: vinculo.professorId,
+        vinculoDocenteId: vinculo.id,
+        periodoLetivoId: periodo.id,
+        anoLetivo:
+          vinculo.turma?.anoLetivo ??
+          periodo.configuracaoPedagogica?.anoLetivo ??
+          new Date().getFullYear(),
+        periodoLabel: periodo.label,
+        dataInicioResponsabilidade: vinculo.dataInicioResponsabilidade ?? null,
+        dataFimResponsabilidade: vinculo.dataFimResponsabilidade ?? null,
+        status: statusCalculado,
+      });
+      return this.diariosRepositorio.save(diario);
+    }
+
+    diario.turmaId = vinculo.turmaId;
+    diario.disciplinaId = vinculo.disciplinaId;
+    diario.professorId = vinculo.professorId;
+    diario.anoLetivo = vinculo.turma?.anoLetivo ?? diario.anoLetivo;
+    diario.periodoLabel = periodo.label;
+    diario.dataInicioResponsabilidade = vinculo.dataInicioResponsabilidade ?? null;
+    diario.dataFimResponsabilidade = vinculo.dataFimResponsabilidade ?? null;
+    diario.periodoLetivo = periodo;
+    diario.disciplina = vinculo.disciplina;
+    diario.professor = vinculo.professor;
+    diario.vinculoDocente = vinculo;
 
     if (
-      periodos.length === 0 ||
-      periodos.some((periodo) => !periodo.dataInicio || !periodo.dataFim)
+      ![
+        StatusDiarioClasse.FECHADO,
+        StatusDiarioClasse.REABERTO,
+        StatusDiarioClasse.SUBSTITUIDO,
+      ].includes(diario.status)
     ) {
-      return null;
+      diario.status = statusCalculado;
     }
 
-    const hoje = this.formatarData(new Date());
-    const periodoAtual = periodos.find(
-      (periodo) =>
-        periodo.dataInicio &&
-        periodo.dataFim &&
-        periodo.dataInicio <= hoje &&
-        periodo.dataFim >= hoje,
-    );
+    return this.diariosRepositorio.save(diario);
+  }
 
-    if (!periodoAtual) {
-      throw new BadRequestException(
-        'Nao ha periodo letivo atual aberto para lancamentos nesta escola.',
-      );
+  private calcularStatusInicialDiario(periodo: EscolaPeriodoLetivo) {
+    if (!periodo.dataInicio || !periodo.dataFim) {
+      return StatusDiarioClasse.ABERTO;
     }
 
-    const data = dataRegistro ?? hoje;
+    const hoje = this.dataAtual();
+    if (hoje < periodo.dataInicio) {
+      return StatusDiarioClasse.NAO_INICIADO;
+    }
+    if (hoje > periodo.dataFim) {
+      return StatusDiarioClasse.PENDENTE_FECHAMENTO;
+    }
+    return StatusDiarioClasse.ABERTO;
+  }
 
-    if (
-      !periodoAtual.dataInicio ||
-      !periodoAtual.dataFim ||
-      data < periodoAtual.dataInicio ||
-      data > periodoAtual.dataFim
-    ) {
-      throw new BadRequestException(
-        `Lancamentos permitidos apenas no ${periodoAtual.label}.`,
-      );
+  private async buscarDiarioPermitido(diarioId: string, usuarioId: string) {
+    const diario = await this.diariosRepositorio.findOne({
+      where: { id: diarioId },
+      relations: {
+        turma: { escola: true },
+        periodoLetivo: true,
+        disciplina: true,
+        professor: { usuario: true },
+        vinculoDocente: true,
+      },
+    });
+
+    if (!diario) {
+      throw new NotFoundException('Diario de classe nao encontrado.');
     }
 
-    return periodoAtual;
+    await this.buscarTurmaPermitida(diario.turmaId, usuarioId);
+    return diario;
   }
 
   private async listarAlunosTurma(turmaId: string) {
@@ -1015,8 +1308,48 @@ export class DiarioClasseService {
         ? { id: frequencia.aluno.id, nome: frequencia.aluno.nomeCompleto }
         : null,
       data: frequencia.data,
+      diarioClasseId: frequencia.diarioClasseId,
       situacao: frequencia.situacao,
       observacao: frequencia.observacao,
+    };
+  }
+
+  private serializarDiario(diario: DiarioClasse) {
+    return {
+      id: diario.id,
+      turmaId: diario.turmaId,
+      disciplinaId: diario.disciplinaId,
+      disciplina: diario.disciplina?.nome,
+      professorId: diario.professorId,
+      professor: diario.professor?.usuario?.nome,
+      vinculoDocenteId: diario.vinculoDocenteId,
+      periodoLetivoId: diario.periodoLetivoId,
+      periodoLabel: diario.periodoLabel,
+      periodo: diario.periodoLetivo
+        ? {
+            id: diario.periodoLetivo.id,
+            numero: diario.periodoLetivo.numero,
+            label: diario.periodoLetivo.label,
+            dataInicio: diario.periodoLetivo.dataInicio,
+            dataFim: diario.periodoLetivo.dataFim,
+          }
+        : null,
+      anoLetivo: diario.anoLetivo,
+      status: diario.status,
+      bloqueadoParaEdicao: [
+        StatusDiarioClasse.FECHADO,
+        StatusDiarioClasse.SUBSTITUIDO,
+      ].includes(diario.status),
+      parecerFinal: diario.parecerFinal,
+      fechadoEm: diario.fechadoEm,
+      fechadoPorUsuarioId: diario.fechadoPorUsuarioId,
+      reabertoEm: diario.reabertoEm,
+      reabertoPorUsuarioId: diario.reabertoPorUsuarioId,
+      motivoReabertura: diario.motivoReabertura,
+      dataInicioResponsabilidade: diario.dataInicioResponsabilidade,
+      dataFimResponsabilidade: diario.dataFimResponsabilidade,
+      createdAt: diario.createdAt,
+      updatedAt: diario.updatedAt,
     };
   }
 
@@ -1028,6 +1361,7 @@ export class DiarioClasseService {
       disciplina: aula.disciplina?.nome,
       professorId: aula.professorId,
       professor: aula.professor?.usuario?.nome,
+      diarioClasseId: aula.diarioClasseId,
       data: aula.data,
       horaInicio: aula.horaInicio,
       horaFim: aula.horaFim,
@@ -1049,6 +1383,7 @@ export class DiarioClasseService {
       disciplina: avaliacao.disciplina?.nome,
       professorId: avaliacao.professorId,
       professor: avaliacao.professor?.usuario?.nome,
+      diarioClasseId: avaliacao.diarioClasseId,
       nome: avaliacao.nome,
       periodo: avaliacao.periodo,
       peso: Number(avaliacao.peso),
@@ -1068,6 +1403,7 @@ export class DiarioClasseService {
         : null,
       professorId: observacao.professorId,
       professor: observacao.professor?.usuario?.nome,
+      diarioClasseId: observacao.diarioClasseId,
       data: observacao.data,
       tipo: observacao.tipo,
       situacao: observacao.situacao,

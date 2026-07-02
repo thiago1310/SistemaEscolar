@@ -17,6 +17,7 @@ import { DiarioClasseController } from './diario-classe.controller';
 import {
   DiarioAula,
   DiarioAvaliacao,
+  DiarioClasse,
   DiarioFrequencia,
   DiarioNota,
   DiarioObservacao,
@@ -35,6 +36,7 @@ import { DiarioClasseService } from './diario-classe.service';
       Escola,
       EscolaConfiguracaoPedagogica,
       EscolaPeriodoLetivo,
+      DiarioClasse,
       DiarioFrequencia,
       DiarioAula,
       DiarioAvaliacao,

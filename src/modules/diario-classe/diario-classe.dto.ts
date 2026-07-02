@@ -37,6 +37,31 @@ export class ListarDiarioTurmasDto {
   turno?: string;
 }
 
+export class ListarDiariosClasseDto {
+  @IsUUID()
+  @IsOptional()
+  disciplinaId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  professorId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  periodoLetivoId?: string;
+}
+
+export class FecharDiarioClasseDto {
+  @IsString()
+  parecerFinal: string;
+}
+
+export class ReabrirDiarioClasseDto {
+  @IsString()
+  @MaxLength(2000)
+  motivoReabertura: string;
+}
+
 export class ListarFrequenciasDto {
   @IsDateString()
   data: string;

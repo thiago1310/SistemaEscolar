@@ -61,12 +61,14 @@ $$ LANGUAGE plpgsql;
 -- =========================================================
 
 -- Diario de classe:
+-- diarios_classe: controle por turma, professor, disciplina, vinculo docente
+-- e periodo letivo, com status, parecer final, fechamento e reabertura.
 -- diario_frequencias: turma_id, disciplina_id, professor_id, vinculo_docente_id,
--- aluno_id, data, situacao e observacao. Unico por turma/data/aluno.
+-- diario_classe_id, aluno_id, data, situacao e observacao. Unico por turma/data/aluno.
 -- diario_aulas: turma_id, disciplina_id, professor_id, vinculo_docente_id,
--- data, horarios, titulo, conteudo, habilidades, recursos, periodo e ativo.
--- diario_avaliacoes: turma_id, disciplina_id, professor_id, nome, periodo,
--- peso, data, observacao e ativo.
+-- diario_classe_id, data, horarios, titulo, conteudo, habilidades, recursos, periodo e ativo.
+-- diario_avaliacoes: turma_id, disciplina_id, professor_id, diario_classe_id,
+-- nome, periodo, peso, data, observacao e ativo.
 -- diario_notas: avaliacao_id, aluno_id, valor e observacao. Unico por
 -- avaliacao/aluno.
 -- diario_observacoes: turma_id, aluno_id opcional, professor_id, data, tipo,
@@ -87,6 +89,32 @@ $$ LANGUAGE plpgsql;
 -- pagina_fonte e observacoes.
 -- itens_planejamento_periodos: item_id e periodo_id.
 -- itens_planejamento_habilidades: item_id, habilidade_id e ordem.
+-- bncc_codigos: codigos oficiais da BNCC com etapa, series ou faixa etaria,
+-- componente/area e fonte.
+
+CREATE TABLE IF NOT EXISTS bncc_codigos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    codigo VARCHAR(40) NOT NULL,
+    etapa_ensino VARCHAR(100) NOT NULL,
+    series JSON,
+    faixa_etaria JSON,
+    componente_ou_area VARCHAR(180) NOT NULL,
+    primeira_ocorrencia_texto INTEGER,
+    fonte_url TEXT,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_bncc_codigos_codigo UNIQUE (codigo)
+);
+
+CREATE INDEX IF NOT EXISTS idx_bncc_codigos_etapa_ensino ON bncc_codigos(etapa_ensino);
+CREATE INDEX IF NOT EXISTS idx_bncc_codigos_componente_ou_area ON bncc_codigos(componente_ou_area);
+CREATE INDEX IF NOT EXISTS idx_bncc_codigos_ativo ON bncc_codigos(ativo);
+
+CREATE TRIGGER trg_bncc_codigos_updated_at
+BEFORE UPDATE ON bncc_codigos
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE IF NOT EXISTS secretarias (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -492,6 +520,8 @@ CREATE TABLE IF NOT EXISTS turma_vinculos_docentes (
     professor_id UUID NOT NULL REFERENCES professores(id) ON DELETE RESTRICT,
     disciplina_id UUID NOT NULL REFERENCES disciplinas(id) ON DELETE RESTRICT,
     carga_horaria_semanal INTEGER NOT NULL,
+    data_inicio_responsabilidade DATE NULL,
+    data_fim_responsabilidade DATE NULL,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -513,6 +543,46 @@ ON turma_vinculos_docentes(ativo);
 
 CREATE TRIGGER trg_turma_vinculos_docentes_updated_at
 BEFORE UPDATE ON turma_vinculos_docentes
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE IF NOT EXISTS diarios_classe (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    turma_id UUID NOT NULL REFERENCES turmas(id) ON DELETE CASCADE,
+    disciplina_id UUID NOT NULL REFERENCES disciplinas(id) ON DELETE RESTRICT,
+    professor_id UUID NOT NULL REFERENCES professores(id) ON DELETE RESTRICT,
+    vinculo_docente_id UUID NOT NULL REFERENCES turma_vinculos_docentes(id) ON DELETE CASCADE,
+    periodo_letivo_id UUID NOT NULL REFERENCES escola_periodos_letivos(id) ON DELETE RESTRICT,
+    ano_letivo INTEGER NOT NULL,
+    periodo_label VARCHAR(80) NOT NULL,
+    data_inicio_responsabilidade DATE NULL,
+    data_fim_responsabilidade DATE NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'NAO_INICIADO',
+    parecer_final TEXT NULL,
+    fechado_em TIMESTAMP NULL,
+    fechado_por_usuario_id UUID NULL REFERENCES usuarios(id) ON DELETE SET NULL,
+    reaberto_em TIMESTAMP NULL,
+    reaberto_por_usuario_id UUID NULL REFERENCES usuarios(id) ON DELETE SET NULL,
+    motivo_reabertura TEXT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_diarios_classe_vinculo_periodo UNIQUE (
+        vinculo_docente_id,
+        periodo_letivo_id
+    )
+);
+
+CREATE INDEX IF NOT EXISTS idx_diarios_classe_turma_id
+ON diarios_classe(turma_id);
+CREATE INDEX IF NOT EXISTS idx_diarios_classe_professor_id
+ON diarios_classe(professor_id);
+CREATE INDEX IF NOT EXISTS idx_diarios_classe_periodo_letivo_id
+ON diarios_classe(periodo_letivo_id);
+CREATE INDEX IF NOT EXISTS idx_diarios_classe_status
+ON diarios_classe(status);
+
+CREATE TRIGGER trg_diarios_classe_updated_at
+BEFORE UPDATE ON diarios_classe
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 

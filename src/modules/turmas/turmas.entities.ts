@@ -117,6 +117,12 @@ export class TurmaVinculoDocente {
   @Column({ name: 'carga_horaria_semanal', type: 'int' })
   cargaHorariaSemanal: number;
 
+  @Column({ name: 'data_inicio_responsabilidade', type: 'date', nullable: true })
+  dataInicioResponsabilidade: string | null;
+
+  @Column({ name: 'data_fim_responsabilidade', type: 'date', nullable: true })
+  dataFimResponsabilidade: string | null;
+
   @Column({ type: 'boolean', default: true })
   ativo: boolean;
 

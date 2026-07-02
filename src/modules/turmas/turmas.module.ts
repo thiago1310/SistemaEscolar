@@ -5,7 +5,8 @@ import { AutenticacaoModule } from '../autenticacao/autenticacao.module';
 import { TokenAcessoGuard } from '../autenticacao/autenticacao.guard';
 import { AutorizacaoModule } from '../autorizacao/autorizacao.module';
 import { Disciplina } from '../disciplinas/disciplinas.entities';
-import { Escola } from '../escolas/escolas.entities';
+import { DiarioClasse } from '../diario-classe/diario-classe.entities';
+import { Escola, EscolaPeriodoLetivo } from '../escolas/escolas.entities';
 import { Professor } from '../professores/professores.entities';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
 import { TurmasController } from './turmas.controller';
@@ -19,7 +20,9 @@ import { TurmasService } from './turmas.service';
     TypeOrmModule.forFeature([
       Turma,
       TurmaVinculoDocente,
+      DiarioClasse,
       Escola,
+      EscolaPeriodoLetivo,
       Usuario,
       UsuarioAcesso,
       Disciplina,

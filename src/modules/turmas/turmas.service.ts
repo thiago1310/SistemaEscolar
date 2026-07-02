@@ -8,8 +8,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Usuario } from '../autenticacao/autenticacao.entities';
 import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
+import {
+  DiarioClasse,
+  StatusDiarioClasse,
+} from '../diario-classe/diario-classe.entities';
 import { Disciplina } from '../disciplinas/disciplinas.entities';
-import { Escola } from '../escolas/escolas.entities';
+import { Escola, EscolaPeriodoLetivo } from '../escolas/escolas.entities';
 import { Professor } from '../professores/professores.entities';
 import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
 import {
@@ -37,6 +41,10 @@ export class TurmasService {
     private readonly professoresRepositorio: Repository<Professor>,
     @InjectRepository(TurmaVinculoDocente)
     private readonly vinculosDocentesRepositorio: Repository<TurmaVinculoDocente>,
+    @InjectRepository(DiarioClasse)
+    private readonly diariosRepositorio: Repository<DiarioClasse>,
+    @InjectRepository(EscolaPeriodoLetivo)
+    private readonly periodosLetivosRepositorio: Repository<EscolaPeriodoLetivo>,
     private readonly escopoUsuarioService: EscopoUsuarioService,
   ) {}
 
@@ -180,9 +188,17 @@ export class TurmasService {
       Object.assign(vinculoExistente, {
         cargaHorariaSemanal: dados.cargaHorariaSemanal,
         ativo: dados.ativo ?? true,
+        dataInicioResponsabilidade:
+          vinculoExistente.dataInicioResponsabilidade ?? this.dataAtual(),
+        dataFimResponsabilidade: dados.ativo === false ? this.dataAtual() : null,
       });
 
       await this.vinculosDocentesRepositorio.save(vinculoExistente);
+      if (vinculoExistente.ativo) {
+        await this.sincronizarDiariosVinculoDocente(turma, vinculoExistente);
+      } else {
+        await this.marcarDiariosVinculoSubstituido(vinculoExistente.id);
+      }
       return this.buscarVinculoDocentePorId(turmaId, vinculoExistente.id, usuarioId);
     }
 
@@ -193,8 +209,14 @@ export class TurmasService {
         disciplinaId: dados.disciplinaId,
         cargaHorariaSemanal: dados.cargaHorariaSemanal,
         ativo: dados.ativo ?? true,
+        dataInicioResponsabilidade: this.dataAtual(),
+        dataFimResponsabilidade: dados.ativo === false ? this.dataAtual() : null,
       }),
     );
+
+    if (vinculo.ativo) {
+      await this.sincronizarDiariosVinculoDocente(turma, vinculo);
+    }
 
     return this.buscarVinculoDocentePorId(turmaId, vinculo.id, usuarioId);
   }
@@ -209,14 +231,48 @@ export class TurmasService {
     const vinculo = await this.obterVinculoDocente(turmaId, vinculoId);
     const professorId = dados.professorId ?? vinculo.professorId;
     const disciplinaId = dados.disciplinaId ?? vinculo.disciplinaId;
+    const mudouProfessorOuDisciplina =
+      professorId !== vinculo.professorId || disciplinaId !== vinculo.disciplinaId;
 
     await this.validarDadosVinculoDocente(turma, professorId, disciplinaId);
-    await this.garantirVinculoDocenteNaoDuplicado(
-      turmaId,
-      professorId,
-      disciplinaId,
-      vinculoId,
-    );
+
+    if (mudouProfessorOuDisciplina) {
+      vinculo.ativo = false;
+      vinculo.dataFimResponsabilidade = this.dataAtual();
+      await this.vinculosDocentesRepositorio.save(vinculo);
+      await this.marcarDiariosVinculoSubstituido(vinculo.id);
+
+      let novoVinculo = await this.vinculosDocentesRepositorio.findOne({
+        where: { turmaId, professorId, disciplinaId },
+      });
+
+      if (novoVinculo) {
+        Object.assign(novoVinculo, {
+          cargaHorariaSemanal:
+            dados.cargaHorariaSemanal ?? vinculo.cargaHorariaSemanal,
+          ativo: dados.ativo ?? true,
+          dataInicioResponsabilidade: this.dataAtual(),
+          dataFimResponsabilidade: dados.ativo === false ? this.dataAtual() : null,
+        });
+      } else {
+        novoVinculo = this.vinculosDocentesRepositorio.create({
+          turmaId,
+          professorId,
+          disciplinaId,
+          cargaHorariaSemanal:
+            dados.cargaHorariaSemanal ?? vinculo.cargaHorariaSemanal,
+          ativo: dados.ativo ?? true,
+          dataInicioResponsabilidade: this.dataAtual(),
+          dataFimResponsabilidade: dados.ativo === false ? this.dataAtual() : null,
+        });
+      }
+
+      await this.vinculosDocentesRepositorio.save(novoVinculo);
+      if (novoVinculo.ativo) {
+        await this.sincronizarDiariosVinculoDocente(turma, novoVinculo);
+      }
+      return this.buscarVinculoDocentePorId(turmaId, novoVinculo.id, usuarioId);
+    }
 
     Object.assign(vinculo, {
       professorId,
@@ -224,9 +280,19 @@ export class TurmasService {
       cargaHorariaSemanal:
         dados.cargaHorariaSemanal ?? vinculo.cargaHorariaSemanal,
       ativo: dados.ativo ?? vinculo.ativo,
+      dataInicioResponsabilidade:
+        dados.ativo === true
+          ? vinculo.dataInicioResponsabilidade ?? this.dataAtual()
+          : vinculo.dataInicioResponsabilidade,
+      dataFimResponsabilidade: dados.ativo === false ? this.dataAtual() : null,
     });
 
     await this.vinculosDocentesRepositorio.save(vinculo);
+    if (vinculo.ativo) {
+      await this.sincronizarDiariosVinculoDocente(turma, vinculo);
+    } else {
+      await this.marcarDiariosVinculoSubstituido(vinculo.id);
+    }
     return this.buscarVinculoDocentePorId(turmaId, vinculoId, usuarioId);
   }
 
@@ -237,9 +303,12 @@ export class TurmasService {
   ) {
     await this.buscarPorId(turmaId, usuarioId);
     const vinculo = await this.obterVinculoDocente(turmaId, vinculoId);
-    await this.vinculosDocentesRepositorio.remove(vinculo);
+    vinculo.ativo = false;
+    vinculo.dataFimResponsabilidade = this.dataAtual();
+    await this.vinculosDocentesRepositorio.save(vinculo);
+    await this.marcarDiariosVinculoSubstituido(vinculo.id);
 
-    return { mensagem: 'Vinculo docente removido com sucesso.' };
+    return { mensagem: 'Vinculo docente encerrado com sucesso.' };
   }
 
   private async buscarVinculoDocentePorId(
@@ -454,6 +523,106 @@ export class TurmasService {
     return null;
   }
 
+  private async sincronizarDiariosVinculoDocente(
+    turma: Turma,
+    vinculo: TurmaVinculoDocente,
+  ) {
+    const periodos = await this.listarPeriodosLetivosTurma(turma);
+    if (periodos.length === 0) {
+      return;
+    }
+
+    for (const periodo of periodos) {
+      let diario = await this.diariosRepositorio.findOne({
+        where: { vinculoDocenteId: vinculo.id, periodoLetivoId: periodo.id },
+      });
+
+      if (!diario) {
+        diario = this.diariosRepositorio.create({
+          turmaId: turma.id,
+          disciplinaId: vinculo.disciplinaId,
+          professorId: vinculo.professorId,
+          vinculoDocenteId: vinculo.id,
+          periodoLetivoId: periodo.id,
+          anoLetivo: turma.anoLetivo,
+          periodoLabel: periodo.label,
+          dataInicioResponsabilidade:
+            vinculo.dataInicioResponsabilidade ?? this.dataAtual(),
+          dataFimResponsabilidade: vinculo.dataFimResponsabilidade ?? null,
+          status: this.calcularStatusInicialDiario(periodo),
+        });
+      } else {
+        diario.turmaId = turma.id;
+        diario.disciplinaId = vinculo.disciplinaId;
+        diario.professorId = vinculo.professorId;
+        diario.anoLetivo = turma.anoLetivo;
+        diario.periodoLabel = periodo.label;
+        diario.dataInicioResponsabilidade =
+          vinculo.dataInicioResponsabilidade ?? this.dataAtual();
+        diario.dataFimResponsabilidade = vinculo.dataFimResponsabilidade ?? null;
+
+        if (
+          ![
+            StatusDiarioClasse.FECHADO,
+            StatusDiarioClasse.REABERTO,
+            StatusDiarioClasse.SUBSTITUIDO,
+          ].includes(diario.status)
+        ) {
+          diario.status = this.calcularStatusInicialDiario(periodo);
+        }
+      }
+
+      await this.diariosRepositorio.save(diario);
+    }
+  }
+
+  private async marcarDiariosVinculoSubstituido(vinculoId: string) {
+    const diarios = await this.diariosRepositorio.find({
+      where: { vinculoDocenteId: vinculoId },
+    });
+
+    for (const diario of diarios) {
+      if (diario.status !== StatusDiarioClasse.FECHADO) {
+        diario.status = StatusDiarioClasse.SUBSTITUIDO;
+      }
+      diario.dataFimResponsabilidade = diario.dataFimResponsabilidade ?? this.dataAtual();
+      await this.diariosRepositorio.save(diario);
+    }
+  }
+
+  private async listarPeriodosLetivosTurma(turma: Turma) {
+    return this.periodosLetivosRepositorio
+      .createQueryBuilder('periodo')
+      .innerJoin('periodo.configuracaoPedagogica', 'configuracao')
+      .where('configuracao.escola_id = :escolaId', { escolaId: turma.escolaId })
+      .andWhere('configuracao.ano_letivo = :anoLetivo', {
+        anoLetivo: turma.anoLetivo,
+      })
+      .andWhere('configuracao.ativa = true')
+      .andWhere('periodo.ativo = true')
+      .orderBy('periodo.numero', 'ASC')
+      .getMany();
+  }
+
+  private calcularStatusInicialDiario(periodo: EscolaPeriodoLetivo) {
+    if (!periodo.dataInicio || !periodo.dataFim) {
+      return StatusDiarioClasse.ABERTO;
+    }
+
+    const hoje = this.dataAtual();
+    if (hoje < periodo.dataInicio) {
+      return StatusDiarioClasse.NAO_INICIADO;
+    }
+    if (hoje > periodo.dataFim) {
+      return StatusDiarioClasse.PENDENTE_FECHAMENTO;
+    }
+    return StatusDiarioClasse.ABERTO;
+  }
+
+  private dataAtual() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
   private serializarVinculoDocente(vinculo: TurmaVinculoDocente) {
     return {
       id: vinculo.id,
@@ -462,6 +631,8 @@ export class TurmasService {
       disciplinaId: vinculo.disciplinaId,
       cargaHorariaSemanal: vinculo.cargaHorariaSemanal,
       ativo: vinculo.ativo,
+      dataInicioResponsabilidade: vinculo.dataInicioResponsabilidade,
+      dataFimResponsabilidade: vinculo.dataFimResponsabilidade,
       anoLetivo: vinculo.turma?.anoLetivo,
       professor: vinculo.professor
         ? {

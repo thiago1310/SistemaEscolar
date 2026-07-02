@@ -18,6 +18,51 @@ export enum TipoPeriodoPlanejamento {
   OUTRO = 'OUTRO',
 }
 
+interface FaixaEtariaBncc {
+  codigo: string;
+  nome: string;
+  idadeInicialAnos: number;
+  idadeFinalAnos: number;
+  descricao: string;
+}
+
+@Entity('bncc_codigos')
+@Unique('uq_bncc_codigos_codigo', ['codigo'])
+export class CodigoBncc {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'varchar', length: 40 })
+  codigo: string;
+
+  @Column({ name: 'etapa_ensino', type: 'varchar', length: 100 })
+  etapaEnsino: string;
+
+  @Column({ type: 'json', nullable: true })
+  series: number[] | null;
+
+  @Column({ name: 'faixa_etaria', type: 'json', nullable: true })
+  faixaEtaria: FaixaEtariaBncc | null;
+
+  @Column({ name: 'componente_ou_area', type: 'varchar', length: 180 })
+  componenteOuArea: string;
+
+  @Column({ name: 'primeira_ocorrencia_texto', type: 'int', nullable: true })
+  primeiraOcorrenciaTexto: number | null;
+
+  @Column({ name: 'fonte_url', type: 'text', nullable: true })
+  fonteUrl: string | null;
+
+  @Column({ type: 'boolean', default: true })
+  ativo: boolean;
+
+  @CreateDateColumn({ name: 'created_at', type: 'datetime' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'datetime' })
+  updatedAt: Date;
+}
+
 @Entity('documentos_curriculares')
 export class DocumentoCurricular {
   @PrimaryGeneratedColumn('uuid')

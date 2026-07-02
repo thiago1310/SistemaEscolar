@@ -9,6 +9,7 @@ import { UsuarioAcesso } from '../usuario-acessos/usuario-acessos.entities';
 import {
   AnoSerieCurricular,
   AreaConhecimento,
+  CodigoBncc,
   ComponenteCurricular,
   DocumentoCurricular,
   HabilidadeCurricular,
@@ -27,6 +28,7 @@ import { PlanejamentoPedagogicoService } from './planejamento-pedagogico.service
   imports: [
     TypeOrmModule.forFeature([
       DocumentoCurricular,
+      CodigoBncc,
       AnoSerieCurricular,
       AreaConhecimento,
       ComponenteCurricular,

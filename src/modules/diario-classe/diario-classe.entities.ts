@@ -9,7 +9,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Aluno } from '../alunos/alunos.entities';
+import { Usuario } from '../autenticacao/autenticacao.entities';
 import { Disciplina } from '../disciplinas/disciplinas.entities';
+import { EscolaPeriodoLetivo } from '../escolas/escolas.entities';
 import { Professor } from '../professores/professores.entities';
 import { Turma, TurmaVinculoDocente } from '../turmas/turmas.entities';
 
@@ -36,6 +38,104 @@ export enum SituacaoObservacaoDiario {
   ACOMPANHAR = 'ACOMPANHAR',
   CONCLUIDO = 'CONCLUIDO',
   PENDENTE_RETORNO = 'PENDENTE_RETORNO',
+}
+
+export enum StatusDiarioClasse {
+  NAO_INICIADO = 'NAO_INICIADO',
+  ABERTO = 'ABERTO',
+  PENDENTE_FECHAMENTO = 'PENDENTE_FECHAMENTO',
+  FECHADO = 'FECHADO',
+  REABERTO = 'REABERTO',
+  SUBSTITUIDO = 'SUBSTITUIDO',
+}
+
+@Entity('diarios_classe')
+@Unique('uq_diarios_classe_vinculo_periodo', ['vinculoDocenteId', 'periodoLetivoId'])
+export class DiarioClasse {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ name: 'turma_id', type: 'varchar', length: 36 })
+  turmaId: string;
+
+  @ManyToOne(() => Turma, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'turma_id' })
+  turma: Turma;
+
+  @Column({ name: 'disciplina_id', type: 'varchar', length: 36 })
+  disciplinaId: string;
+
+  @ManyToOne(() => Disciplina, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'disciplina_id' })
+  disciplina: Disciplina;
+
+  @Column({ name: 'professor_id', type: 'varchar', length: 36 })
+  professorId: string;
+
+  @ManyToOne(() => Professor, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'professor_id' })
+  professor: Professor;
+
+  @Column({ name: 'vinculo_docente_id', type: 'varchar', length: 36 })
+  vinculoDocenteId: string;
+
+  @ManyToOne(() => TurmaVinculoDocente, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'vinculo_docente_id' })
+  vinculoDocente: TurmaVinculoDocente;
+
+  @Column({ name: 'periodo_letivo_id', type: 'varchar', length: 36 })
+  periodoLetivoId: string;
+
+  @ManyToOne(() => EscolaPeriodoLetivo, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'periodo_letivo_id' })
+  periodoLetivo: EscolaPeriodoLetivo;
+
+  @Column({ name: 'ano_letivo', type: 'int' })
+  anoLetivo: number;
+
+  @Column({ name: 'periodo_label', type: 'varchar', length: 80 })
+  periodoLabel: string;
+
+  @Column({ name: 'data_inicio_responsabilidade', type: 'date', nullable: true })
+  dataInicioResponsabilidade: string | null;
+
+  @Column({ name: 'data_fim_responsabilidade', type: 'date', nullable: true })
+  dataFimResponsabilidade: string | null;
+
+  @Column({ type: 'varchar', length: 30, default: StatusDiarioClasse.NAO_INICIADO })
+  status: StatusDiarioClasse;
+
+  @Column({ name: 'parecer_final', type: 'text', nullable: true })
+  parecerFinal: string | null;
+
+  @Column({ name: 'fechado_em', type: 'datetime', nullable: true })
+  fechadoEm: Date | null;
+
+  @Column({ name: 'fechado_por_usuario_id', type: 'varchar', length: 36, nullable: true })
+  fechadoPorUsuarioId: string | null;
+
+  @ManyToOne(() => Usuario, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'fechado_por_usuario_id' })
+  fechadoPorUsuario: Usuario | null;
+
+  @Column({ name: 'reaberto_em', type: 'datetime', nullable: true })
+  reabertoEm: Date | null;
+
+  @Column({ name: 'reaberto_por_usuario_id', type: 'varchar', length: 36, nullable: true })
+  reabertoPorUsuarioId: string | null;
+
+  @ManyToOne(() => Usuario, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'reaberto_por_usuario_id' })
+  reabertoPorUsuario: Usuario | null;
+
+  @Column({ name: 'motivo_reabertura', type: 'text', nullable: true })
+  motivoReabertura: string | null;
+
+  @CreateDateColumn({ name: 'created_at', type: 'datetime' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'datetime' })
+  updatedAt: Date;
 }
 
 @Entity('diario_frequencias')
@@ -76,6 +176,13 @@ export class DiarioFrequencia {
   @ManyToOne(() => TurmaVinculoDocente, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'vinculo_docente_id' })
   vinculoDocente: TurmaVinculoDocente | null;
+
+  @Column({ name: 'diario_classe_id', type: 'varchar', length: 36, nullable: true })
+  diarioClasseId: string | null;
+
+  @ManyToOne(() => DiarioClasse, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'diario_classe_id' })
+  diarioClasse: DiarioClasse | null;
 
   @Column({ name: 'aluno_id', type: 'varchar', length: 36 })
   alunoId: string;
@@ -137,6 +244,13 @@ export class DiarioAula {
   @ManyToOne(() => TurmaVinculoDocente, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'vinculo_docente_id' })
   vinculoDocente: TurmaVinculoDocente | null;
+
+  @Column({ name: 'diario_classe_id', type: 'varchar', length: 36, nullable: true })
+  diarioClasseId: string | null;
+
+  @ManyToOne(() => DiarioClasse, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'diario_classe_id' })
+  diarioClasse: DiarioClasse | null;
 
   @Column({ type: 'date' })
   data: string;
@@ -218,6 +332,13 @@ export class DiarioAvaliacao {
   @ManyToOne(() => TurmaVinculoDocente, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'vinculo_docente_id' })
   vinculoDocente: TurmaVinculoDocente | null;
+
+  @Column({ name: 'diario_classe_id', type: 'varchar', length: 36, nullable: true })
+  diarioClasseId: string | null;
+
+  @ManyToOne(() => DiarioClasse, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'diario_classe_id' })
+  diarioClasse: DiarioClasse | null;
 
   @Column({ type: 'varchar', length: 120 })
   nome: string;
@@ -302,6 +423,13 @@ export class DiarioObservacao {
   @ManyToOne(() => Professor, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'professor_id' })
   professor: Professor | null;
+
+  @Column({ name: 'diario_classe_id', type: 'varchar', length: 36, nullable: true })
+  diarioClasseId: string | null;
+
+  @ManyToOne(() => DiarioClasse, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'diario_classe_id' })
+  diarioClasse: DiarioClasse | null;
 
   @Column({ type: 'date' })
   data: string;
