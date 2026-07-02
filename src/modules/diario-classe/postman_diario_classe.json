@@ -105,7 +105,7 @@
         "url": "{{url_base}}/diario-classe/turmas/{{turmaId}}/aulas",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"disciplinaId\": \"{{disciplinaId}}\",\n  \"data\": \"2026-06-30\",\n  \"horaInicio\": \"08:00\",\n  \"horaFim\": \"08:50\",\n  \"titulo\": \"Numeros decimais\",\n  \"conteudo\": \"Adicao e subtracao com numeros decimais.\",\n  \"periodo\": \"2 Bimestre\"\n}"
+          "raw": "{\n  \"disciplinaId\": \"{{disciplinaId}}\",\n  \"diarioClasseId\": \"{{diarioClasseId}}\",\n  \"data\": \"2026-06-30\",\n  \"horaInicio\": \"08:00\",\n  \"horaFim\": \"08:50\",\n  \"titulo\": \"Numeros decimais\",\n  \"conteudo\": \"Adicao e subtracao com numeros decimais.\",\n  \"periodo\": \"2 Bimestre\"\n}"
         }
       }
     },
@@ -120,7 +120,7 @@
         "url": "{{url_base}}/diario-classe/turmas/{{turmaId}}/avaliacoes",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"disciplinaId\": \"{{disciplinaId}}\",\n  \"nome\": \"AV1 - Prova\",\n  \"periodo\": \"2 Bimestre\",\n  \"peso\": 40,\n  \"data\": \"2026-06-30\"\n}"
+          "raw": "{\n  \"disciplinaId\": \"{{disciplinaId}}\",\n  \"diarioClasseId\": \"{{diarioClasseId}}\",\n  \"nome\": \"AV1 - Prova\",\n  \"periodo\": \"2 Bimestre\",\n  \"peso\": 40,\n  \"data\": \"2026-06-30\"\n}"
         }
       }
     },
@@ -135,7 +135,7 @@
         "url": "{{url_base}}/diario-classe/avaliacoes/{{avaliacaoId}}/notas",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"notas\": [\n    {\n      \"alunoId\": \"{{alunoId}}\",\n      \"valor\": 8.5,\n      \"observacao\": \"Bom desempenho.\"\n    }\n  ]\n}"
+          "raw": "{\n  \"diarioClasseId\": \"{{diarioClasseId}}\",\n  \"notas\": [\n    {\n      \"alunoId\": \"{{alunoId}}\",\n      \"valor\": 8.5,\n      \"observacao\": \"Bom desempenho.\"\n    }\n  ]\n}"
         }
       }
     },
@@ -150,7 +150,7 @@
         "url": "{{url_base}}/diario-classe/turmas/{{turmaId}}/observacoes",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"alunoId\": \"{{alunoId}}\",\n  \"data\": \"2026-06-30\",\n  \"tipo\": \"ACOMPANHAMENTO\",\n  \"resumo\": \"Dificuldade em fracoes\",\n  \"descricao\": \"Aluno precisa retomar operacoes com fracoes.\"\n}"
+          "raw": "{\n  \"alunoId\": \"{{alunoId}}\",\n  \"diarioClasseId\": \"{{diarioClasseId}}\",\n  \"data\": \"2026-06-30\",\n  \"tipo\": \"ACOMPANHAMENTO\",\n  \"resumo\": \"Dificuldade em fracoes\",\n  \"descricao\": \"Aluno precisa retomar operacoes com fracoes.\"\n}"
         }
       }
     }

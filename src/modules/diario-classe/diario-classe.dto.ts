@@ -92,12 +92,11 @@ export class SalvarFrequenciasDto {
   data: string;
 
   @IsUUID()
-  @IsOptional()
-  disciplinaId?: string;
+  diarioClasseId: string;
 
   @IsUUID()
   @IsOptional()
-  diarioClasseId?: string;
+  disciplinaId?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -134,6 +133,9 @@ export class ListarAulasDto {
 export class CriarAulaDto {
   @IsUUID()
   disciplinaId: string;
+
+  @IsUUID()
+  diarioClasseId: string;
 
   @IsDateString()
   data: string;
@@ -173,6 +175,10 @@ export class AtualizarAulaDto {
   @IsUUID()
   @IsOptional()
   disciplinaId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  diarioClasseId?: string;
 
   @IsDateString()
   @IsOptional()
@@ -233,6 +239,9 @@ export class CriarAvaliacaoDto {
   @IsUUID()
   disciplinaId: string;
 
+  @IsUUID()
+  diarioClasseId: string;
+
   @IsString()
   @MaxLength(120)
   nome: string;
@@ -256,6 +265,10 @@ export class CriarAvaliacaoDto {
 }
 
 export class AtualizarAvaliacaoDto {
+  @IsUUID()
+  @IsOptional()
+  diarioClasseId?: string;
+
   @IsString()
   @IsOptional()
   @MaxLength(120)
@@ -301,6 +314,9 @@ export class RegistroNotaDto {
 }
 
 export class SalvarNotasDto {
+  @IsUUID()
+  diarioClasseId: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => RegistroNotaDto)
@@ -356,6 +372,9 @@ export class CriarObservacaoDto {
   @IsOptional()
   alunoId?: string | null;
 
+  @IsUUID()
+  diarioClasseId: string;
+
   @IsDateString()
   data: string;
 
@@ -390,6 +409,10 @@ export class AtualizarObservacaoDto {
   @IsUUID()
   @IsOptional()
   alunoId?: string | null;
+
+  @IsUUID()
+  @IsOptional()
+  diarioClasseId?: string;
 
   @IsDateString()
   @IsOptional()

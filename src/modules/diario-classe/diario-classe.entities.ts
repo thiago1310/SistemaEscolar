@@ -139,7 +139,11 @@ export class DiarioClasse {
 }
 
 @Entity('diario_frequencias')
-@Unique('uq_diario_frequencias_turma_data_aluno', ['turmaId', 'data', 'alunoId'])
+@Unique('uq_diario_frequencias_diario_data_aluno', [
+  'diarioClasseId',
+  'data',
+  'alunoId',
+])
 export class DiarioFrequencia {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -290,12 +294,7 @@ export class DiarioAula {
 }
 
 @Entity('diario_avaliacoes')
-@Unique('uq_diario_avaliacoes_turma_disciplina_periodo_nome', [
-  'turmaId',
-  'disciplinaId',
-  'periodo',
-  'nome',
-])
+@Unique('uq_diario_avaliacoes_diario_nome', ['diarioClasseId', 'nome'])
 export class DiarioAvaliacao {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -377,6 +376,13 @@ export class DiarioNota {
   @ManyToOne(() => DiarioAvaliacao, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'avaliacao_id' })
   avaliacao: DiarioAvaliacao;
+
+  @Column({ name: 'diario_classe_id', type: 'varchar', length: 36, nullable: true })
+  diarioClasseId: string | null;
+
+  @ManyToOne(() => DiarioClasse, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'diario_classe_id' })
+  diarioClasse: DiarioClasse | null;
 
   @Column({ name: 'aluno_id', type: 'varchar', length: 36 })
   alunoId: string;

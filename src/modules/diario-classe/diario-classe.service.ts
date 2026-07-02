@@ -1,11 +1,12 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, In, Repository } from 'typeorm';
+import { Brackets, In, QueryFailedError, Repository } from 'typeorm';
 import { Aluno, SituacaoAluno } from '../alunos/alunos.entities';
 import { EscopoUsuarioService } from '../autorizacao/escopo-usuario.service';
 import { Disciplina } from '../disciplinas/disciplinas.entities';
@@ -396,17 +397,13 @@ export class DiarioClasseService {
     dados: SalvarFrequenciasDto,
     usuarioId: string,
   ) {
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    const { diario, vinculo } = await this.garantirDiarioLancamento(
       turmaId,
       usuarioId,
+      dados.diarioClasseId,
+      dados.data,
       dados.disciplinaId,
     );
-    const diario = await this.garantirDiarioEditavel(vinculo, dados.data);
-    if (dados.diarioClasseId && diario?.id !== dados.diarioClasseId) {
-      throw new BadRequestException(
-        'Diario informado nao corresponde a data, turma e disciplina do lancamento.',
-      );
-    }
     const alunos = await this.listarAlunosTurma(turmaId);
     const alunosPermitidos = new Set(alunos.map((aluno) => aluno.id));
 
@@ -416,7 +413,12 @@ export class DiarioClasseService {
       }
 
       const existente = await this.frequenciasRepositorio.findOne({
-        where: { turmaId, data: dados.data, alunoId: registro.alunoId },
+        where: {
+          turmaId,
+          data: dados.data,
+          alunoId: registro.alunoId,
+          diarioClasseId: diario.id,
+        },
       });
       const frequencia =
         existente ??
@@ -427,10 +429,10 @@ export class DiarioClasseService {
         });
 
       Object.assign(frequencia, {
-        disciplinaId: dados.disciplinaId ?? vinculo.disciplinaId,
+        disciplinaId: diario.disciplinaId,
         professorId: vinculo.professorId,
         vinculoDocenteId: vinculo.id,
-        diarioClasseId: diario?.id ?? null,
+        diarioClasseId: diario.id,
         situacao: registro.situacao,
         observacao: registro.observacao ?? null,
       });
@@ -440,7 +442,7 @@ export class DiarioClasseService {
 
     return this.listarFrequencias(
       turmaId,
-      { data: dados.data, diarioClasseId: diario?.id },
+      { data: dados.data, diarioClasseId: diario.id },
       usuarioId,
     );
   }
@@ -502,18 +504,20 @@ export class DiarioClasseService {
   }
 
   async criarAula(turmaId: string, dados: CriarAulaDto, usuarioId: string) {
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    const { diario, vinculo } = await this.garantirDiarioLancamento(
       turmaId,
       usuarioId,
+      dados.diarioClasseId,
+      dados.data,
       dados.disciplinaId,
     );
-    const diario = await this.garantirDiarioEditavel(vinculo, dados.data);
     const aula = this.aulasRepositorio.create({
       ...dados,
       turmaId,
+      disciplinaId: diario.disciplinaId,
       professorId: vinculo.professorId,
       vinculoDocenteId: vinculo.id,
-      diarioClasseId: diario?.id ?? null,
+      diarioClasseId: diario.id,
       horaInicio: dados.horaInicio ?? null,
       horaFim: dados.horaFim ?? null,
       habilidades: dados.habilidades ?? null,
@@ -527,28 +531,31 @@ export class DiarioClasseService {
 
   async atualizarAula(id: string, dados: AtualizarAulaDto, usuarioId: string) {
     const aula = await this.buscarAula(id, usuarioId);
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    const { diario, vinculo } = await this.garantirDiarioLancamento(
       aula.turmaId,
       usuarioId,
+      dados.diarioClasseId ?? aula.diarioClasseId,
+      dados.data ?? aula.data,
       dados.disciplinaId ?? aula.disciplinaId,
     );
-    const diario = await this.garantirDiarioEditavel(
-      vinculo,
-      dados.data ?? aula.data,
-    );
-    aula.diarioClasseId = diario?.id ?? aula.diarioClasseId ?? null;
-    Object.assign(aula, dados);
+    Object.assign(aula, dados, {
+      disciplinaId: diario.disciplinaId,
+      professorId: vinculo.professorId,
+      vinculoDocenteId: vinculo.id,
+      diarioClasseId: diario.id,
+    });
     return this.serializarAula(await this.aulasRepositorio.save(aula));
   }
 
   async inativarAula(id: string, usuarioId: string) {
     const aula = await this.buscarAula(id, usuarioId);
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    await this.garantirDiarioLancamento(
       aula.turmaId,
       usuarioId,
+      aula.diarioClasseId,
+      aula.data,
       aula.disciplinaId,
     );
-    await this.garantirDiarioEditavel(vinculo, aula.data);
     aula.ativo = false;
     return this.serializarAula(await this.aulasRepositorio.save(aula));
   }
@@ -584,30 +591,38 @@ export class DiarioClasseService {
   }
 
   async criarAvaliacao(turmaId: string, dados: CriarAvaliacaoDto, usuarioId: string) {
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    const { diario, vinculo } = await this.garantirDiarioLancamento(
       turmaId,
       usuarioId,
+      dados.diarioClasseId,
+      dados.data,
       dados.disciplinaId,
     );
-    const diario = await this.garantirDiarioEditavel(
-      vinculo,
-      dados.data,
+    await this.garantirAvaliacaoNaoDuplicada(
+      diario.id,
+      dados.nome,
     );
     const avaliacao = this.avaliacoesRepositorio.create({
       ...dados,
       turmaId,
+      disciplinaId: diario.disciplinaId,
       professorId: vinculo.professorId,
       vinculoDocenteId: vinculo.id,
-      diarioClasseId: diario?.id ?? null,
+      diarioClasseId: diario.id,
       peso: String(dados.peso),
       data: dados.data ?? null,
-      periodo: dados.periodo ?? diario?.periodoLabel,
+      periodo: dados.periodo ?? diario.periodoLabel,
       observacao: dados.observacao ?? null,
       ativo: true,
     });
-    return this.serializarAvaliacao(
-      await this.avaliacoesRepositorio.save(avaliacao),
-    );
+    try {
+      return this.serializarAvaliacao(
+        await this.avaliacoesRepositorio.save(avaliacao),
+      );
+    } catch (erro) {
+      this.tratarErroDuplicidadeAvaliacao(erro);
+      throw erro;
+    }
   }
 
   async atualizarAvaliacao(
@@ -616,33 +631,45 @@ export class DiarioClasseService {
     usuarioId: string,
   ) {
     const avaliacao = await this.buscarAvaliacao(id, usuarioId);
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    const { diario, vinculo } = await this.garantirDiarioLancamento(
       avaliacao.turmaId,
       usuarioId,
+      dados.diarioClasseId ?? avaliacao.diarioClasseId,
+      dados.data ?? avaliacao.data,
       avaliacao.disciplinaId,
     );
-    const diario = await this.garantirDiarioEditavel(
-      vinculo,
-      dados.data ?? avaliacao.data,
+    await this.garantirAvaliacaoNaoDuplicada(
+      diario.id,
+      dados.nome ?? avaliacao.nome,
+      avaliacao.id,
     );
-    avaliacao.diarioClasseId = diario?.id ?? avaliacao.diarioClasseId ?? null;
     Object.assign(avaliacao, {
       ...dados,
+      disciplinaId: diario.disciplinaId,
+      professorId: vinculo.professorId,
+      vinculoDocenteId: vinculo.id,
+      diarioClasseId: diario.id,
       peso: dados.peso === undefined ? avaliacao.peso : String(dados.peso),
     });
-    return this.serializarAvaliacao(
-      await this.avaliacoesRepositorio.save(avaliacao),
-    );
+    try {
+      return this.serializarAvaliacao(
+        await this.avaliacoesRepositorio.save(avaliacao),
+      );
+    } catch (erro) {
+      this.tratarErroDuplicidadeAvaliacao(erro);
+      throw erro;
+    }
   }
 
   async inativarAvaliacao(id: string, usuarioId: string) {
     const avaliacao = await this.buscarAvaliacao(id, usuarioId);
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    await this.garantirDiarioLancamento(
       avaliacao.turmaId,
       usuarioId,
+      avaliacao.diarioClasseId,
+      avaliacao.data,
       avaliacao.disciplinaId,
     );
-    await this.garantirDiarioEditavel(vinculo, avaliacao.data);
     avaliacao.ativo = false;
     return this.serializarAvaliacao(
       await this.avaliacoesRepositorio.save(avaliacao),
@@ -691,6 +718,7 @@ export class DiarioClasseService {
           const nota = mapaNotas.get(`${avaliacao.id}:${aluno.id}`);
           return {
             avaliacaoId: avaliacao.id,
+            diarioClasseId: nota?.diarioClasseId ?? avaliacao.diarioClasseId,
             valor: nota?.valor === null || nota?.valor === undefined ? null : Number(nota.valor),
             observacao: nota?.observacao ?? null,
           };
@@ -714,12 +742,25 @@ export class DiarioClasseService {
 
   async salvarNotas(avaliacaoId: string, dados: SalvarNotasDto, usuarioId: string) {
     const avaliacao = await this.buscarAvaliacao(avaliacaoId, usuarioId);
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    const { diario } = await this.garantirDiarioLancamento(
       avaliacao.turmaId,
       usuarioId,
+      dados.diarioClasseId,
+      avaliacao.data,
       avaliacao.disciplinaId,
     );
-    await this.garantirDiarioEditavel(vinculo, avaliacao.data);
+    if (
+      avaliacao.diarioClasseId &&
+      avaliacao.diarioClasseId !== dados.diarioClasseId
+    ) {
+      throw new BadRequestException(
+        'Diario informado nao corresponde ao diario da avaliacao.',
+      );
+    }
+    if (!avaliacao.diarioClasseId) {
+      avaliacao.diarioClasseId = diario.id;
+      await this.avaliacoesRepositorio.save(avaliacao);
+    }
     const alunos = await this.listarAlunosTurma(avaliacao.turmaId);
     const alunosPermitidos = new Set(alunos.map((aluno) => aluno.id));
 
@@ -732,8 +773,13 @@ export class DiarioClasseService {
       });
       const nota =
         existente ??
-        this.notasRepositorio.create({ avaliacaoId, alunoId: item.alunoId });
+        this.notasRepositorio.create({
+          avaliacaoId,
+          diarioClasseId: diario.id,
+          alunoId: item.alunoId,
+        });
 
+      nota.diarioClasseId = diario.id;
       nota.valor = item.valor === undefined || item.valor === null ? null : String(item.valor);
       nota.observacao = item.observacao ?? null;
       await this.notasRepositorio.save(nota);
@@ -741,7 +787,7 @@ export class DiarioClasseService {
 
     return this.listarNotas(avaliacao.turmaId, usuarioId, {
       disciplinaId: avaliacao.disciplinaId,
-      diarioClasseId: avaliacao.diarioClasseId ?? undefined,
+      diarioClasseId: diario.id,
       periodo: avaliacao.periodo,
     });
   }
@@ -808,17 +854,20 @@ export class DiarioClasseService {
     dados: CriarObservacaoDto,
     usuarioId: string,
   ) {
-    const professor = await this.obterProfessorUsuario(usuarioId);
-    const vinculo = await this.garantirProfessorPodeEscrever(turmaId, usuarioId);
-    const diario = await this.garantirDiarioEditavel(vinculo, dados.data);
+    const { diario, vinculo } = await this.garantirDiarioLancamento(
+      turmaId,
+      usuarioId,
+      dados.diarioClasseId,
+      dados.data,
+    );
     if (dados.alunoId) {
       await this.garantirAlunoTurma(dados.alunoId, turmaId);
     }
     const observacao = this.observacoesRepositorio.create({
       ...dados,
       turmaId,
-      professorId: professor.id,
-      diarioClasseId: diario?.id ?? null,
+      professorId: vinculo.professorId,
+      diarioClasseId: diario.id,
       alunoId: dados.alunoId ?? null,
       situacao: dados.situacao ?? undefined,
       encaminhamentos: dados.encaminhamentos ?? null,
@@ -837,19 +886,19 @@ export class DiarioClasseService {
     usuarioId: string,
   ) {
     const observacao = await this.buscarObservacao(id, usuarioId);
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    const { diario, vinculo } = await this.garantirDiarioLancamento(
       observacao.turmaId,
       usuarioId,
-    );
-    const diario = await this.garantirDiarioEditavel(
-      vinculo,
+      dados.diarioClasseId ?? observacao.diarioClasseId,
       dados.data ?? observacao.data,
     );
-    observacao.diarioClasseId = diario?.id ?? observacao.diarioClasseId ?? null;
     if (dados.alunoId) {
       await this.garantirAlunoTurma(dados.alunoId, observacao.turmaId);
     }
-    Object.assign(observacao, dados);
+    Object.assign(observacao, dados, {
+      professorId: vinculo.professorId,
+      diarioClasseId: diario.id,
+    });
     if (dados.responsaveisComunicados && !observacao.dataComunicacao) {
       observacao.dataComunicacao = new Date();
     }
@@ -860,11 +909,12 @@ export class DiarioClasseService {
 
   async inativarObservacao(id: string, usuarioId: string) {
     const observacao = await this.buscarObservacao(id, usuarioId);
-    const vinculo = await this.garantirProfessorPodeEscrever(
+    await this.garantirDiarioLancamento(
       observacao.turmaId,
       usuarioId,
+      observacao.diarioClasseId,
+      observacao.data,
     );
-    await this.garantirDiarioEditavel(vinculo, observacao.data);
     observacao.ativo = false;
     return this.serializarObservacao(
       await this.observacoesRepositorio.save(observacao),
@@ -1200,6 +1250,90 @@ export class DiarioClasseService {
     }
 
     return diario;
+  }
+
+  private async garantirDiarioLancamento(
+    turmaId: string,
+    usuarioId: string,
+    diarioClasseId?: string | null,
+    dataRegistro?: string | null,
+    disciplinaId?: string | null,
+  ) {
+    if (!diarioClasseId) {
+      throw new BadRequestException('Informe o diarioClasseId do lancamento.');
+    }
+
+    const diario = await this.garantirDiarioPertenceTurma(
+      diarioClasseId,
+      turmaId,
+      usuarioId,
+    );
+
+    if (disciplinaId && diario.disciplinaId !== disciplinaId) {
+      throw new BadRequestException(
+        'Diario informado nao corresponde a disciplina do lancamento.',
+      );
+    }
+
+    const vinculo = await this.garantirProfessorPodeEscrever(
+      turmaId,
+      usuarioId,
+      diario.disciplinaId,
+    );
+
+    if (diario.vinculoDocenteId && diario.vinculoDocenteId !== vinculo.id) {
+      throw new ForbiddenException(
+        'Professor sem vinculo ativo com o diario informado.',
+      );
+    }
+
+    const diarioEditavel = await this.garantirDiarioEditavel(
+      vinculo,
+      dataRegistro,
+    );
+
+    if (!diarioEditavel || diarioEditavel.id !== diario.id) {
+      throw new BadRequestException(
+        'Diario informado nao corresponde a data, turma e disciplina do lancamento.',
+      );
+    }
+
+    return { diario: diarioEditavel, vinculo };
+  }
+
+  private async garantirAvaliacaoNaoDuplicada(
+    diarioClasseId: string,
+    nome: string,
+    ignorarId?: string,
+  ) {
+    const consulta = this.avaliacoesRepositorio
+      .createQueryBuilder('avaliacao')
+      .where('avaliacao.diario_classe_id = :diarioClasseId', { diarioClasseId })
+      .andWhere('avaliacao.nome = :nome', { nome });
+
+    if (ignorarId) {
+      consulta.andWhere('avaliacao.id != :ignorarId', { ignorarId });
+    }
+
+    const existente = await consulta.getOne();
+
+    if (existente) {
+      throw new ConflictException(
+        'Ja existe uma avaliacao com este nome para o diario informado.',
+      );
+    }
+  }
+
+  private tratarErroDuplicidadeAvaliacao(erro: unknown) {
+    if (
+      erro instanceof QueryFailedError &&
+      String((erro as QueryFailedError & { driverError?: { code?: string } }).driverError?.code) ===
+        'ER_DUP_ENTRY'
+    ) {
+      throw new ConflictException(
+        'Ja existe uma avaliacao com este nome para o diario informado.',
+      );
+    }
   }
 
   private async listarAlunosTurma(turmaId: string) {
