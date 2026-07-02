@@ -1,0 +1,54 @@
+{
+  "info": {
+    "_postman_id": "8e423a75-78be-4c78-bncc-codigos",
+    "name": "Sistema Escolar - BNCC Codigos",
+    "description": "Collection do modulo bncc-codigos. Consulta os codigos oficiais da BNCC carregados pelo seed:admin a partir de bncc_codigos.json.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "accessToken", "value": "" },
+    { "key": "codigoBncc", "value": "EF15LP01" }
+  ],
+  "item": [
+    {
+      "name": "Listar codigos",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/bncc-codigos?pagina=1&limite=50"
+      }
+    },
+    {
+      "name": "Filtrar por serie e componente",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/bncc-codigos?etapaEnsino=Ensino%20Fundamental&serie=1&componenteOuArea=Lingua%20Portuguesa&limite=50"
+      }
+    },
+    {
+      "name": "Filtrar educacao infantil por idade",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/bncc-codigos?etapaEnsino=Educacao%20Infantil&idade=1.5&limite=50"
+      }
+    },
+    {
+      "name": "Buscar por codigo",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/bncc-codigos/{{codigoBncc}}"
+      }
+    },
+    {
+      "name": "Listar opcoes",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/bncc-codigos/opcoes"
+      }
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import { AlunosModule } from './modules/alunos/alunos.module';
 import { AutenticacaoModule } from './modules/autenticacao/autenticacao.module';
 import { AuditoriaModule } from './modules/auditoria/auditoria.module';
 import { AutorizacaoModule } from './modules/autorizacao/autorizacao.module';
+import { BnccCodigosModule } from './modules/bncc-codigos/bncc-codigos.module';
 import { EscolasModule } from './modules/escolas/escolas.module';
 import { DisciplinasModule } from './modules/disciplinas/disciplinas.module';
 import { MatriculasModule } from './modules/matriculas/matriculas.module';
@@ -50,6 +51,7 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module';
     MatriculasModule,
     DiarioClasseModule,
     PlanejamentoPedagogicoModule,
+    BnccCodigosModule,
   ],
 })
 export class AppModule {}

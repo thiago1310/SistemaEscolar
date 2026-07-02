@@ -139,6 +139,11 @@ export class DiarioClasse {
 }
 
 @Entity('diario_frequencias')
+@Unique('uq_diario_frequencias_turma_data_aluno', [
+  'turmaId',
+  'data',
+  'alunoId',
+])
 @Unique('uq_diario_frequencias_diario_data_aluno', [
   'diarioClasseId',
   'data',
@@ -294,6 +299,12 @@ export class DiarioAula {
 }
 
 @Entity('diario_avaliacoes')
+@Unique('uq_diario_avaliacoes_turma_disciplina_periodo_nome', [
+  'turmaId',
+  'disciplinaId',
+  'periodo',
+  'nome',
+])
 @Unique('uq_diario_avaliacoes_diario_nome', ['diarioClasseId', 'nome'])
 export class DiarioAvaliacao {
   @PrimaryGeneratedColumn('uuid')

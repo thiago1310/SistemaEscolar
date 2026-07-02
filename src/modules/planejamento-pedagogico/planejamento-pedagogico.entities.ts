@@ -18,7 +18,7 @@ export enum TipoPeriodoPlanejamento {
   OUTRO = 'OUTRO',
 }
 
-interface FaixaEtariaBncc {
+export interface FaixaEtariaBncc {
   codigo: string;
   nome: string;
   idadeInicialAnos: number;
