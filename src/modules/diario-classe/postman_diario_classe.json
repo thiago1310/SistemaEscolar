@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "7e02fd2d-9f78-4d11-a93b-diario-classe",
     "name": "Sistema Escolar - Diario de Classe",
-    "description": "Collection do modulo diario-classe. Leitura respeita escopo no backend; escrita exige professor com vinculo docente ativo na turma. A listagem de turmas agrupa disciplinas do mesmo professor na mesma turma em subjects/disciplinas. Diarios de classe sao sincronizados por turma, professor, disciplina e periodo letivo, permitindo fechamento por bimestre/trimestre/semestre.",
+    "description": "Collection do modulo diario-classe. Leitura respeita escopo no backend; escrita exige professor com vinculo docente ativo na turma. A listagem de turmas agrupa disciplinas do mesmo professor na mesma turma em subjects/disciplinas. Diarios de classe sao sincronizados por turma, professor, disciplina e periodo letivo, permitindo fechamento por bimestre/trimestre/semestre. Ao trocar periodo no front, use diarioClasseId para carregar aulas, avaliacoes, notas, frequencias e observacoes do diario selecionado.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -39,6 +39,14 @@
         "method": "GET",
         "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
         "url": "{{url_base}}/diario-classe/turmas/{{turmaId}}/diarios?disciplinaId={{disciplinaId}}&periodoLetivoId={{periodoLetivoId}}"
+      }
+    },
+    {
+      "name": "Obter dados completos do diario",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": "{{url_base}}/diario-classe/diarios/{{diarioClasseId}}/dados"
       }
     },
     {
@@ -82,7 +90,7 @@
         "url": "{{url_base}}/diario-classe/turmas/{{turmaId}}/frequencias",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"data\": \"2026-06-30\",\n  \"disciplinaId\": \"{{disciplinaId}}\",\n  \"registros\": [\n    {\n      \"alunoId\": \"{{alunoId}}\",\n      \"situacao\": \"PRESENTE\"\n    }\n  ]\n}"
+          "raw": "{\n  \"data\": \"2026-06-30\",\n  \"disciplinaId\": \"{{disciplinaId}}\",\n  \"diarioClasseId\": \"{{diarioClasseId}}\",\n  \"registros\": [\n    {\n      \"alunoId\": \"{{alunoId}}\",\n      \"situacao\": \"PRESENTE\"\n    }\n  ]\n}"
         }
       }
     },

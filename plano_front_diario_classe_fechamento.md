@@ -11,6 +11,10 @@ Adaptar o frontend para consumir os diarios de classe gerados por periodo letivo
   - Nova chamada ao abrir uma turma.
   - Filtros opcionais: `disciplinaId`, `professorId`, `periodoLetivoId`.
   - Retorna diario por professor, disciplina e periodo letivo, com `status`, `bloqueadoParaEdicao`, `periodo`, `parecerFinal` e dados de fechamento/reabertura.
+- `GET /diario-classe/diarios/:diarioId/dados`
+  - Chamada principal ao selecionar/trocar periodo no diario.
+  - Retorna o diario selecionado e os dados vinculados a ele: frequencia do dia, aulas/conteudos, avaliacoes, notas e observacoes.
+  - Deve ser preferido no frontend para evitar misturar dados por texto de periodo.
 - `POST /diario-classe/diarios/:diarioId/fechar`
   - Usado pelo professor para fechar o diario do periodo selecionado com `parecerFinal`.
 - `PATCH /diario-classe/diarios/:diarioId/reabrir`
@@ -21,6 +25,7 @@ Adaptar o frontend para consumir os diarios de classe gerados por periodo letivo
 ## Mudancas de UI
 - Ao entrar no diario da turma, carregar `GET /diario-classe/turmas/:turmaId/diarios`.
 - Exibir seletor de periodo usando os diarios retornados, nao uma lista fixa no frontend.
+- Ao trocar o periodo/componente, chamar `GET /diario-classe/diarios/:diarioId/dados` e atualizar as abas com o retorno desse diario.
 - Mostrar chip de status do diario selecionado:
   - `NAO_INICIADO`: periodo ainda nao iniciou.
   - `ABERTO`: lancamentos permitidos.

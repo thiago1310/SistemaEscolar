@@ -310,15 +310,64 @@ export class DiarioClasseService {
     return this.serializarDiario(await this.diariosRepositorio.save(diario));
   }
 
+  async obterDadosDiario(diarioId: string, usuarioId: string) {
+    const diario = await this.buscarDiarioPermitido(diarioId, usuarioId);
+    const filtrosDiario = {
+      diarioClasseId: diario.id,
+      disciplinaId: diario.disciplinaId,
+    };
+
+    const [frequencias, aulas, avaliacoes, notas, observacoes] =
+      await Promise.all([
+        this.listarFrequencias(
+          diario.turmaId,
+          {
+            data: this.dataAtual(),
+            ...filtrosDiario,
+          },
+          usuarioId,
+        ),
+        this.listarAulas(diario.turmaId, usuarioId, filtrosDiario),
+        this.listarAvaliacoes(diario.turmaId, usuarioId, filtrosDiario),
+        this.listarNotas(diario.turmaId, usuarioId, filtrosDiario),
+        this.listarObservacoes(diario.turmaId, usuarioId, {
+          diarioClasseId: diario.id,
+        }),
+      ]);
+
+    return {
+      diario: this.serializarDiario(diario),
+      frequencias,
+      aulas,
+      avaliacoes,
+      notas,
+      observacoes,
+    };
+  }
+
   async listarFrequencias(
     turmaId: string,
     filtros: ListarFrequenciasDto,
     usuarioId: string,
   ) {
     await this.buscarTurmaPermitida(turmaId, usuarioId);
+    if (filtros.diarioClasseId) {
+      await this.garantirDiarioPertenceTurma(
+        filtros.diarioClasseId,
+        turmaId,
+        usuarioId,
+      );
+    }
     const alunos = await this.listarAlunosTurma(turmaId);
     const frequencias = await this.frequenciasRepositorio.find({
-      where: { turmaId, data: filtros.data },
+      where: {
+        turmaId,
+        data: filtros.data,
+        ...(filtros.disciplinaId ? { disciplinaId: filtros.disciplinaId } : {}),
+        ...(filtros.diarioClasseId
+          ? { diarioClasseId: filtros.diarioClasseId }
+          : {}),
+      },
       relations: { aluno: true },
     });
     const porAluno = new Map(frequencias.map((item) => [item.alunoId, item]));
@@ -333,6 +382,8 @@ export class DiarioClasseService {
               alunoId: aluno.id,
               aluno,
               data: filtros.data,
+              disciplinaId: filtros.disciplinaId ?? null,
+              diarioClasseId: filtros.diarioClasseId ?? null,
               situacao: SituacaoFrequenciaDiario.PRESENTE,
             }),
         ),
@@ -351,6 +402,11 @@ export class DiarioClasseService {
       dados.disciplinaId,
     );
     const diario = await this.garantirDiarioEditavel(vinculo, dados.data);
+    if (dados.diarioClasseId && diario?.id !== dados.diarioClasseId) {
+      throw new BadRequestException(
+        'Diario informado nao corresponde a data, turma e disciplina do lancamento.',
+      );
+    }
     const alunos = await this.listarAlunosTurma(turmaId);
     const alunosPermitidos = new Set(alunos.map((aluno) => aluno.id));
 
@@ -382,11 +438,22 @@ export class DiarioClasseService {
       await this.frequenciasRepositorio.save(frequencia);
     }
 
-    return this.listarFrequencias(turmaId, { data: dados.data }, usuarioId);
+    return this.listarFrequencias(
+      turmaId,
+      { data: dados.data, diarioClasseId: diario?.id },
+      usuarioId,
+    );
   }
 
   async listarAulas(turmaId: string, usuarioId: string, filtros: ListarAulasDto = {}) {
     await this.buscarTurmaPermitida(turmaId, usuarioId);
+    if (filtros.diarioClasseId) {
+      await this.garantirDiarioPertenceTurma(
+        filtros.diarioClasseId,
+        turmaId,
+        usuarioId,
+      );
+    }
     const consulta = this.aulasRepositorio
       .createQueryBuilder('aula')
       .leftJoinAndSelect('aula.disciplina', 'disciplina')
@@ -398,6 +465,11 @@ export class DiarioClasseService {
     if (filtros.disciplinaId) {
       consulta.andWhere('aula.disciplina_id = :disciplinaId', {
         disciplinaId: filtros.disciplinaId,
+      });
+    }
+    if (filtros.diarioClasseId) {
+      consulta.andWhere('aula.diario_classe_id = :diarioClasseId', {
+        diarioClasseId: filtros.diarioClasseId,
       });
     }
     if (filtros.periodo) {
@@ -487,10 +559,20 @@ export class DiarioClasseService {
     filtros: ListarAvaliacoesDto = {},
   ) {
     await this.buscarTurmaPermitida(turmaId, usuarioId);
+    if (filtros.diarioClasseId) {
+      await this.garantirDiarioPertenceTurma(
+        filtros.diarioClasseId,
+        turmaId,
+        usuarioId,
+      );
+    }
     const where = {
       turmaId,
       ativo: true,
       ...(filtros.disciplinaId ? { disciplinaId: filtros.disciplinaId } : {}),
+      ...(filtros.diarioClasseId
+        ? { diarioClasseId: filtros.diarioClasseId }
+        : {}),
       ...(filtros.periodo ? { periodo: filtros.periodo } : {}),
     };
     const avaliacoes = await this.avaliacoesRepositorio.find({
@@ -569,12 +651,22 @@ export class DiarioClasseService {
 
   async listarNotas(turmaId: string, usuarioId: string, filtros: ListarNotasDto = {}) {
     await this.buscarTurmaPermitida(turmaId, usuarioId);
+    if (filtros.diarioClasseId) {
+      await this.garantirDiarioPertenceTurma(
+        filtros.diarioClasseId,
+        turmaId,
+        usuarioId,
+      );
+    }
     const alunos = await this.listarAlunosTurma(turmaId);
     const avaliacoes = await this.avaliacoesRepositorio.find({
       where: {
         turmaId,
         ativo: true,
         ...(filtros.disciplinaId ? { disciplinaId: filtros.disciplinaId } : {}),
+        ...(filtros.diarioClasseId
+          ? { diarioClasseId: filtros.diarioClasseId }
+          : {}),
         ...(filtros.periodo ? { periodo: filtros.periodo } : {}),
         ...(filtros.avaliacaoId ? { id: filtros.avaliacaoId } : {}),
       },
@@ -649,6 +741,7 @@ export class DiarioClasseService {
 
     return this.listarNotas(avaliacao.turmaId, usuarioId, {
       disciplinaId: avaliacao.disciplinaId,
+      diarioClasseId: avaliacao.diarioClasseId ?? undefined,
       periodo: avaliacao.periodo,
     });
   }
@@ -659,6 +752,13 @@ export class DiarioClasseService {
     filtros: ListarObservacoesDto = {},
   ) {
     await this.buscarTurmaPermitida(turmaId, usuarioId);
+    if (filtros.diarioClasseId) {
+      await this.garantirDiarioPertenceTurma(
+        filtros.diarioClasseId,
+        turmaId,
+        usuarioId,
+      );
+    }
     const consulta = this.observacoesRepositorio
       .createQueryBuilder('observacao')
       .leftJoinAndSelect('observacao.aluno', 'aluno')
@@ -670,6 +770,11 @@ export class DiarioClasseService {
     if (filtros.alunoId) {
       consulta.andWhere('observacao.aluno_id = :alunoId', {
         alunoId: filtros.alunoId,
+      });
+    }
+    if (filtros.diarioClasseId) {
+      consulta.andWhere('observacao.diario_classe_id = :diarioClasseId', {
+        diarioClasseId: filtros.diarioClasseId,
       });
     }
     if (filtros.tipo) {
@@ -1080,6 +1185,20 @@ export class DiarioClasseService {
     }
 
     await this.buscarTurmaPermitida(diario.turmaId, usuarioId);
+    return diario;
+  }
+
+  private async garantirDiarioPertenceTurma(
+    diarioId: string,
+    turmaId: string,
+    usuarioId: string,
+  ) {
+    const diario = await this.buscarDiarioPermitido(diarioId, usuarioId);
+
+    if (diario.turmaId !== turmaId) {
+      throw new BadRequestException('Diario nao pertence a turma informada.');
+    }
+
     return diario;
   }
 

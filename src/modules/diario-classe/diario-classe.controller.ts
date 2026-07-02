@@ -74,6 +74,18 @@ export class DiarioClasseController {
     );
   }
 
+  @Get('diarios/:diarioId/dados')
+  @NivelMinimo(10)
+  obterDadosDiario(
+    @Param('diarioId') diarioId: string,
+    @Req() req: RequisicaoAutenticada,
+  ) {
+    return this.diarioClasseService.obterDadosDiario(
+      diarioId,
+      req.usuario.id,
+    );
+  }
+
   @Post('diarios/:diarioId/fechar')
   @NivelMinimo(10)
   fecharDiario(

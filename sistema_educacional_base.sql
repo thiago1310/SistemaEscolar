@@ -64,11 +64,13 @@ $$ LANGUAGE plpgsql;
 -- diarios_classe: controle por turma, professor, disciplina, vinculo docente
 -- e periodo letivo, com status, parecer final, fechamento e reabertura.
 -- diario_frequencias: turma_id, disciplina_id, professor_id, vinculo_docente_id,
--- diario_classe_id, aluno_id, data, situacao e observacao. Unico por turma/data/aluno.
+-- diario_classe_id, aluno_id, data, situacao e observacao. Unico por
+-- turma/data/aluno.
 -- diario_aulas: turma_id, disciplina_id, professor_id, vinculo_docente_id,
 -- diario_classe_id, data, horarios, titulo, conteudo, habilidades, recursos, periodo e ativo.
 -- diario_avaliacoes: turma_id, disciplina_id, professor_id, diario_classe_id,
--- nome, periodo, peso, data, observacao e ativo.
+-- nome, periodo, peso, data, observacao e ativo. Unico por
+-- turma/disciplina/periodo/nome.
 -- diario_notas: avaliacao_id, aluno_id, valor e observacao. Unico por
 -- avaliacao/aluno.
 -- diario_observacoes: turma_id, aluno_id opcional, professor_id, data, tipo,

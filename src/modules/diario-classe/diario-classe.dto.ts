@@ -69,6 +69,10 @@ export class ListarFrequenciasDto {
   @IsUUID()
   @IsOptional()
   disciplinaId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  diarioClasseId?: string;
 }
 
 export class RegistroFrequenciaDto {
@@ -91,6 +95,10 @@ export class SalvarFrequenciasDto {
   @IsOptional()
   disciplinaId?: string;
 
+  @IsUUID()
+  @IsOptional()
+  diarioClasseId?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => RegistroFrequenciaDto)
@@ -101,6 +109,10 @@ export class ListarAulasDto {
   @IsUUID()
   @IsOptional()
   disciplinaId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  diarioClasseId?: string;
 
   @IsString()
   @IsOptional()
@@ -208,6 +220,10 @@ export class ListarAvaliacoesDto {
   @IsOptional()
   disciplinaId?: string;
 
+  @IsUUID()
+  @IsOptional()
+  diarioClasseId?: string;
+
   @IsString()
   @IsOptional()
   periodo?: string;
@@ -296,6 +312,10 @@ export class ListarNotasDto {
   @IsOptional()
   disciplinaId?: string;
 
+  @IsUUID()
+  @IsOptional()
+  diarioClasseId?: string;
+
   @IsString()
   @IsOptional()
   periodo?: string;
@@ -313,6 +333,10 @@ export class ListarObservacoesDto {
   @IsUUID()
   @IsOptional()
   alunoId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  diarioClasseId?: string;
 
   @IsIn(Object.values(TipoObservacaoDiario))
   @IsOptional()
